@@ -1,16 +1,40 @@
-html,
-body {
-  padding: 0;
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
-    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"); */
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&display=swap");
+
+@layer base {
+  body {
+    @apply bg-background;
+  }
+  :root {
+    --color-primary: 0, 0, 0;
+    --color-secondary: 238, 238, 238;
+    --color-background: 250, 250, 250;
+    --color-error: 176, 0, 32;
+  }
+  .theme-prehrana {
+    --color-primary: 21, 195, 154;
+  }
+  .theme-obavijesti {
+    --color-primary: 43, 118, 223;
+  }
+  .theme-smjestaj {
+    --color-primary: 250, 127, 40;
+  }
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+@layer utilities {
+  .translate-y-0 {
+    transform: translateY(0px);
+  }
+  .-translate-y-full {
+    transform: translateY(-100%);
+  }
 }
 
-* {
-  box-sizing: border-box;
+input::-webkit-calendar-picker-indicator {
+  display: none !important;
 }
