@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { MdAdd } from "react-icons/md";
 import Header from "../../components/Header";
 import MenuTable from "../../components/Prehrana/MenuTable";
 import Layout from "../../components/Layout";
 import { useMenus } from "../../lib/api/menus";
 import { useProducts } from "../../lib/api/products";
+import { useRouter } from "next/router";
+import { userGroups } from "../../lib/constants";
 
 const MenuList = () => {
   const { products } = useProducts();
@@ -13,6 +15,16 @@ const MenuList = () => {
   setMenus(menus?.sort((a, b) => new Date(b.date) - new Date(a.date)));
 
   const [selectedMenus, setSelectedMenus] = useState([]);
+
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    const username = localStorage.getItem("username");
+
+    if (!token || !userGroups["prehrana"].includes(username))
+      router.push("/prehrana/login");
+  }, []);
 
   const deleteMenusState = (menuIds) => {
     let menusCopy = [...menus];

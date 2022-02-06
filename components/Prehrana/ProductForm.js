@@ -43,19 +43,13 @@ const ProductForm = ({ product }) => {
 
   const router = useRouter();
 
-  const croToEngString = (str) => {
-    var translate_re = /[čćđšž]/g;
-    var translate = {
-      č: "c",
-      ć: "c",
-      đ: "d",
-      š: "s",
-      ž: "z",
-    };
-    return str.replace(translate_re, function (match) {
-      return translate[match];
-    });
-  };
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    const username = localStorage.getItem("username");
+
+    if (!token || !userGroups["prehrana"].includes(username))
+      router.push("/prehrana/login");
+  }, []);
 
   const formatAllergens = (allergensString) => {
     console.log("alergenii", allergensString);

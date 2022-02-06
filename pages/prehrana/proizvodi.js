@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MdAdd } from "react-icons/md";
 import Header from "../../components/Header";
 import ProductsHeader from "../../components/Prehrana/ProductsHeader";
 import TableProducts from "../../components/Prehrana/ProductTable";
 import Layout from "../../components/Layout";
 import { useProducts } from "../../lib/api/products";
+import { useRouter } from "next/router";
+import { userGroups } from "../../lib/constants";
 
 const Products = () => {
   const { products, error, setProducts } = useProducts();
@@ -20,6 +22,16 @@ const Products = () => {
         : 0
     )
   );
+
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    const username = localStorage.getItem("username");
+
+    if (!token || !userGroups["prehrana"].includes(username))
+      router.push("/prehrana/login");
+  }, []);
 
   const deleteProducts = (productIds) => {
     let productsCopy = [...products];

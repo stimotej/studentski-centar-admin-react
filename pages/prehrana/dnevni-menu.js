@@ -18,6 +18,7 @@ import {
   useProducts,
 } from "../../lib/api/products";
 import { updateRestaurant } from "../../lib/api/restaurant";
+import { userGroups } from "../../lib/constants";
 
 const NewDnevniMenu = () => {
   const { products, error: errorProducts, setProducts } = useProducts();
@@ -45,6 +46,14 @@ const NewDnevniMenu = () => {
     rucak: 46,
     vecera: 47,
   });
+
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    const username = localStorage.getItem("username");
+
+    if (!token || !userGroups["prehrana"].includes(username))
+      router.push("/prehrana/login");
+  }, []);
 
   useEffect(() => {
     if (menus) getMenuOnDate(date);

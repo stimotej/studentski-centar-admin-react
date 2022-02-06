@@ -5,11 +5,22 @@ import Link from "next/link";
 import { MdOutlinePlayArrow } from "react-icons/md";
 import Layout from "../../components/Layout";
 import { useRestaurant } from "../../lib/api/restaurant";
+import { useEffect } from "react";
+import { userGroups } from "../../lib/constants";
+import { useRouter } from "next/router";
 
 const Home = () => {
   const { restaurant, error } = useRestaurant();
 
-  console.log(error);
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    const username = localStorage.getItem("username");
+
+    if (!token || !userGroups["prehrana"].includes(username))
+      router.push("/prehrana/login");
+  }, []);
 
   return (
     <Layout>

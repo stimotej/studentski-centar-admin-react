@@ -102,24 +102,34 @@ const Table = ({
     let changedStock = stock === "instock" ? "outofstock" : "instock";
     // changeStockState(id, changedStock);
 
-    let productsCopy = [...products];
-    const index = productsCopy.findIndex((product) => product.id === id);
-    productsCopy[index].stock = changedStock;
-    // mutate("products", productsCopy, false);
+    // let productsCopy = [...products];
+    // const index = productsCopy.findIndex((product) => product.id === id);
+    // productsCopy[index].stock = changedStock;
+    // mutate("products", productsCopy, { revalidate: false });
 
-    setStockLoading(id);
+    // console.log(productsCopy);
+
+    // setStockLoading(id);
     try {
-      await updateProduct(id, {
-        stock: changedStock,
-      });
+      await mutate("products", async (productsCurrent) => {
+        const updatedProduct = await updateProduct(id, {
+          stock: changedStock,
+        });
 
-      // mutate("products", productsCopy);
+        const filteredProducts = productsCurrent.filter(
+          (product) => product.id !== id
+        );
+        return [...filteredProducts, updatedProduct];
+      });
+      // await updateProduct(id, {
+      //   stock: changedStock,
+      // });
     } catch (error) {
-      productsCopy[index].stock = stock;
-      mutate("products", productsCopy);
+      // productsCopy[index].stock = stock;
+      // mutate("products", productsCopy);
       toast.error("Greška prilikom postavljanja zalihe");
     } finally {
-      setStockLoading(null);
+      // setStockLoading(null);
     }
   };
 

@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { MdArrowBack } from "react-icons/md";
 import Loader from "./Elements/Loader";
 import { login } from "../lib/api/auth";
+import { userGroups } from "../lib/constants";
 
 const Login = ({ from }) => {
   const [username, setUsername] = useState("");
@@ -13,6 +14,13 @@ const Login = ({ from }) => {
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    const username = localStorage.getItem("username");
+
+    if (token && userGroups[from].includes(username)) router.push(`/${from}`);
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
