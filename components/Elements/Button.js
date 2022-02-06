@@ -51,7 +51,7 @@ const Button = ({
       type={type || "button"}
       onClick={onClick}
       className={`${style} ${className}`}
-      disabled={disabled}
+      disabled={loading}
     >
       {loading ? (
         <Loader

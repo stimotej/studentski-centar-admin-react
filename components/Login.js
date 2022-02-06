@@ -16,8 +16,8 @@ const Login = ({ from }) => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    const username = localStorage.getItem("username");
+    const token = window.localStorage.getItem("access_token");
+    const username = window.localStorage.getItem("username");
 
     if (token && userGroups[from].includes(username)) router.push(`/${from}`);
   }, []);

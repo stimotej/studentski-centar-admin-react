@@ -11,7 +11,10 @@ import Tabs, { Tab, Content } from "../../components/Elements/Tabs/Tabs";
 import MediaFileInput from "../../components/Elements/MediaFileInput";
 const QuillEditor = dynamic(
   () => import("../../components/Obavijesti/Editor/QuillEditor"),
-  { ssr: false }
+  {
+    ssr: false,
+    loading: () => <Loader className="w-10 h-10 mt-5 mx-auto border-primary" />,
+  }
 );
 import StoredPostNote from "../../components/Obavijesti/Editor/StoredPostNote";
 import Layout from "../../components/Layout";
@@ -21,6 +24,8 @@ import {
   useObavijesti,
 } from "../../lib/api/obavijesti";
 import { createMedia, useMedia } from "../../lib/api/obavijestiMedia";
+import { userGroups } from "../../lib/constants";
+import Loader from "../../components/Elements/Loader";
 
 const Editor = () => {
   const [storedPostNote, setStoredPostNote] = useState(false);
@@ -28,9 +33,11 @@ const Editor = () => {
   const router = useRouter();
 
   useEffect(() => {
-    if (!localStorage.getItem("access_token")) {
+    const token = window.localStorage.getItem("access_token");
+    const username = window.localStorage.getItem("username");
+
+    if (!token || !userGroups["obavijesti"].includes(username))
       router.push("/obavijesti/login");
-    }
 
     let storedPostExists = false;
     storedPostKeys.forEach((key) => {
@@ -99,7 +106,7 @@ const Editor = () => {
 
   const resetStoredPostAndState = () => {
     storedPostKeys.forEach((key) => {
-      localStorage.removeItem(key);
+      window.localStorage.removeItem(key);
     });
     setImage(null);
     setTitle("");
@@ -197,8 +204,8 @@ const Editor = () => {
           setImage(selectedImage);
           setImageId(selectedImage?.id);
           if (!router.query?.content) {
-            localStorage.setItem("editor_image_id", selectedImage?.id);
-            localStorage.setItem("editor_image_src", selectedImage?.src);
+            window.localStorage.setItem("editor_image_id", selectedImage?.id);
+            window.localStorage.setItem("editor_image_src", selectedImage?.src);
           }
         } else if (mediaDialog === "contentImage")
           // addImageToEditor(selectedImage.src);
@@ -247,7 +254,7 @@ const Editor = () => {
           onChange={(e) => {
             setDescription(e.target.value);
             !router.query?.content &&
-              localStorage.setItem("editor_description", e.target.value);
+              window.localStorage.setItem("editor_description", e.target.value);
           }}
         />
         <div className="mt-4">Status:</div>
@@ -263,7 +270,7 @@ const Editor = () => {
               onChange={(e) => {
                 setStatus(e.target.value);
                 !router.query?.content &&
-                  localStorage.setItem("editor_status", "publish");
+                  window.localStorage.setItem("editor_status", "publish");
               }}
             />
             <label htmlFor="publish">Objavi na stranicu</label>
@@ -279,7 +286,7 @@ const Editor = () => {
               onChange={(e) => {
                 setStatus(e.target.value);
                 !router.query?.content &&
-                  localStorage.setItem("editor_status", "draft");
+                  window.localStorage.setItem("editor_status", "draft");
               }}
             />
             <label htmlFor="draft">Spremi kao skicu</label>
@@ -334,7 +341,7 @@ const Editor = () => {
             onChange={(e) => {
               setTitle(e.target.value);
               !router.query?.content &&
-                localStorage.setItem("editor_title", e.target.value);
+                window.localStorage.setItem("editor_title", e.target.value);
             }}
           />
           <QuillEditor
@@ -342,7 +349,7 @@ const Editor = () => {
             onChange={(value) => {
               setContent(value);
               !router.query?.content &&
-                localStorage.setItem("editor_content", value);
+                window.localStorage.setItem("editor_content", value);
             }}
             addImageToolbar={addImageToolbar}
             src={src}

@@ -27,7 +27,7 @@ const Table = ({
   const [productsPage, setProductsPage] = useState([]);
 
   useEffect(() => {
-    setPerPage(localStorage.getItem("products_table_per_page") || 10);
+    setPerPage(window.localStorage.getItem("products_table_per_page") || 10);
   }, []);
 
   useEffect(() => {
@@ -102,14 +102,14 @@ const Table = ({
     let changedStock = stock === "instock" ? "outofstock" : "instock";
     // changeStockState(id, changedStock);
 
-    // let productsCopy = [...products];
-    // const index = productsCopy.findIndex((product) => product.id === id);
-    // productsCopy[index].stock = changedStock;
+    let productsCopy = [...products];
+    const index = productsCopy.findIndex((product) => product.id === id);
+    productsCopy[index].stock = changedStock;
     // mutate("products", productsCopy, { revalidate: false });
 
     // console.log(productsCopy);
 
-    // setStockLoading(id);
+    setStockLoading(id);
     try {
       await mutate("products", async (productsCurrent) => {
         const updatedProduct = await updateProduct(id, {
@@ -125,11 +125,11 @@ const Table = ({
       //   stock: changedStock,
       // });
     } catch (error) {
-      // productsCopy[index].stock = stock;
+      productsCopy[index].stock = stock;
       // mutate("products", productsCopy);
       toast.error("Greška prilikom postavljanja zalihe");
     } finally {
-      // setStockLoading(null);
+      setStockLoading(null);
     }
   };
 
@@ -142,7 +142,7 @@ const Table = ({
 
   useEffect(() => {
     onChangePage(page);
-    localStorage.setItem("products_table_per_page", perPage);
+    window.localStorage.setItem("products_table_per_page", perPage);
   }, [perPage]);
 
   return (

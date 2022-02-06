@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { MdArrowBack } from "react-icons/md";
 import InputLabel from "../Elements/InputLabel";
@@ -44,8 +44,8 @@ const ProductForm = ({ product }) => {
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    const username = localStorage.getItem("username");
+    const token = window.localStorage.getItem("access_token");
+    const username = window.localStorage.getItem("username");
 
     if (!token || !userGroups["prehrana"].includes(username))
       router.push("/prehrana/login");
@@ -63,9 +63,6 @@ const ProductForm = ({ product }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-
-    const token = localStorage.getItem("access_token");
-    const categoryId = localStorage.getItem("category_id");
 
     if (image && image !== product?.image) {
       var reader = new FileReader();

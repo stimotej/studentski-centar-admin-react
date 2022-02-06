@@ -15,6 +15,7 @@ import Loader from "../../components/Elements/Loader";
 import Dialog from "../../components/Elements/Dialog";
 import Layout from "../../components/Layout";
 import { deleteObavijest, useObavijesti } from "../../lib/api/obavijesti";
+import { userGroups } from "../../lib/constants";
 
 const Home = () => {
   const { obavijesti, error, setObavijesti } = useObavijesti();
@@ -43,9 +44,11 @@ const Home = () => {
   const router = useRouter();
 
   useEffect(() => {
-    if (!localStorage.getItem("access_token")) {
+    const token = window.localStorage.getItem("access_token");
+    const username = window.localStorage.getItem("username");
+
+    if (!token || !userGroups["obavijesti"].includes(username))
       router.push("/obavijesti/login");
-    }
   }, []);
 
   useEffect(() => {

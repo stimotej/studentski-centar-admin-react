@@ -2,8 +2,8 @@ import { Navigate, useLocation } from "react-router";
 
 const RequireAuth = ({ children, link, userCategory }) => {
   let location = useLocation();
-  const token = localStorage.getItem("access_token");
-  const username = localStorage.getItem("username");
+  const token = window.localStorage.getItem("access_token");
+  const username = window.localStorage.getItem("username");
 
   const userGroups = {
     prehrana: ["express", "savska", "lascina"],

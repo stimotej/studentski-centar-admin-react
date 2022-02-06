@@ -31,7 +31,7 @@ const MenuTable = ({
   const [menusPage, setMenusPage] = useState([]);
 
   useEffect(() => {
-    setPerPage(localStorage.getItem("menus_table_per_page") || 10);
+    setPerPage(window.localStorage.getItem("menus_table_per_page") || 10);
   }, []);
 
   useEffect(() => {
@@ -95,7 +95,7 @@ const MenuTable = ({
 
   useEffect(() => {
     onChangePage(page);
-    localStorage.setItem("menus_table_per_page", perPage);
+    window.localStorage.setItem("menus_table_per_page", perPage);
   }, [perPage]);
 
   return (

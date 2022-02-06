@@ -48,8 +48,8 @@ const NewDnevniMenu = () => {
   });
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    const username = localStorage.getItem("username");
+    const token = window.localStorage.getItem("access_token");
+    const username = window.localStorage.getItem("username");
 
     if (!token || !userGroups["prehrana"].includes(username))
       router.push("/prehrana/login");

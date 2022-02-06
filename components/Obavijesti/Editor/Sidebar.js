@@ -26,12 +26,12 @@ const Sidebar = ({
         } lg:flex flex-col flex-1 pb-5 px-5 z-50 lg:z-10 h-full w-72 bg-white shadow overflow-y-auto`}
       >
         <button
-          className="ml-auto p-3 hover:bg-background rounded-full"
+          className="ml-auto mt-4 p-3 hover:bg-background lg:hidden rounded-full"
           onClick={() => setActive(false)}
         >
           <MdClose />
         </button>
-        <h3 className="text-lg font-medium mt-2 lg:mt-8">Postavi</h3>
+        <h3 className="text-lg font-medium mt-2 lg:mt-20">Postavi</h3>
         <div className="mb-8">{children}</div>
         <div className="flex justify-evenly w-full mt-auto">
           {/* <button

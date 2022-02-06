@@ -1,110 +1,98 @@
 import React, { useEffect, useState, useRef } from "react";
-import { io } from "socket.io-client";
-import api from "../../lib/api";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import Navbar from "../../components/Prehrana/MenuPrikaz/Navbar";
 import NotConnectedWarning from "../../components/Prehrana/MenuPrikaz/NotConnectedWarning";
 import Menu from "../../components/Prehrana/MenuPrikaz/Menu";
-import { isToday } from "../../lib/dates";
+import Pusher from "pusher-js";
+import { useProducts } from "../../lib/api/products";
+import { useMenuToday } from "../../lib/api/menus";
 
 const MenuPrikaz = () => {
-  const [products, setProducts] = useState(null);
-  const [menu, setMenu] = useState(null);
+  const { products, productsError, setProducts } = useProducts();
+  const { menu, menuError, setMenu } = useMenuToday();
 
   const [socket, setSocket] = useState(null);
 
-  const [connected, setConnected] = useState(false);
+  const [connected, setConnected] = useState(true);
 
   const activeMeal = "rucak";
 
   const fullscreenHandle = useFullScreenHandle();
 
   useEffect(() => {
-    const restaurantId = localStorage.getItem("restaurant_id");
-
-    // http://localhost:5000
-    // https://studentski-centar-admin.herokuapp.com
-    const newSocket = io("http://localhost:5000", {
-      transports: ["websocket"],
+    var pusher = new Pusher(process.env.PUSHER_KEY, {
+      cluster: process.env.PUSHER_CLUSTER,
+      encrypted: true,
     });
 
-    setSocket(newSocket);
+    var channel = pusher.subscribe("menu-preview");
 
-    api
-      .get("products", {
-        params: {
-          per_page: 100,
-        },
-      })
-      .then((response) => {
-        setProducts(response.data);
-      })
-      .catch((error) => console.log(error));
+    if (products) {
+      channel.bind("product", function (product) {
+        let productsCopy = [...products];
+        const index = productsCopy.findIndex((item) => item.id === product.id);
 
-    api
-      .get("menus", {
-        params: {
-          restaurant_id: restaurantId,
-          date: new Date().toISOString().split("T")[0],
-        },
-      })
-      .then((response) => setMenu(response.data[0]))
-      .catch((error) => console.log(error));
+        if (index === -1) productsCopy.push(product);
+        else productsCopy[index] = product;
+
+        setProducts(productsCopy);
+      });
+    }
 
     return () => {
-      newSocket.close();
-    };
-  }, []);
-
-  useEffect(() => {
-    socket?.on("connect", () => {
-      console.log(socket.id);
-      setConnected(true);
-    });
-
-    socket?.on("connect_error", (err) => {
-      console.log(err.message);
-      setConnected(false);
-    });
-  }, [socket]);
-
-  useEffect(() => {
-    socket?.on("product", (product) => {
-      console.log("ddd", product);
-
-      let productsCopy = [...products];
-      const index = productsCopy.findIndex((item) => item.id === product.id);
-
-      if (index === -1) productsCopy.push(product);
-      else productsCopy[index] = product;
-
-      setProducts(productsCopy);
-    });
-
-    return () => {
-      socket?.off("products");
+      pusher.disconnect();
     };
   }, [products]);
 
-  useEffect(() => {
-    socket?.on("menu", (updatedMenu) => {
-      console.log("menuuu", updatedMenu);
-      setMenu(updatedMenu);
+  // useEffect(() => {
+  //   socket?.on("connect", () => {
+  //     console.log(socket.id);
+  //     setConnected(true);
+  //   });
 
-      if (!isToday(updatedMenu.date)) {
-        api
-          .get("menus", {
-            params: { date: new Date().toISOString().split("T")[0] },
-          })
-          .then((response) => setMenu(response.data[0]))
-          .catch((error) => console.log(error));
-      }
-    });
+  //   socket?.on("connect_error", (err) => {
+  //     console.log(err.message);
+  //     setConnected(false);
+  //   });
+  // }, [socket]);
 
-    return () => {
-      socket?.off("menu");
-    };
-  }, [menu]);
+  // useEffect(() => {
+  //   socket?.on("product", (product) => {
+  //     console.log("ddd", product);
+
+  //     let productsCopy = [...products];
+  //     const index = productsCopy.findIndex((item) => item.id === product.id);
+
+  //     if (index === -1) productsCopy.push(product);
+  //     else productsCopy[index] = product;
+
+  //     setProducts(productsCopy);
+  //   });
+
+  //   return () => {
+  //     socket?.off("products");
+  //   };
+  // }, [products]);
+
+  // useEffect(() => {
+  //   socket?.on("menu", (updatedMenu) => {
+  //     console.log("menuuu", updatedMenu);
+  //     setMenu(updatedMenu);
+
+  //     if (!isToday(updatedMenu.date)) {
+  //       api
+  //         .get("menus", {
+  //           params: { date: new Date().toISOString().split("T")[0] },
+  //         })
+  //         .then((response) => setMenu(response.data[0]))
+  //         .catch((error) => console.log(error));
+  //     }
+  //   });
+
+  //   return () => {
+  //     socket?.off("menu");
+  //   };
+  // }, [menu]);
 
   return (
     <FullScreen className="bg-background" handle={fullscreenHandle}>

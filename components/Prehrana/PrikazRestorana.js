@@ -104,7 +104,7 @@ const PrikazRestorana = ({ id, slika, naslov, opis }) => {
         className="relative w-full h-80 cursor-pointer rounded-xl shadow-md hover:shadow-lg transition-shadow"
       >
         <Image
-          src={image ? URL.createObjectURL(image) : slika}
+          src={image ? URL.createObjectURL(image) : slika ? slika : ""}
           alt="Slika restorana"
           className="rounded-xl"
           layout="fill"

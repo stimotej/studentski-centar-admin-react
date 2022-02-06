@@ -20,6 +20,7 @@ import {
   updateMedia,
   useMedia,
 } from "../../lib/api/obavijestiMedia";
+import { userGroups } from "../../lib/constants";
 
 const Media = () => {
   const { mediaList, error, setMediaList } = useMedia();
@@ -54,9 +55,11 @@ const Media = () => {
   const router = useRouter();
 
   useEffect(() => {
-    if (!localStorage.getItem("access_token")) {
+    const token = window.localStorage.getItem("access_token");
+    const username = window.localStorage.getItem("username");
+
+    if (!token || !userGroups["obavijesti"].includes(username))
       router.push("/obavijesti/login");
-    }
   }, []);
 
   const handleSearch = (e) => {
@@ -269,12 +272,13 @@ const Media = () => {
           loading={loading}
         >
           <div className="flex flex-col md:flex-row">
-            <div className="relative w-full md:w-1/2 rounded-lg shadow-md">
+            <div className="w-full md:w-1/2 rounded-lg shadow-md h-fit">
               <Image
                 src={mediaDialog.src}
                 alt={mediaDialog.alt}
-                layout="fill"
-                objectFit="cover"
+                width={mediaDialog.width}
+                height={mediaDialog.height}
+                layout="responsive"
                 className="rounded-lg"
               />
             </div>

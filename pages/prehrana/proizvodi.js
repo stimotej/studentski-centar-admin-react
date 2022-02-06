@@ -7,6 +7,7 @@ import Layout from "../../components/Layout";
 import { useProducts } from "../../lib/api/products";
 import { useRouter } from "next/router";
 import { userGroups } from "../../lib/constants";
+import Script from "next/script";
 
 const Products = () => {
   const { products, error, setProducts } = useProducts();
@@ -26,8 +27,8 @@ const Products = () => {
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    const username = localStorage.getItem("username");
+    const token = window.localStorage.getItem("access_token");
+    const username = window.localStorage.getItem("username");
 
     if (!token || !userGroups["prehrana"].includes(username))
       router.push("/prehrana/login");
@@ -85,7 +86,7 @@ const Products = () => {
       <Header
         title="Proizvodi"
         link
-        to="./dodaj-proizvod"
+        to="/prehrana/dodaj-proizvod"
         text="Dodaj proizvod"
         icon={<MdAdd />}
         primary
@@ -106,6 +107,7 @@ const Products = () => {
           changeStockState={changeStockState}
         />
       </div>
+      <Script src="https://js.pusher.com/7.0.3/pusher.min.js" />
     </Layout>
   );
 };
