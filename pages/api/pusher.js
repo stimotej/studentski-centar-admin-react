@@ -9,6 +9,6 @@ const pusher = new Pusher({
 });
 
 export default function handler(req, res) {
-  pusher.trigger("menu-preview", "product", req.body);
+  pusher.trigger("menu-preview", req.body.event, req.body.data);
   res.end();
 }
