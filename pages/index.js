@@ -27,7 +27,7 @@ const LoginSelect = () => {
         />
       </div>
       <span className="font-light mb-5 px-6 text-center">
-        Za sva pitanja, prijedloge za izmjenu, uočavanje grešaka u radu stustavu
+        Za sva pitanja, prijedloge za izmjenu, uočavanje grešaka u radu stustava
         molimo:
       </span>
       <Button link to="/kontakt" text="Kontaktirajte nas" primary />

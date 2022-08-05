@@ -27,5 +27,5 @@ module.exports = {
       maxHeight: { 90: "90%" },
     },
   },
-  plugins: [require("@tailwindcss/forms")],
+  plugins: [],
 };
