@@ -6,18 +6,14 @@ import {
   MdOutlineImage,
 } from "react-icons/md";
 import Header from "../../components/Header";
-import TableProducts from "../../components/Prehrana/ProductTable";
 import Layout from "../../components/Layout";
-import {
-  updateMultipleProducts,
-  updateProduct,
-  useProducts,
-} from "../../lib/api/products";
+import { updateProduct, useProducts } from "../../lib/api/products";
 import { useRouter } from "next/router";
 import { userGroups } from "../../lib/constants";
 import Script from "next/script";
 import MyTable from "../../components/Elements/Table";
 import {
+  Button,
   IconButton,
   InputAdornment,
   InputBase,
@@ -33,25 +29,17 @@ import {
   faXmark,
   faMagnifyingGlass,
 } from "@fortawesome/pro-regular-svg-icons";
-import StockModal from "../../components/Prehrana/StockModal";
-import Dialog from "../../components/Elements/Dialog";
 import { toast } from "react-toastify";
 import Link from "next/link";
+import replaceCroatian from "../../lib/replaceCroatian";
+import LoadingButton from "@mui/lab/LoadingButton";
+import DeleteDialog from "../../components/Prehrana/Products/DeleteDialog";
+import StockDialog from "../../components/Prehrana/Products/StockDialog";
 
 const Products = () => {
   const { products, error, loading, setProducts } = useProducts();
 
   const [selectedProducts, setSelectedProducts] = useState([]);
-
-  setProducts(
-    products?.sort((a, b) =>
-      a.name.toUpperCase() > b.name.toUpperCase()
-        ? 1
-        : b.name.toUpperCase() > a.name.toUpperCase()
-        ? -1
-        : 0
-    )
-  );
 
   const router = useRouter();
 
@@ -63,35 +51,15 @@ const Products = () => {
       router.push("/prehrana/login");
   }, []);
 
-  const deleteProducts = (productIds) => {
-    let productsCopy = [...products];
-    let index = 0;
-    console.log(productsCopy);
-    productIds.forEach((id) => {
-      index = productsCopy.findIndex((product) => product.id === id);
-      productsCopy.splice(index, 1);
-    });
-    console.log(productsCopy);
-    setProducts(productsCopy);
-    setSelectedProducts([]);
-  };
-
   const [search, setSearch] = useState("");
-  const [filteredProducts, setFilteredProducts] = useState([]);
 
-  const handleSearch = (e) => {
-    setSearch(e.target.value);
-    const searchValue = e.target.value.replace(
+  const searchFilter = (item) => {
+    var searchValue = search.replace(
       /[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi,
       ""
     );
-    let filteredCopy = products?.filter((product) => {
-      return (
-        product.name.toLowerCase().search(searchValue.toLowerCase()) !== -1
-      );
-    });
-    setFilteredProducts(filteredCopy);
-    if (!searchValue.length) setFilteredProducts([]);
+    searchValue = replaceCroatian(searchValue).toLowerCase();
+    return replaceCroatian(item.name).toLowerCase().includes(searchValue);
   };
 
   const changeStockState = (id, stock) => {
@@ -145,23 +113,6 @@ const Products = () => {
       toast.error("Greška prilikom postavljanja zalihe");
     } finally {
       setStockLoading(null);
-    }
-  };
-
-  const [deleteLoading, setDeleteLoading] = useState(false);
-
-  const handleDelete = async () => {
-    setDeleteLoading(true);
-
-    try {
-      await updateMultipleProducts({ delete: selectedProducts });
-
-      deleteProducts(selectedProducts);
-      toast.success(`Uspješno obrisano ${selectedProducts.length} proizvoda`);
-    } catch (error) {
-      toast.error("Greška kod brisanja proizvoda");
-    } finally {
-      setDeleteLoading(false);
     }
   };
 
@@ -226,10 +177,9 @@ const Products = () => {
                 search.length > 0 && (
                   <InputAdornment position="end">
                     <IconButton
-                      // onClick={handleClickShowPassword}
-                      // onMouseDown={handleMouseDownPassword}
+                      onClick={() => setSearch("")}
                       edge="end"
-                      className="text-sm"
+                      className="text-sm w-8 aspect-square"
                     >
                       <FontAwesomeIcon icon={faXmark} />
                     </IconButton>
@@ -239,11 +189,7 @@ const Products = () => {
             />
           }
           headCells={headCells}
-          rows={
-            filteredProducts.length ||
-            (search.length ? filteredProducts : products) ||
-            []
-          }
+          rows={products?.filter(searchFilter) || []}
           onSelectionChange={(selected) => setSelectedProducts(selected)}
           defaultOrder="asc"
           defaultOrderBy="name"
@@ -267,20 +213,20 @@ const Products = () => {
                 </IconButton>
               </Tooltip>
               {nSelected === 1 && (
-                <Tooltip title="Uredi proizvod" arrow>
-                  <Link
-                    href={{
-                      pathname: "/prehrana/uredi-proizvod",
-                      query: products?.filter(
-                        (item) => item.id === selectedProducts[0]
-                      )[0],
-                    }}
-                  >
+                <Link
+                  href={{
+                    pathname: "/prehrana/uredi-proizvod",
+                    query: products?.filter(
+                      (item) => item.id === selectedProducts[0]
+                    )[0],
+                  }}
+                >
+                  <Tooltip title="Uredi proizvod" arrow>
                     <IconButton>
                       <FontAwesomeIcon icon={faPen} />
                     </IconButton>
-                  </Link>
-                </Tooltip>
+                  </Tooltip>
+                </Link>
               )}
               <Tooltip title="Uredi stanje" arrow>
                 <IconButton onClick={() => setStockModal(true)}>
@@ -304,56 +250,52 @@ const Products = () => {
               </TableCell>
               <TableCell>{row.name}</TableCell>
               <TableCell>
-                <a
-                  className="text-primary hover:underline"
+                <Button
+                  className="theme-prehrana !text-primary hover:!bg-primary/5"
                   target="_blank"
                   rel="noreferrer"
                   href={row.link}
                   onClick={(e) => e.stopPropagation()}
                 >
-                  Link
-                </a>
+                  Otvori
+                </Button>
               </TableCell>
               <TableCell>{row.price} kn</TableCell>
               <TableCell>
-                <button
-                  className="flex items-center py-2 px-3 rounded-full border hover:bg-secondary/50"
+                <LoadingButton
+                  loading={stockLoading === row.id}
+                  loadingPosition="start"
+                  variant="outlined"
+                  className="flex items-center py-2 px-3 !rounded-full hover:!bg-[#00000004] !text-gray-600 !border-gray-200 hover:!border-gray-400"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleChangeStock(row.id, row.stock);
                   }}
-                  // disabled={stockLoading}
+                  startIcon={
+                    row.stock === "instock" ? (
+                      <MdOutlineDone className="h-5 w-5 mx-auto text-primary" />
+                    ) : (
+                      <MdOutlineClose className="h-5 w-5 mx-auto text-error" />
+                    )
+                  }
                 >
-                  {row.stock === "instock" ? (
-                    <MdOutlineDone className="h-5 w-5 mx-auto text-primary mr-2" />
-                  ) : (
-                    <MdOutlineClose className="h-5 w-5 mx-auto text-error mr-2" />
-                  )}
                   {row.stock === "instock" ? "Dostupno" : "Nedostupno"}
-                </button>
+                </LoadingButton>
               </TableCell>
             </>
           )}
         />
-        {stockModal && (
-          <StockModal
-            selectedProducts={selectedProducts}
-            changeStockState={changeStockState}
-            handleClose={() => setStockModal(false)}
-          />
-        )}
-        {deleteModal && (
-          <Dialog
-            title="Brisanje proizvoda"
-            actionText="Obriši"
-            handleClose={() => setDeleteModal(false)}
-            handleAction={handleDelete}
-            loading={deleteLoading}
-            small
-          >
-            Jeste li sigurni da želite obrisati odabrane proizvode?
-          </Dialog>
-        )}
+        <StockDialog
+          stockModal={stockModal}
+          setStockModal={setStockModal}
+          changeStockState={changeStockState}
+          selectedProducts={selectedProducts}
+        />
+        <DeleteDialog
+          deleteModal={deleteModal}
+          setDeleteModal={setDeleteModal}
+          selectedProducts={selectedProducts}
+        />
         {/* <TableProducts
           products={
             filteredProducts.length || search.length

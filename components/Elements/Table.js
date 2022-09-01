@@ -174,11 +174,12 @@ const EnhancedTableToolbar = (props) => {
       {numSelected > 0 ? (
         selectedAction && selectedAction(numSelected)
       ) : (
-        <Tooltip title="Filtriraj" arrow>
-          <IconButton>
-            <FontAwesomeIcon icon={faBarsFilter} />
-          </IconButton>
-        </Tooltip>
+        // <Tooltip title="Filtriraj" arrow>
+        //   <IconButton>
+        //     <FontAwesomeIcon icon={faBarsFilter} />
+        //   </IconButton>
+        // </Tooltip>
+        <></>
       )}
     </Toolbar>
   );
@@ -365,7 +366,7 @@ export default function MyTable({
                   const labelId = `enhanced-table-checkbox-${index}`;
 
                   return (
-                    <>
+                    <React.Fragment key={row.id}>
                       <TableRow
                         hover
                         onClick={
@@ -430,7 +431,7 @@ export default function MyTable({
                           </TableCell>
                         </TableRow>
                       )}
-                    </>
+                    </React.Fragment>
                   );
                 })}
               {emptyRows > 0 && (

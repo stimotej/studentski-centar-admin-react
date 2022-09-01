@@ -1,3 +1,6 @@
+import { faPlus } from "@fortawesome/pro-regular-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { InputAdornment, OutlinedInput } from "@mui/material";
 import { useState, useRef } from "react";
 import { MdOutlineAdd } from "react-icons/md";
 
@@ -64,15 +67,17 @@ const SearchBar = ({
 
   return (
     <div className={`relative w-full ${className}`}>
-      <MdOutlineAdd className="text-black text-opacity-50 absolute top-1/2 right-3 transform -translate-y-1/2 w-5 h-5" />
-      <input
-        type="text"
-        autoComplete="false"
-        className="bg-secondary border-transparent py-3 pl-3 pr-10 rounded-lg w-full shadow-md"
+      <OutlinedInput
+        fullWidth
         value={value.current}
         onChange={handleSearch}
         onKeyDown={handleKeyPress}
         onBlur={handleOnBlur}
+        endAdornment={
+          <InputAdornment position="end">
+            <FontAwesomeIcon icon={faPlus} />
+          </InputAdornment>
+        }
         {...inputProps}
       />
       {filteredItems.length ? (

@@ -7,7 +7,7 @@ const MenuPreviewTable = ({ title, menu, products, className, fields }) => {
     <div
       className={`flex flex-col w-full text-left shadow-md rounded-lg ${className}`}
     >
-      <div className="w-full p-2 rounded-t-lg bg-secondary text-primary font-bold">
+      <div className="theme-prehrana w-full p-2 rounded-t-lg bg-secondary text-primary font-bold">
         {title}
       </div>
       <div>
@@ -21,7 +21,7 @@ const MenuPreviewTable = ({ title, menu, products, className, fields }) => {
         <div className="flex">
           {fields.map((field, index) => (
             <ul key={index} className="flex-1">
-              {menu[field.split("-")[0]][field.split("-")[1]]?.map(
+              {menu?.[field.split("-")[0]]?.[field.split("-")[1]]?.map(
                 (productId, index) => {
                   let product = products?.filter(
                     (item) => item.id === productId

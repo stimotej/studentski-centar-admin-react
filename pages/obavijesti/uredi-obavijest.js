@@ -248,7 +248,7 @@ const Editor = () => {
         </button>
         <div className="mt-4">Opis:</div>
         <textarea
-          className="w-full bg-secondary border-transparent rounded-lg mt-2 resize-none"
+          className="w-full rounded-lg mt-2"
           placeholder="Kratki opis obavijesti"
           value={description}
           onChange={(e) => {

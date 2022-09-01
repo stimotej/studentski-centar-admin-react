@@ -1,6 +1,7 @@
+import { Button } from "@mui/material";
 import { useState, useCallback, useEffect } from "react";
-import { formatDate } from "../../lib/dates";
 import Calendar from "./Calendar";
+import dayjs from "dayjs";
 
 const DateInput = ({ value, onChange, markedDays }) => {
   const [active, setActive] = useState(false);
@@ -34,13 +35,13 @@ const DateInput = ({ value, onChange, markedDays }) => {
 
   return (
     <div className="relative w-fit">
-      <button
-        type="button"
-        className="py-2 px-4 bg-secondary rounded-lg"
+      <Button
+        variant="outlined"
+        className="!py-1 px-4 !border-black/50 hover:!border-black hover:!bg-black/5 !text-black !text-[16px]"
         onClick={() => setActive(!active)}
       >
-        {formatDate(value)}
-      </button>
+        {dayjs(value).format("DD.MM.YYYY")}
+      </Button>
       {active && (
         <>
           <div

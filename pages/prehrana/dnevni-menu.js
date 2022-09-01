@@ -17,8 +17,10 @@ import {
   updateMultipleProducts,
   useProducts,
 } from "../../lib/api/products";
-import { updateRestaurant } from "../../lib/api/restaurant";
+import { updateRestaurant, useRestaurant } from "../../lib/api/restaurant";
 import { userGroups } from "../../lib/constants";
+import LoadingButton from "@mui/lab/LoadingButton";
+import clsx from "clsx";
 
 const NewDnevniMenu = () => {
   const { products, error: errorProducts, setProducts } = useProducts();
@@ -147,20 +149,16 @@ const NewDnevniMenu = () => {
     let formated = {};
     mealNames.forEach((mealName) => {
       menuNames.forEach((menuName) => {
-        menuState &&
-          menuState[mealName] &&
-          menuState[mealName][menuName]?.forEach((productId) => {
-            console.log(productId);
-            if (mealName === "rucak" && menuName === "izbor")
-              izbor.add(productId);
-            if (mealName === "rucak" && menuName === "prilozi")
-              prilozi.add(productId);
-          });
+        menuState?.[mealName]?.[menuName]?.forEach((productId) => {
+          console.log(productId);
+          if (mealName === "rucak" && menuName === "izbor")
+            izbor.add(productId);
+          if (mealName === "rucak" && menuName === "prilozi")
+            prilozi.add(productId);
+        });
         let dbMetaName = [mealName, dbMenuNames[menuName]].join("_");
         formated[dbMetaName] = formatMenuItems(
-          menuState &&
-            menuState[mealName] &&
-            menuState[mealName][menuName]?.map((id) => getProductById(id)),
+          menuState?.[mealName]?.[menuName]?.map((id) => getProductById(id)),
           mealName
         );
       });
@@ -168,6 +166,7 @@ const NewDnevniMenu = () => {
 
     formated["izbor_proizvodi"] = Array.from(izbor).toString();
     formated["prilozi_proizvodi"] = Array.from(prilozi).toString();
+    console.log("formated: ", formated);
     return formated;
   };
 
@@ -195,10 +194,10 @@ const NewDnevniMenu = () => {
         try {
           const createdMenu = await createMenu({
             date: date,
-            dorucak: menu?.dorucak || [],
-            rucak: menu?.rucak || [],
-            vecera: menu?.vecera || [],
-            ostalo: menu?.ostalo || [],
+            dorucak: menu?.dorucak || {},
+            rucak: menu?.rucak || {},
+            vecera: menu?.vecera || {},
+            ostalo: menu?.ostalo || {},
           });
 
           toast.success("Uspješno spremljen menu");
@@ -228,9 +227,11 @@ const NewDnevniMenu = () => {
 
       const menuProducts = await getMenuProducts();
 
-      await updateMultipleProducts({
+      const res = await updateMultipleProducts({
         update: menuProducts.map((group) => formatSiteMenu(group)),
       });
+
+      console.log("res", res);
     } catch (error) {
       toast.error(`Greška kod objavljivanja menija na stranicu`);
     } finally {
@@ -261,13 +262,14 @@ const NewDnevniMenu = () => {
         responsive
       />
       <div className="px-5 md:px-10 py-6 mx-auto">
-        <AutosuggestInput
-          items={products}
-          className="sticky top-5 mx-auto z-20"
-          onSelected={(value) => addSelectedProduct(value)}
-          placeholder="Dodaj proizvode..."
-          displayItems={8}
-        />
+        <div className="sticky pt-5 top-0 left-0 right-0 z-20 bg-background">
+          <AutosuggestInput
+            items={products}
+            onSelected={(value) => addSelectedProduct(value)}
+            placeholder="Dodaj proizvode..."
+            displayItems={8}
+          />
+        </div>
         <div className="mt-8 flex flex-col-reverse items-start justify-between sm:flex-row md:items-center">
           <div className="flex items-center">
             <div className="flex items-center mt-8 sm:mt-0">
@@ -280,12 +282,23 @@ const NewDnevniMenu = () => {
             </div>
           </div>
           {isToday(date) && (
-            <Button
-              text="Objavi na stranicu"
-              className="ml-auto"
+            // <Button
+            //   text="Objavi na stranicu"
+            //   className="ml-auto"
+            //   loading={saveSiteLoading}
+            //   onClick={handleSaveSite}
+            // />
+            <LoadingButton
+              variant="outlined"
+              className={clsx(
+                !saveSiteLoading &&
+                  "!border-primary/50 hover:!border-primary hover:!bg-primary/5 !text-primary"
+              )}
               loading={saveSiteLoading}
               onClick={handleSaveSite}
-            />
+            >
+              Objavi na stranicu
+            </LoadingButton>
           )}
         </div>
         <div className="mt-10">

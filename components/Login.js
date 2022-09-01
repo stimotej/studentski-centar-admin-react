@@ -82,7 +82,7 @@ const Login = ({ from }) => {
           {/* <InputLabel text="Korisničko ime" /> */}
           <input
             type="text"
-            className={`px-4 py-2 rounded-lg mb-6 border border-black/50 ${
+            className={`px-4 py-2 rounded-lg mb-6 border border-black/50 focus:border-transparent focus:ring-1 ring-primary ${
               error && "border border-error"
             }`}
             placeholder="Korisničko ime"
@@ -93,7 +93,7 @@ const Login = ({ from }) => {
           {/* <InputLabel text="Lozinka" /> */}
           <input
             type="password"
-            className={`px-4 py-2 rounded-lg mb-6 border border-black/50 ${
+            className={`px-4 py-2 rounded-lg mb-6 border border-black/50 focus:border-transparent focus:ring-1 ring-primary ${
               error && "border border-error"
             }`}
             placeholder="Lozinka"

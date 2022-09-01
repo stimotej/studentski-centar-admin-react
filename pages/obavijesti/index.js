@@ -55,6 +55,10 @@ const Home = () => {
     if (obavijesti) setObavijest(obavijesti[0]);
   }, [obavijesti]);
 
+  useEffect(() => {
+    if (error) console.log("err", error);
+  }, [error]);
+
   const handleSearch = (e) => {
     setSearch(e.target.value);
     const searchValue = e.target.value.replace(

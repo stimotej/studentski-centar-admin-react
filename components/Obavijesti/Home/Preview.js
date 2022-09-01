@@ -5,7 +5,7 @@ import Button from "../../Elements/Button";
 
 const Preview = ({ obavijest, handleDelete, className, title }) => {
   return (
-    <div className={className + " break-all sticky top-4"}>
+    <div className={className + " break-all"}>
       {title !== false && (
         <h1 className="text-2xl font-semibold px-3">
           {obavijest?.title}

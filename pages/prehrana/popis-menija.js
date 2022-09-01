@@ -1,26 +1,24 @@
 import React, { useEffect, useState } from "react";
 import { MdAdd, MdOutlineVisibility } from "react-icons/md";
 import Header from "../../components/Header";
-import MenuTable from "../../components/Prehrana/MenuTable";
 import Layout from "../../components/Layout";
-import { deleteMenu, useMenus } from "../../lib/api/menus";
+import { useMenus } from "../../lib/api/menus";
 import { useProducts } from "../../lib/api/products";
 import { useRouter } from "next/router";
 import { userGroups } from "../../lib/constants";
 import MyTable from "../../components/Elements/Table";
-import { IconButton, TableCell, Tooltip } from "@mui/material";
-import { formatDate } from "../../lib/dates";
+import { Button, IconButton, TableCell, Tooltip } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faPen } from "@fortawesome/pro-regular-svg-icons";
 import Link from "next/link";
-import { toast } from "react-toastify";
-import Dialog from "../../components/Elements/Dialog";
+import dayjs from "dayjs";
+import ChangeDateDialog from "../../components/Prehrana/Menus/ChangeDateDialog";
+import DeleteDialog from "../../components/Prehrana/Menus/DeleteDialog";
+import PreviewDialog from "../../components/Prehrana/Menus/PreviewDialog";
 
 const MenuList = () => {
   const { products } = useProducts();
   const { menus, error, loading, setMenus } = useMenus();
-
-  setMenus(menus?.sort((a, b) => new Date(b.date) - new Date(a.date)));
 
   const [selectedMenus, setSelectedMenus] = useState([]);
 
@@ -34,54 +32,15 @@ const MenuList = () => {
       router.push("/prehrana/login");
   }, []);
 
-  const deleteMenusState = (menuIds) => {
-    let menusCopy = [...menus];
-    let index = 0;
-    menuIds.forEach((id) => {
-      index = menusCopy.findIndex((menu) => menu._id === id);
-      menusCopy.splice(index, 1);
-    });
-    setMenus(menusCopy);
-    setSelectedMenus([]);
-  };
-
-  const updateMenuState = (changedMenu, date, deletedMenu) => {
-    let menusCopy = [...menus];
-    let index = menusCopy.findIndex(
-      (menuItem) => menuItem._id === changedMenu._id
-    );
-    menusCopy[index].date = date;
-
-    if (deletedMenu) {
-      index = menusCopy.findIndex(
-        (menuItem) => menuItem._id === deletedMenu._id
-      );
-      menusCopy.splice(index, 1);
-    }
-
-    setMenus(menusCopy);
-  };
-
   const [deleteModal, setDeleteModal] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(false);
-
-  const handleDelete = () => {
-    setDeleteLoading(true);
-
-    let requests = selectedMenus.map((menuId) => deleteMenu(menuId));
-
-    Promise.all(requests)
-      .then((res) => {
-        toast.success(`Uspješno obrisano ${selectedMenus.length} menija`);
-        deleteMenusState(selectedMenus);
-      })
-      .catch((error) => {
-        toast.error("Greška kod brisanja menija");
-      })
-      .finally(() => {
-        setDeleteLoading(false);
-      });
-  };
+  const [showMenuPreviewDialog, setShowMenuPreviewDialog] = useState({
+    state: false,
+    menu: null,
+  });
+  const [changeMenuDateDialog, setChangeMenuDateDialog] = useState({
+    state: false,
+    menu: null,
+  });
 
   const headCells = [
     {
@@ -148,22 +107,22 @@ const MenuList = () => {
                 </IconButton>
               </Tooltip>
               {nSelected === 1 && (
-                <Tooltip title="Uredi menu" arrow>
-                  <Link
-                    href={{
-                      pathname: "/prehrana/dnevni-menu",
-                      query: {
-                        date: menus
-                          ?.filter((menu) => menu.id === selectedMenus[0])[0]
-                          ?.date?.split("T")[0],
-                      },
-                    }}
-                  >
+                <Link
+                  href={{
+                    pathname: "/prehrana/dnevni-menu",
+                    query: {
+                      date: menus?.filter(
+                        (menu) => menu.id === selectedMenus[0]
+                      )[0]?.date,
+                    },
+                  }}
+                >
+                  <Tooltip title="Uredi menu" arrow>
                     <IconButton>
                       <FontAwesomeIcon icon={faPen} />
                     </IconButton>
-                  </Link>
-                </Tooltip>
+                  </Tooltip>
+                </Link>
               )}
             </div>
           )}
@@ -171,37 +130,43 @@ const MenuList = () => {
             <>
               <TableCell>
                 <strong>
-                  {row.date ? formatDate(row.date) : "Nije postavljeno"}
+                  {row.date
+                    ? dayjs(row.date).format("DD.MM.YYYY")
+                    : "Nije postavljeno"}
                 </strong>
               </TableCell>
-              <TableCell>{formatDate(row.createdAt)}</TableCell>
-              <TableCell>{formatDate(row.updatedAt)}</TableCell>
+              <TableCell>{dayjs(row.createdAt).format("DD.MM.YYYY")}</TableCell>
+              <TableCell>{dayjs(row.updatedAt).format("DD.MM.YYYY")}</TableCell>
               <TableCell>
-                <button
-                  className="text-primary hover:underline"
+                <Button
+                  className="!text-primary hover:!bg-primary/5"
                   onClick={(e) => {
                     e.stopPropagation();
-                    // setChangeMenuDateDialog(menu)}
+                    setChangeMenuDateDialog({
+                      state: true,
+                      menu: row,
+                    });
                   }}
                 >
                   Promijeni
-                </button>
+                </Button>
               </TableCell>
               <TableCell>
-                <button
-                  className="p-2 rounded-full hover:bg-secondary/50"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    // setShowMenuPreviewDialog(menu)}
-                  }}
-                >
-                  <MdOutlineVisibility className="w-5 h-5" />
-                </button>
+                <Tooltip title="Pregledaj menu" arrow>
+                  <IconButton
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowMenuPreviewDialog({ state: true, menu: row });
+                    }}
+                  >
+                    <MdOutlineVisibility className="w-5 h-5" />
+                  </IconButton>
+                </Tooltip>
               </TableCell>
             </>
           )}
         />
-        {deleteModal && (
+        {/* {deleteModal && (
           <Dialog
             title="Brisanje menija"
             actionText="Obriši"
@@ -212,7 +177,22 @@ const MenuList = () => {
           >
             Jeste li sigurni da želite obrisati odabrane menije?
           </Dialog>
-        )}
+        )} */}
+        <DeleteDialog
+          deleteModal={deleteModal}
+          setDeleteModal={setDeleteModal}
+          selectedMenus={selectedMenus}
+        />
+
+        <ChangeDateDialog
+          changeMenuDateDialog={changeMenuDateDialog}
+          setChangeMenuDateDialog={setChangeMenuDateDialog}
+        />
+
+        <PreviewDialog
+          showMenuPreviewDialog={showMenuPreviewDialog}
+          setShowMenuPreviewDialog={setShowMenuPreviewDialog}
+        />
         {/* <MenuTable
           menus={menus}
           error={error}

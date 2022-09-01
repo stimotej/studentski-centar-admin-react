@@ -1,6 +1,8 @@
-import Dialog from "../Elements/Dialog";
+import { faXmark } from "@fortawesome/pro-regular-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Dialog, DialogContent, DialogTitle, IconButton } from "@mui/material";
 
-const AlergeniDialog = ({ handleClose }) => {
+const AlergeniDialog = ({ showAlergeniDialog, setShowAlergeniDialog }) => {
   const alergeni = [
     {
       oznaka: "A",
@@ -65,15 +67,34 @@ const AlergeniDialog = ({ handleClose }) => {
   ];
 
   return (
-    <Dialog title="Alergeni" handleClose={handleClose}>
-      {alergeni.map((alergen, index) => (
-        <tr key={index} className={index % 2 === 0 ? "bg-background" : ""}>
-          <td className="px-4 font-semibold text-center py-2">
-            {alergen.oznaka}
-          </td>
-          <td className="pl-2">{alergen.znacenje}</td>
-        </tr>
-      ))}
+    <Dialog
+      fullWidth
+      maxWidth="md"
+      open={showAlergeniDialog}
+      onClose={() => setShowAlergeniDialog(false)}
+      scroll="body"
+    >
+      <DialogTitle className="!flex !justify-between items-center">
+        <div>Alergeni</div>{" "}
+        <IconButton
+          className="w-10 aspect-square"
+          onClick={() => setShowAlergeniDialog(false)}
+        >
+          <FontAwesomeIcon icon={faXmark} />
+        </IconButton>
+      </DialogTitle>
+      <DialogContent>
+        <div className="flex flex-col">
+          {alergeni.map((alergen, index) => (
+            <tr key={index} className={index % 2 === 0 ? "bg-background" : ""}>
+              <td className="px-4 font-semibold text-center py-2">
+                {alergen.oznaka}
+              </td>
+              <td className="pl-2">{alergen.znacenje}</td>
+            </tr>
+          ))}
+        </div>
+      </DialogContent>
     </Dialog>
   );
 };

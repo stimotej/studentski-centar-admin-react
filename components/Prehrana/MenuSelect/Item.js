@@ -17,10 +17,10 @@ const MenuSelectItem = ({
 
   return (
     <div
-      className={`flex-1 mt-1 border md:mt-0 p-4 cursor-pointer rounded-lg transition-shadow ${
+      className={`flex-1 mt-1 ring-inset md:mt-0 p-4 cursor-pointer rounded-lg transition ${
         active
-          ? "bg-primary/20 shadow-md border-transparent"
-          : "hover:border-black"
+          ? "ring-2 ring-primary hover:bg-primary/5"
+          : "ring-1 ring-gray-300 hover:ring-black hover:bg-black/5"
       }`}
       onClick={onSelect}
     >

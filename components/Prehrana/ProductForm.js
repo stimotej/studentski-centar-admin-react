@@ -3,9 +3,7 @@ import { useRouter } from "next/router";
 import { MdArrowBack } from "react-icons/md";
 import InputLabel from "../Elements/InputLabel";
 import AlergeniDialog from "./AlergeniDialog";
-import Select from "../Elements/Select";
 import { toast } from "react-toastify";
-import Button from "../Elements/Button";
 import MediaFileInput from "../Elements/MediaFileInput";
 import Link from "next/link";
 import { createMedia } from "../../lib/api/media";
@@ -14,6 +12,20 @@ import {
   updateProduct,
   useProducts,
 } from "../../lib/api/products";
+import { Controller, useForm } from "react-hook-form";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { Button, InputAdornment, MenuItem, TextField } from "@mui/material";
+import LoadingButton from "@mui/lab/LoadingButton";
+import clsx from "clsx";
+
+const schema = yup.object().shape({
+  name: yup.string().required("Ovo polje je obavezno"),
+  price: yup
+    .number()
+    .typeError("Mora biti broj")
+    .required("Ovo polje je obavezno"),
+});
 
 const ProductForm = ({ product }) => {
   const { products, error, setProducts } = useProducts();
@@ -24,15 +36,30 @@ const ProductForm = ({ product }) => {
     return description.substring(start, end);
   };
 
-  const [name, setName] = useState(product ? product.name : "");
-  const [description, setDescription] = useState(
-    product?.description ? parseDescription(product.description) : ""
-  );
-  const [image, setImage] = useState(product?.image || "");
-  const [price, setPrice] = useState(product ? product.price : "");
-  const [stockStatus, setStockStatus] = useState(
-    product ? product.stock : "instock"
-  );
+  const formOptions = {
+    mode: "onChange",
+    resolver: yupResolver(schema),
+    defaultValues: {
+      name: product?.name || "",
+      description: product?.description
+        ? parseDescription(product?.description)
+        : "",
+      image: !!product?.image && product?.image !== "0" ? product?.image : "",
+      price: product?.price || "",
+      stockStatus: product?.stockStatus || "instock",
+      allergens: product?.allergens?.toString() || "",
+      weight: product?.weight || "",
+    },
+  };
+
+  const {
+    handleSubmit,
+    reset,
+    watch,
+    control,
+    formState: { isValid, isSubmitting, errors },
+  } = useForm(formOptions);
+
   const [allergens, setAllergens] = useState(
     (product && product.allergens?.toString()) || ""
   );
@@ -60,43 +87,33 @@ const ProductForm = ({ product }) => {
       .map((item) => item.trim());
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (data) => {
     setLoading(true);
 
-    if (image && image !== product?.image) {
+    if (!!data.image && data.image !== product?.image) {
       var reader = new FileReader();
       reader.onloadend = async () => {
         setLoading(true);
         try {
           const imageId = await createMedia(
             reader.result,
-            image.type,
-            image.name
+            data.image.type,
+            data.image.name
           );
 
           const createdProduct = {};
+          const newProduct = {
+            ...data,
+            allergens: formatAllergens(data.allergens),
+            price: data.price.toString(),
+            weight: data.weight.toString(),
+            image: imageId,
+          };
 
           if (product) {
-            createdProduct = await updateProduct(product.id, {
-              name: name,
-              description: description,
-              image: imageId,
-              price: price,
-              stock: stockStatus,
-              allergens: formatAllergens(allergens),
-              weight: weight,
-            });
+            createdProduct = await updateProduct(product.id, newProduct);
           } else {
-            createdProduct = await createProduct({
-              name: name,
-              description: description,
-              image: imageId,
-              price: price,
-              stock: stockStatus,
-              allergens: formatAllergens(allergens),
-              weight: weight,
-            });
+            createdProduct = await createProduct(newProduct);
           }
 
           toast.success(
@@ -113,6 +130,7 @@ const ProductForm = ({ product }) => {
           }
           console.log("copy", productsCopy);
           setProducts(productsCopy);
+          router.push("/prehrana/proizvodi");
         } catch (error) {
           console.log(error.response);
           toast.error(
@@ -122,33 +140,27 @@ const ProductForm = ({ product }) => {
           );
         } finally {
           setLoading(false);
-          router.push("/prehrana/proizvodi");
         }
       };
-      reader.readAsArrayBuffer(image);
+      reader.readAsArrayBuffer(data.image);
     } else {
       setLoading(true);
       try {
         const createdProduct = {};
+        const newProduct = {
+          ...data,
+          allergens: formatAllergens(data.allergens),
+          price: data.price.toString(),
+          weight: data.weight.toString(),
+        };
+        delete newProduct.image;
+
+        console.log("Poslano: ", newProduct);
 
         if (product) {
-          createdProduct = await updateProduct(product.id, {
-            name: name,
-            description: description,
-            price: price,
-            stock: stockStatus,
-            allergens: formatAllergens(allergens),
-            weight: weight,
-          });
+          createdProduct = await updateProduct(product.id, newProduct);
         } else {
-          createdProduct = await createProduct({
-            name: name,
-            description: description,
-            price: price,
-            stock: stockStatus,
-            allergens: formatAllergens(allergens),
-            weight: weight,
-          });
+          createdProduct = await createProduct(newProduct);
         }
 
         console.log("Response Data:", createdProduct);
@@ -165,8 +177,9 @@ const ProductForm = ({ product }) => {
         }
         console.log("copy", productsCopy);
         setProducts(productsCopy);
+        router.push("/prehrana/proizvodi");
       } catch (error) {
-        console.log(error);
+        console.log(error.response);
         toast.error(
           product
             ? "Greška kod spremanja promjena"
@@ -174,15 +187,9 @@ const ProductForm = ({ product }) => {
         );
       } finally {
         setLoading(false);
-        router.push("/prehrana/proizvodi");
       }
     }
   };
-
-  const selectItems = [
-    { text: "Na zalihi", value: "instock" },
-    { text: "Nema na zalihi", value: "outofstock" },
-  ];
 
   return (
     <div className="px-5 md:w-2/3 lg:w-1/2 mx-auto">
@@ -195,98 +202,148 @@ const ProductForm = ({ product }) => {
       <h1 className="text-3xl font-semibold pb-10">
         {product ? "Uredi proizvod" : "Dodaj novi proizvod"}
       </h1>
-      <form className="flex flex-col mx-auto pb-8" onSubmit={handleSubmit}>
+      <div className="flex flex-col gap-6 mx-auto pb-8">
         {/* NAZIV */}
-        <InputLabel text="Naziv" />
-        <input
-          type="text"
-          className="px-4 py-2 rounded-lg mb-8 bg-secondary border-transparent"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        ></input>
-
-        {/* OPIS */}
-        <InputLabel text="Opis" />
-        <textarea
-          type="text"
-          rows="6"
-          className="px-4 py-2 rounded-lg mb-8 bg-secondary border-transparent"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        ></textarea>
-
-        {/* SLIKA */}
-        <InputLabel text="Slika" />
-        <MediaFileInput
-          className="mb-8"
-          value={image}
-          onChange={(value) => setImage(value)}
+        <Controller
+          control={control}
+          name="name"
+          render={({ field }) => (
+            <TextField
+              {...field}
+              label="Naziv"
+              className="w-full"
+              error={!!errors.name}
+              helperText={errors.name && errors.name.message}
+            />
+          )}
         />
 
-        {/* CIJENA */}
-        <InputLabel text="Cijena" />
-        <div className="flex items-center mb-8">
-          <input
-            type="number"
-            className="px-4 py-2 rounded-lg mr-3 flex-grow bg-secondary border-transparent"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-          ></input>
-          <span className="flex-shrink">kn</span>
+        {/* OPIS */}
+        <Controller
+          control={control}
+          name="description"
+          render={({ field }) => (
+            <TextField
+              {...field}
+              label="Opis"
+              multiline
+              minRows={3}
+              className="w-full"
+              error={!!errors.description}
+              helperText={errors.description && errors.description.message}
+            />
+          )}
+        />
+
+        {/* SLIKA */}
+        <div className="flex flex-col gap-1">
+          <InputLabel text="Slika" />
+          {/* <MediaFileInput value={image} onChange={(value) => setImage(value)} /> */}
+          <Controller
+            control={control}
+            name="image"
+            render={({ field }) => <MediaFileInput {...field} />}
+          />
         </div>
 
+        {/* CIJENA */}
+        <Controller
+          control={control}
+          name="price"
+          render={({ field }) => (
+            <TextField
+              {...field}
+              label="Cijena"
+              type="number"
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">HRK</InputAdornment>
+                ),
+              }}
+              className="w-full"
+              error={!!errors.price}
+              helperText={errors.price && errors.price.message}
+            />
+          )}
+        />
+
         {/* STATUS ZALIHE */}
-        <InputLabel text="Status zalihe" />
-        <Select
-          items={selectItems}
-          className="mb-8"
-          value={stockStatus}
-          onChange={(value) => setStockStatus(value)}
+        <Controller
+          control={control}
+          name="stockStatus"
+          render={({ field }) => (
+            <TextField
+              {...field}
+              label="Status zalihe"
+              select
+              className="w-full"
+            >
+              <MenuItem value="instock">Na zalihi</MenuItem>
+              <MenuItem value="outofstock">Nema na zalihi</MenuItem>
+            </TextField>
+          )}
         />
 
         {/* ALERGENI */}
-        <InputLabel text="Alergeni (Unesite alergene odvjene zarezom)" />
-        <input
-          type="text"
-          rows="2"
-          className="form-textarea px-4 py-2 rounded-lg bg-secondary border-transparent"
-          value={allergens}
-          onChange={(e) => setAllergens(e.target.value)}
-        />
-        <button
-          type="button"
-          className="self-start text-sm text-primary mt-2 hover:underline mb-8"
-          onClick={() => setShowAlergeniDialog(true)}
-        >
-          Popis alergena
-        </button>
-        {showAlergeniDialog && (
-          <AlergeniDialog handleClose={() => setShowAlergeniDialog(false)} />
-        )}
-
-        {/* TEŽINA */}
-        <InputLabel text="Težina" />
-        <div className="flex items-center">
-          <input
-            type="number"
-            className="px-4 py-2 rounded-lg mr-3 flex-grow bg-secondary border-transparent"
-            value={weight}
-            onChange={(e) => setWeight(e.target.value)}
-          ></input>
-          <span className="flex-shrink">g</span>
-        </div>
-
-        {/* SUBMIT */}
-        <div className="self-end mt-8">
+        <div className="flex flex-col gap-2">
+          <Controller
+            control={control}
+            name="allergens"
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Alergeni"
+                className="w-full"
+                helperText="Unesite alergene odvojene zarezom"
+              />
+            )}
+          />
           <Button
-            type="submit"
-            text={product ? "Spremi" : "Dodaj"}
-            disabled={loading}
-            loading={loading}
-            primary
+            type="button"
+            className="text-sm !text-primary hover:!bg-primary/5 self-end"
+            onClick={() => setShowAlergeniDialog(true)}
+          >
+            Popis alergena
+          </Button>
+          <AlergeniDialog
+            showAlergeniDialog={showAlergeniDialog}
+            setShowAlergeniDialog={setShowAlergeniDialog}
           />
         </div>
-      </form>
+
+        {/* TEŽINA */}
+        <Controller
+          control={control}
+          name="weight"
+          render={({ field }) => (
+            <TextField
+              {...field}
+              label="Težina"
+              type="number"
+              InputProps={{
+                endAdornment: <InputAdornment position="end">g</InputAdornment>,
+              }}
+              className="w-full"
+              error={!!errors.weight}
+              helperText={errors.weight && errors.weight.message}
+            />
+          )}
+        />
+
+        <LoadingButton
+          variant="outlined"
+          className={clsx(
+            "self-end",
+            !loading &&
+              "!border-primary/50 hover:!border-primary hover:!bg-primary/5 !text-primary"
+          )}
+          loading={loading}
+          disabled={!isValid}
+          onClick={handleSubmit(onSubmit)}
+        >
+          {product ? "Spremi" : "Dodaj"}
+        </LoadingButton>
+      </div>
     </div>
   );
 };

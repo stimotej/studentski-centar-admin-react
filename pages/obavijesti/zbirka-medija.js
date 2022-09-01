@@ -21,9 +21,25 @@ import {
   useMedia,
 } from "../../lib/api/obavijestiMedia";
 import { userGroups } from "../../lib/constants";
+import axios from "axios";
+
+// const mediaUrl = "https://unaprijedi.com/wp-json/wp/v2/media";
+const mediaUrl = "http://161.53.174.14/wp-json/wp/v2/media";
 
 const Media = () => {
   const { mediaList, error, setMediaList } = useMedia();
+
+  useEffect(() => {
+    axios
+      .get(mediaUrl, {
+        params: {
+          per_page: 100,
+          page: 2,
+          timestamp: new Date().getTime(),
+        },
+      })
+      .then((response) => console.table(response.data));
+  }, []);
 
   const [filteredMedia, setFilteredMedia] = useState([]);
 

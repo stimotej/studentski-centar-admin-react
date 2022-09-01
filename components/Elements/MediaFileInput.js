@@ -1,13 +1,14 @@
-import { useState } from "react";
+import { forwardRef, useState } from "react";
 import Image from "next/image";
 import Dropzone from "react-dropzone";
 
-const MediaFileInput = ({ value, onChange, className }) => {
+const MediaFileInput = forwardRef(({ value, onChange, className }, ref) => {
   const [dragOver, setDragOver] = useState(false);
   const [dragRejected, setDragRejected] = useState(false);
 
   return (
     <Dropzone
+      ref={ref}
       onDrop={(acceptedFiles) => {
         onChange(acceptedFiles[0]);
         setDragOver(false);
@@ -23,7 +24,7 @@ const MediaFileInput = ({ value, onChange, className }) => {
         <section>
           <div
             {...getRootProps()}
-            className={`text-center p-5 sm:p-8 md:p-12 border-2 cursor-pointer border-dashed text-black/50 rounded-lg ${
+            className={`text-center p-5 sm:p-8 md:p-12 border cursor-pointer border-dashed text-black/50 rounded-lg ${
               dragOver
                 ? "border-primary bg-secondary"
                 : dragRejected
@@ -70,6 +71,6 @@ const MediaFileInput = ({ value, onChange, className }) => {
       )}
     </Dropzone>
   );
-};
+});
 
 export default MediaFileInput;
