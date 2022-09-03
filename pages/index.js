@@ -19,12 +19,12 @@ const LoginSelect = () => {
           text="Kontrola prikaza restorana, proizvoda i menija"
           link="/prehrana"
         />
-        <LoginCard
+        {/* <LoginCard
           theme="theme-smjestaj"
           title="Smještaj"
           text="Kontrola prikaza restorana, proizvoda i menija"
           link="/smjestaj"
-        />
+        /> */}
       </div>
       <span className="font-light mb-5 px-6 text-center">
         Za sva pitanja, prijedloge za izmjenu, uočavanje grešaka u radu stustava
