@@ -6,7 +6,6 @@ import Loader from "../../components/Elements/Loader";
 import { toast } from "react-toastify";
 import { isToday } from "../../lib/dates";
 import { compareDates } from "../../lib/dates";
-import Button from "../../components/Elements/Button";
 import Header from "../../components/Header";
 import { MdOutlineSaveAlt } from "react-icons/md";
 import DateInput from "../../components/Elements/DateInput";
@@ -20,7 +19,6 @@ import {
 import { updateRestaurant, useRestaurant } from "../../lib/api/restaurant";
 import { userGroups } from "../../lib/constants";
 import LoadingButton from "@mui/lab/LoadingButton";
-import clsx from "clsx";
 
 const NewDnevniMenu = () => {
   const { products, error: errorProducts, setProducts } = useProducts();
@@ -290,10 +288,6 @@ const NewDnevniMenu = () => {
             // />
             <LoadingButton
               variant="outlined"
-              className={clsx(
-                !saveSiteLoading &&
-                  "!border-primary/50 hover:!border-primary hover:!bg-primary/5 !text-primary"
-              )}
               loading={saveSiteLoading}
               onClick={handleSaveSite}
             >

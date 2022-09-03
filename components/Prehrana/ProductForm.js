@@ -210,6 +210,7 @@ const ProductForm = ({ product }) => {
           render={({ field }) => (
             <TextField
               {...field}
+              variant="filled"
               label="Naziv"
               className="w-full"
               error={!!errors.name}
@@ -225,6 +226,7 @@ const ProductForm = ({ product }) => {
           render={({ field }) => (
             <TextField
               {...field}
+              variant="filled"
               label="Opis"
               multiline
               minRows={3}
@@ -253,6 +255,7 @@ const ProductForm = ({ product }) => {
           render={({ field }) => (
             <TextField
               {...field}
+              variant="filled"
               label="Cijena"
               type="number"
               InputProps={{
@@ -274,6 +277,7 @@ const ProductForm = ({ product }) => {
           render={({ field }) => (
             <TextField
               {...field}
+              variant="filled"
               label="Status zalihe"
               select
               className="w-full"
@@ -292,6 +296,7 @@ const ProductForm = ({ product }) => {
             render={({ field }) => (
               <TextField
                 {...field}
+                variant="filled"
                 label="Alergeni"
                 className="w-full"
                 helperText="Unesite alergene odvojene zarezom"
@@ -318,6 +323,7 @@ const ProductForm = ({ product }) => {
           render={({ field }) => (
             <TextField
               {...field}
+              variant="filled"
               label="Težina"
               type="number"
               InputProps={{

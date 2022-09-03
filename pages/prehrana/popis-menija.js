@@ -139,7 +139,6 @@ const MenuList = () => {
               <TableCell>{dayjs(row.updatedAt).format("DD.MM.YYYY")}</TableCell>
               <TableCell>
                 <Button
-                  className="!text-primary hover:!bg-primary/5"
                   onClick={(e) => {
                     e.stopPropagation();
                     setChangeMenuDateDialog({

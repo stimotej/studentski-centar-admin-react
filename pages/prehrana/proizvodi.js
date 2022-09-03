@@ -251,7 +251,6 @@ const Products = () => {
               <TableCell>{row.name}</TableCell>
               <TableCell>
                 <Button
-                  className="theme-prehrana !text-primary hover:!bg-primary/5"
                   target="_blank"
                   rel="noreferrer"
                   href={row.link}
@@ -266,7 +265,7 @@ const Products = () => {
                   loading={stockLoading === row.id}
                   loadingPosition="start"
                   variant="outlined"
-                  className="flex items-center py-2 px-3 !rounded-full hover:!bg-[#00000004] !text-gray-600 !border-gray-200 hover:!border-gray-400"
+                  color="secondary"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleChangeStock(row.id, row.stock);
