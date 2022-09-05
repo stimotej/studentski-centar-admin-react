@@ -161,7 +161,7 @@ const Home = () => {
               />
             </div>
           </div>
-          {obavijesti ? (
+          {obavijesti?.length > 0 ? (
             <ObavijestSelect
               obavijesti={
                 filteredObavijesti.length || search.length
