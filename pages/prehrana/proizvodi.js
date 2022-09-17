@@ -189,7 +189,7 @@ const Products = () => {
             />
           }
           headCells={headCells}
-          rows={products?.filter(searchFilter) || []}
+          rows={!!products ? products?.filter(searchFilter) : []}
           onSelectionChange={(selected) => setSelectedProducts(selected)}
           defaultOrder="asc"
           defaultOrderBy="name"

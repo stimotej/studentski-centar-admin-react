@@ -54,3 +54,9 @@
   font-size: 1.5rem !important;
   font-weight: 600;
 }
+
+.ql-editor iframe {
+  width: 100%;
+  min-height: 300px;
+  height: 100%;
+}

@@ -13,8 +13,8 @@ module.exports = {
     return config;
   },
   env: {
-    WOO_API_CUSTOMER_KEY: "ck_5d9ee4faf76c88d4fa17a9174d8e65b187a2a1ad",
-    WOO_API_CUSTOMER_SECRET: "cs_1fdf3bec652f0745b4f3e58ef9dde4c0dc66d456",
+    WOO_API_CUSTOMER_KEY: "ck_ed63c982672207b21afbecce812ab7a06322ba8e",
+    WOO_API_CUSTOMER_SECRET: "cs_4e0e8f4724d48b071c7b1c4d5b799f72a43ba32b",
     MAIL_USER: "timotej.sofijanovic.test@gmail.com",
     MAIL_PASS: "timotejsofijanovic",
     MAIL_ADMIN: "timotej1707timi@gmail.com",

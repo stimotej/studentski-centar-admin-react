@@ -25,12 +25,15 @@ const Item = ({ obavijest, active, onClick, className }) => {
         </div>
       )}
       <div className="flex-1 flex flex-col break-all">
-        <h3 className="text-lg font-semibold">
-          {obavijest.title}
+        <div className="flex items-center gap-3">
+          <h3
+            className="text-lg font-semibold"
+            dangerouslySetInnerHTML={{ __html: obavijest.title }}
+          ></h3>
           {obavijest.status === "draft" && (
-            <span className="text-sm font-normal text-error ml-3">Skica</span>
+            <span className="text-sm font-normal text-error">Skica</span>
           )}
-        </h3>
+        </div>
         <p className="text-sm font-light my-2">{obavijest.description}</p>
         <p className="text-sm">
           {obavijest.author} - {obavijest.date.replace("T", " ")}

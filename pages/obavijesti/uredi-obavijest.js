@@ -26,6 +26,7 @@ import {
 import { createMedia, useMedia } from "../../lib/api/obavijestiMedia";
 import { userGroups } from "../../lib/constants";
 import Loader from "../../components/Elements/Loader";
+import { TextField } from "@mui/material";
 
 const Editor = () => {
   const [storedPostNote, setStoredPostNote] = useState(false);
@@ -152,6 +153,8 @@ const Editor = () => {
           imageId: imageId || 0,
         });
 
+        console.log("createdObavijest", createdObavijest);
+
         setObavijesti([...obavijesti, createdObavijest]);
         resetStoredPostAndState();
         toast.success("Uspješno objavljena obavijest.");
@@ -216,6 +219,21 @@ const Editor = () => {
     } else {
       handleAddMedia();
     }
+  };
+
+  const [ytModal, setYtModal] = useState(false);
+  const [ytUrl, setYtUrl] = useState("");
+  const [videoId, setVideoId] = useState("");
+
+  const addYoutubeVideo = () => {
+    console.log("yt");
+    setYtModal(true);
+  };
+
+  const handleAddYtVideo = () => {
+    const ytUrlParams = new URLSearchParams(ytUrl.split("?")[1]);
+    setVideoId(ytUrlParams.get("v"));
+    setYtModal(false);
   };
 
   return (
@@ -331,6 +349,26 @@ const Editor = () => {
           </Tabs>
         </Dialog>
       )}
+      {ytModal && (
+        <Dialog
+          title="YouTube video"
+          handleClose={() => {
+            setYtModal(false);
+          }}
+          actions
+          actionText={"Dodaj"}
+          handleAction={handleAddYtVideo}
+          loading={selectedTab === 1 && addMediaLoading}
+        >
+          <TextField
+            value={ytUrl}
+            onChange={(e) => setYtUrl(e.target.value)}
+            variant="filled"
+            label="Url"
+            className="w-full"
+          />
+        </Dialog>
+      )}
       <div className="pr-0 lg:pr-72">
         <div className="px-5 py-10 md:p-12">
           <input
@@ -344,14 +382,28 @@ const Editor = () => {
                 window.localStorage.setItem("editor_title", e.target.value);
             }}
           />
+          {/* <QuillEditor
+            value={title}
+            placeholder="Naslov..."
+            onChange={(value) => {
+              setTitle(value);
+              !router.query?.content &&
+                window.localStorage.setItem("editor_title", value);
+            }}
+            className="w-full mt-14 sm:mt-12 text-2xl bg-transparent font-semibold border-transparent focus:border-transparent focus:ring-0"
+          /> */}
           <QuillEditor
             value={content}
             onChange={(value) => {
               setContent(value);
+              console.log("ql val: ", value);
               !router.query?.content &&
                 window.localStorage.setItem("editor_content", value);
             }}
             addImageToolbar={addImageToolbar}
+            addYoutubeVideo={addYoutubeVideo}
+            videoId={videoId}
+            setVideoId={setVideoId}
             src={src}
             setSrc={setSrc}
           />

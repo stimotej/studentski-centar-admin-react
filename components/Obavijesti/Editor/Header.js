@@ -1,5 +1,6 @@
 import React from "react";
 import { MdOutlineImage } from "react-icons/md";
+import { FaYoutube } from "react-icons/fa";
 
 const Header = () => {
   return (
@@ -28,6 +29,9 @@ const Header = () => {
       <button className="ql-blockquote my-1 sm:my-2"></button>
       <button className="ql-addImageToolbar my-1 sm:my-2">
         <MdOutlineImage className="text-black hover:text-primary" />
+      </button>
+      <button className="ql-addYoutubeVideo my-1 sm:my-2">
+        <FaYoutube className="text-black hover:text-primary" />
       </button>
     </header>
   );

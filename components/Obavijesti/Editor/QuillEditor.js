@@ -4,7 +4,17 @@ import ImageResize from "quill-image-resize-module-react";
 
 Quill.register("modules/imageResize", ImageResize, true);
 
-const Editor = ({ value, onChange, addImageToolbar, src, setSrc }) => {
+const Editor = ({
+  value,
+  onChange,
+  addImageToolbar,
+  addYoutubeVideo,
+  videoId,
+  setVideoId,
+  className,
+  src,
+  setSrc,
+}) => {
   const reactQuillRef = useRef(null);
 
   useEffect(() => {
@@ -17,6 +27,20 @@ const Editor = ({ value, onChange, addImageToolbar, src, setSrc }) => {
     }
   }, [src]);
 
+  useEffect(() => {
+    if (videoId) {
+      const quill = reactQuillRef.current.getEditor();
+      var range = quill.getSelection();
+      let position = range ? range.index : 0;
+      quill.insertEmbed(
+        position,
+        "video",
+        `https://www.youtube.com/embed/${videoId}`
+      );
+      setVideoId(null);
+    }
+  }, [videoId]);
+
   const formats = [
     "bold",
     "italic",
@@ -27,6 +51,7 @@ const Editor = ({ value, onChange, addImageToolbar, src, setSrc }) => {
     "link",
     "blockquote",
     "image",
+    "video",
   ];
 
   const modules = useMemo(
@@ -35,6 +60,7 @@ const Editor = ({ value, onChange, addImageToolbar, src, setSrc }) => {
         container: "#toolbar",
         handlers: {
           addImageToolbar: addImageToolbar,
+          addYoutubeVideo: addYoutubeVideo,
         },
       },
       imageResize: {
@@ -50,7 +76,7 @@ const Editor = ({ value, onChange, addImageToolbar, src, setSrc }) => {
       ref={(el) => (reactQuillRef.current = el)}
       value={value}
       onChange={onChange}
-      className="mt-4"
+      className={`mt-4 ${className}`}
       placeholder="Sadržaj..."
       modules={modules}
       formats={formats}

@@ -7,12 +7,15 @@ const Preview = ({ obavijest, handleDelete, className, title }) => {
   return (
     <div className={className + " break-all"}>
       {title !== false && (
-        <h1 className="text-2xl font-semibold px-3">
-          {obavijest?.title}
+        <div className="flex items-center gap-3">
+          <h1
+            className="text-2xl font-semibold px-3"
+            dangerouslySetInnerHTML={{ __html: obavijest?.title }}
+          ></h1>
           {obavijest?.status === "draft" && (
-            <span className="text-sm font-normal text-error ml-3">Skica</span>
+            <span className="text-sm font-normal text-error">Skica</span>
           )}
-        </h1>
+        </div>
       )}
       <div className="flex items-center px-3 mt-2 pt-5 lg:pt-0 lg:my-8">
         <Button
