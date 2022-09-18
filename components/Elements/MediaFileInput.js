@@ -73,4 +73,6 @@ const MediaFileInput = forwardRef(({ value, onChange, className }, ref) => {
   );
 });
 
+MediaFileInput.displayName = "MediaFileInput";
+
 export default MediaFileInput;

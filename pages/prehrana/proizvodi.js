@@ -59,7 +59,7 @@ const Products = () => {
       ""
     );
     searchValue = replaceCroatian(searchValue).toLowerCase();
-    return replaceCroatian(item.name).toLowerCase().includes(searchValue);
+    return replaceCroatian(item?.name)?.toLowerCase()?.includes(searchValue);
   };
 
   const changeStockState = (id, stock) => {
