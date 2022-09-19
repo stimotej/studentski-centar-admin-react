@@ -13,7 +13,11 @@ import { faXmark } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 import clsx from "clsx";
-import { updateMultipleProducts, useProducts } from "../../../lib/api/products";
+import {
+  deleteProduct,
+  updateMultipleProducts,
+  useProducts,
+} from "../../../lib/api/products";
 
 const DeleteDialog = ({ deleteModal, setDeleteModal, selectedProducts }) => {
   const { products, error, loading, setProducts } = useProducts();
@@ -32,20 +36,26 @@ const DeleteDialog = ({ deleteModal, setDeleteModal, selectedProducts }) => {
     setProducts(productsCopy);
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     setDeleteLoading(true);
 
-    try {
-      await updateMultipleProducts({ delete: selectedProducts });
+    let requests = selectedProducts.map((productId) =>
+      deleteProduct(productId)
+    );
 
-      deleteProducts(selectedProducts);
-      toast.success(`Uspješno obrisano ${selectedProducts.length} proizvoda`);
-      setDeleteModal(false);
-    } catch (error) {
-      toast.error("Greška kod brisanja proizvoda");
-    } finally {
-      setDeleteLoading(false);
-    }
+    Promise.all(requests)
+      .then((res) => {
+        toast.success(`Uspješno obrisano ${selectedProducts.length} proizvoda`);
+        deleteProducts(selectedProducts);
+        setDeleteModal(false);
+      })
+      .catch((error) => {
+        toast.error("Greška kod brisanja proizvoda");
+        console.log(error);
+      })
+      .finally(() => {
+        setDeleteLoading(false);
+      });
   };
 
   return (

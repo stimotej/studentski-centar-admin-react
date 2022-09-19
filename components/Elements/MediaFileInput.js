@@ -35,7 +35,7 @@ const MediaFileInput = forwardRef(({ value, onChange, className }, ref) => {
             `}
           >
             <input {...getInputProps()} />
-            {value ? (
+            {value && value !== "false" ? (
               <div className="relative w-full h-80">
                 <Image
                   src={

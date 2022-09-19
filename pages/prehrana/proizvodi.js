@@ -7,7 +7,11 @@ import {
 } from "react-icons/md";
 import Header from "../../components/Header";
 import Layout from "../../components/Layout";
-import { updateProduct, useProducts } from "../../lib/api/products";
+import {
+  createProduct,
+  updateProduct,
+  useProducts,
+} from "../../lib/api/products";
 import { useRouter } from "next/router";
 import { userGroups } from "../../lib/constants";
 import Script from "next/script";
@@ -35,9 +39,14 @@ import replaceCroatian from "../../lib/replaceCroatian";
 import LoadingButton from "@mui/lab/LoadingButton";
 import DeleteDialog from "../../components/Prehrana/Products/DeleteDialog";
 import StockDialog from "../../components/Prehrana/Products/StockDialog";
+import axios from "axios";
 
 const Products = () => {
   const { products, error, loading, setProducts } = useProducts();
+
+  useEffect(() => {
+    console.log("ppppp", products);
+  }, [products]);
 
   const [selectedProducts, setSelectedProducts] = useState([]);
 
@@ -94,12 +103,12 @@ const Products = () => {
 
     setStockLoading(id);
     try {
-      await mutate("products", async (productsCurrent) => {
+      await mutate("proizvodi", async (productsCurrent) => {
         const updatedProduct = await updateProduct(id, {
-          stock: changedStock,
+          stockStatus: changedStock,
         });
 
-        const filteredProducts = productsCurrent.filter(
+        const filteredProducts = productsCurrent?.filter(
           (product) => product.id !== id
         );
         return [...filteredProducts, updatedProduct];
@@ -109,6 +118,7 @@ const Products = () => {
       // });
     } catch (error) {
       productsCopy[index].stock = stock;
+      console.log("ggggg", error);
       // mutate("products", productsCopy);
       toast.error("Greška prilikom postavljanja zalihe");
     } finally {
@@ -217,7 +227,7 @@ const Products = () => {
                   href={{
                     pathname: "/prehrana/uredi-proizvod",
                     query: products?.filter(
-                      (item) => item.id === selectedProducts[0]
+                      (item) => item?.id === selectedProducts[0]
                     )[0],
                   }}
                 >

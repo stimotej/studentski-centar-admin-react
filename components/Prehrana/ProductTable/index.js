@@ -111,7 +111,7 @@ const Table = ({
 
     setStockLoading(id);
     try {
-      await mutate("products", async (productsCurrent) => {
+      await mutate("proizvodi", async (productsCurrent) => {
         const updatedProduct = await updateProduct(id, {
           stock: changedStock,
         });

@@ -41,13 +41,11 @@ const ProductForm = ({ product }) => {
     resolver: yupResolver(schema),
     defaultValues: {
       name: product?.name || "",
-      description: product?.description
-        ? parseDescription(product?.description)
-        : "",
+      description: product?.description || "",
       image: !!product?.image && product?.image !== "0" ? product?.image : "",
       price: product?.price || "",
-      stockStatus: product?.stockStatus || "instock",
-      allergens: product?.allergens?.toString() || "",
+      stockStatus: product?.stock || "instock",
+      allergens: product?.allergens || "",
       weight: product?.weight || "",
     },
   };
@@ -104,7 +102,8 @@ const ProductForm = ({ product }) => {
           const createdProduct = {};
           const newProduct = {
             ...data,
-            allergens: formatAllergens(data.allergens),
+            stock: data.stockStatus,
+            allergens: data.allergens,
             price: data.price.toString(),
             weight: data.weight.toString(),
             image: imageId,
@@ -149,7 +148,7 @@ const ProductForm = ({ product }) => {
         const createdProduct = {};
         const newProduct = {
           ...data,
-          allergens: formatAllergens(data.allergens),
+          allergens: data.allergens,
           price: data.price.toString(),
           weight: data.weight.toString(),
         };
@@ -179,7 +178,7 @@ const ProductForm = ({ product }) => {
         setProducts(productsCopy);
         router.push("/prehrana/proizvodi");
       } catch (error) {
-        console.log(error.response);
+        console.log(error);
         toast.error(
           product
             ? "Greška kod spremanja promjena"

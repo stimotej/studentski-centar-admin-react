@@ -14,7 +14,11 @@ import { faXmark } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 import clsx from "clsx";
-import { updateMultipleProducts, useProducts } from "../../../lib/api/products";
+import {
+  updateMultipleProducts,
+  updateProduct,
+  useProducts,
+} from "../../../lib/api/products";
 import { useSWRConfig } from "swr";
 
 const StockDialog = ({
@@ -30,26 +34,32 @@ const StockDialog = ({
 
   const [loading, setLoading] = useState(false);
 
-  const handleSave = async () => {
-    let previousStock = selectedStock === "instock" ? "outofstock" : "instock";
+  const handleSave = () => {
     setLoading(true);
-    try {
-      await updateMultipleProducts({
-        update: selectedProducts.map((productId) => ({
-          id: productId,
-          stock_status: selectedStock,
-        })),
-      });
+    let previousStock = selectedStock === "instock" ? "outofstock" : "instock";
 
-      changeStockState(selectedProducts, selectedStock);
-      toast.success(`Uspješno promijenjen status zalihe odabranim proizvodima`);
-      setStockModal(false);
-    } catch (error) {
-      changeStockState(selectedProducts, previousStock);
-      toast.error("Greška kod spremanja stanja zalihe");
-    } finally {
-      setLoading(false);
-    }
+    let requests = selectedProducts.map((productId) =>
+      updateProduct(productId, {
+        stockStatus: selectedStock,
+      })
+    );
+
+    Promise.all(requests)
+      .then((res) => {
+        toast.success(
+          `Uspješno promijenjen status zalihe odabranim proizvodima`
+        );
+        changeStockState(selectedProducts, selectedStock);
+        setStockModal(false);
+      })
+      .catch((error) => {
+        toast.error("Greška kod spremanja stanja zalihe");
+        changeStockState(selectedProducts, previousStock);
+        console.log(error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   return (

@@ -223,14 +223,13 @@ const NewDnevniMenu = () => {
 
       toast.success(`Menu uspješno objavljen na stranicu`);
 
-      const menuProducts = await getMenuProducts();
+      // const menuProducts = await getMenuProducts();
 
-      const res = await updateMultipleProducts({
-        update: menuProducts.map((group) => formatSiteMenu(group)),
-      });
-
-      console.log("res", res);
+      // const res = await updateMultipleProducts({
+      //   update: menuProducts.map((group) => formatSiteMenu(group)),
+      // });
     } catch (error) {
+      console.log("err", error);
       toast.error(`Greška kod objavljivanja menija na stranicu`);
     } finally {
       postTags = [];
