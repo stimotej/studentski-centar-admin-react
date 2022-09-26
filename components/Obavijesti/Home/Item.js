@@ -1,7 +1,26 @@
+import dayjs from "dayjs";
 import Image from "next/image";
+import { useEffect } from "react";
+import { useState } from "react";
 import { MdOutlineImage } from "react-icons/md";
+import { useCategories } from "../../../lib/api/categories";
+import { obavijestiCategoryId } from "../../../lib/constants";
 
 const Item = ({ obavijest, active, onClick, className }) => {
+  const { categories } = useCategories();
+  const [category, setCategory] = useState("");
+
+  useEffect(() => {
+    if (categories) {
+      const postCategory = obavijest.categories.find(
+        (item) => parseInt(item) !== obavijestiCategoryId
+      );
+      categories.forEach((item) => {
+        if (item.id === parseInt(postCategory)) setCategory(item.name);
+      });
+    }
+  }, [categories]);
+
   return (
     <div
       className={`flex items-center rounded-lg p-2 cursor-pointer hover:bg-white hover:shadow-lg transition-shadow ${
@@ -36,7 +55,7 @@ const Item = ({ obavijest, active, onClick, className }) => {
         </div>
         <p className="text-sm font-light my-2">{obavijest.description}</p>
         <p className="text-sm">
-          {obavijest.author} - {obavijest.date.replace("T", " ")}
+          {category} | {dayjs(obavijest.date).format("DD.MM.YYYY HH:MM[h]")}
         </p>
       </div>
     </div>

@@ -6,7 +6,7 @@ const Select = ({ obavijesti, value, onChange, handleDelete }) => {
   return (
     <div className="mt-10">
       {obavijesti?.map((obavijest) => (
-        <div key={obavijest.id}>
+        <div key={obavijest?.id}>
           {/* Item on desktop */}
           <Item
             className="hidden lg:flex"

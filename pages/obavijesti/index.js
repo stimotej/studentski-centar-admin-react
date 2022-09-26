@@ -199,8 +199,10 @@ const Home = () => {
             small
           >
             <p>
-              Jeste li sigurni da želite obrisati obavijest:
-              <strong> {deleteDialog.title}</strong>
+              Jeste li sigurni da želite obrisati obavijest:{" "}
+              <strong
+                dangerouslySetInnerHTML={{ __html: deleteDialog.title }}
+              ></strong>
             </p>
           </Dialog>
         )}

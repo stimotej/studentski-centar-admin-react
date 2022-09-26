@@ -35,7 +35,7 @@ const Home = () => {
             promjene
           </span>
 
-          {restaurant ? (
+          {!!restaurant ? (
             <PrikazRestorana
               id={restaurant?.id}
               slika={restaurant?.image}

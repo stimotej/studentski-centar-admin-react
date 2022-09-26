@@ -1,6 +1,6 @@
 import dynamic from "next/dynamic";
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
-import { MdOutlineEdit, MdOutlineDelete } from "react-icons/md";
+import { MdOutlineEdit, MdOutlineDelete, MdOpenInNew } from "react-icons/md";
 import Button from "../../Elements/Button";
 
 const Preview = ({ obavijest, handleDelete, className, title }) => {
@@ -29,6 +29,14 @@ const Preview = ({ obavijest, handleDelete, className, title }) => {
           text="Obriši"
           icon={<MdOutlineDelete />}
           onClick={handleDelete}
+          className="ml-4"
+        />
+        <Button
+          text="Otvori"
+          icon={<MdOpenInNew />}
+          link
+          openInNewTab
+          to={obavijest?.link}
           className="ml-4"
         />
       </div>

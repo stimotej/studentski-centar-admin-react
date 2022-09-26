@@ -11,6 +11,7 @@ const Button = ({
   type,
   disabled,
   icon,
+  openInNewTab,
   loading,
   onClick,
   className,
@@ -29,7 +30,7 @@ const Button = ({
 
   return link ? (
     <Link href={{ pathname: to, query: state }}>
-      <a className={`${style} ${className}`}>
+      <a className={`${style} ${className}`} target={openInNewTab && "_blank"}>
         {icon && (
           <div className={!responsive && text ? "mr-2" : ""}>{icon}</div>
         )}

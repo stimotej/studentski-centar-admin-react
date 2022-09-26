@@ -9,6 +9,7 @@ import Dialog from "../../components/Elements/Dialog";
 import MediaSelect from "../../components/Obavijesti/MediaSelect";
 import Tabs, { Tab, Content } from "../../components/Elements/Tabs/Tabs";
 import MediaFileInput from "../../components/Elements/MediaFileInput";
+const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 const QuillEditor = dynamic(
   () => import("../../components/Obavijesti/Editor/QuillEditor"),
   {
@@ -24,9 +25,11 @@ import {
   useObavijesti,
 } from "../../lib/api/obavijesti";
 import { createMedia, useMedia } from "../../lib/api/obavijestiMedia";
-import { userGroups } from "../../lib/constants";
+import { obavijestiCategoryId, userGroups } from "../../lib/constants";
 import Loader from "../../components/Elements/Loader";
 import { TextField } from "@mui/material";
+import { useCategories } from "../../lib/api/categories";
+import Select from "../../components/Elements/Select";
 
 const Editor = () => {
   const [storedPostNote, setStoredPostNote] = useState(false);
@@ -53,11 +56,13 @@ const Editor = () => {
   }, []);
 
   const { obavijesti, error, setObavijesti } = useObavijesti();
+  const { categories, error: errorCategories, setCategories } = useCategories();
   const { mediaList, error: errorMedia, setMediaList } = useMedia();
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [description, setDescription] = useState("");
+  const [category, setCategory] = useState(null);
   const [status, setStatus] = useState("publish");
   const [imageId, setImageId] = useState("");
 
@@ -65,19 +70,26 @@ const Editor = () => {
 
   useEffect(() => {
     if (Object.keys(router.query).length) {
+      const postCategory = router.query.categories.find(
+        (item) => parseInt(item) !== obavijestiCategoryId
+      );
       setTitle(router.query.title || "");
       setContent(router.query.content || "");
       setDescription(router.query.description || "");
+      setCategory(parseInt(postCategory) || null);
       setStatus(router.query.status || "publish");
       setImageId(router.query.imageId || "");
     } else {
       setTitle(window.localStorage.getItem("editor_title") || "");
       setContent(window.localStorage.getItem("editor_content") || "");
       setDescription(window.localStorage.getItem("editor_description") || "");
+      setCategory(
+        parseInt(window.localStorage.getItem("editor_category")) || null
+      );
       setStatus(window.localStorage.getItem("editor_status") || "publish");
       setImageId(window.localStorage.getItem("editor_image_id") || "");
     }
-  }, []);
+  }, [categories]);
 
   useEffect(() => {
     if (Object.keys(router.query).length)
@@ -100,6 +112,7 @@ const Editor = () => {
     "editor_title",
     "editor_content",
     "editor_description",
+    "editor_category",
     "editor_image_id",
     "editor_image_src",
     "editor_status",
@@ -113,6 +126,7 @@ const Editor = () => {
     setTitle("");
     setContent("");
     setDescription("");
+    setCategory(null);
     setImageId(0);
     setStatus("publish");
   };
@@ -125,6 +139,7 @@ const Editor = () => {
           title: title,
           content: content,
           description: description,
+          category: category,
           status: status,
           imageId: imageId,
         });
@@ -149,6 +164,7 @@ const Editor = () => {
           title: title,
           content: content,
           description: description,
+          category: category,
           status: status,
           imageId: imageId || 0,
         });
@@ -275,6 +291,21 @@ const Editor = () => {
               window.localStorage.setItem("editor_description", e.target.value);
           }}
         />
+        <div className="mt-4">Kategorija:</div>
+        <Select
+          items={categories?.map((item) => ({
+            text: item.name,
+            value: item.id,
+          }))}
+          value={category}
+          onChange={(value) => {
+            setCategory(value);
+            !router.query?.content &&
+              window.localStorage.setItem("editor_category", value);
+          }}
+          className="!w-full mt-2"
+          iconClassName="!ml-auto"
+        />
         <div className="mt-4">Status:</div>
         <div className="flex flex-col mt-2">
           <div>
@@ -371,15 +402,18 @@ const Editor = () => {
       )}
       <div className="pr-0 lg:pr-72">
         <div className="px-5 py-10 md:p-12">
-          <input
-            type="text"
-            className="w-full mt-14 sm:mt-12 text-2xl bg-transparent font-semibold border-transparent focus:border-transparent focus:ring-0"
+          <ReactQuill
+            className="w-full mt-14 sm:mt-12 text-2xl obavijest-title bg-transparent font-semibold border-transparent focus:border-transparent focus:ring-0"
             placeholder="Naslov..."
+            modules={{
+              toolbar: false,
+            }}
+            formats={["header"]}
             value={title}
-            onChange={(e) => {
-              setTitle(e.target.value);
+            onChange={(value) => {
+              setTitle(value);
               !router.query?.content &&
-                window.localStorage.setItem("editor_title", e.target.value);
+                window.localStorage.setItem("editor_title", value);
             }}
           />
           {/* <QuillEditor

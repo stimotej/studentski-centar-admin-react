@@ -1,19 +1,26 @@
 import { useState } from "react";
 import { MdExpandMore } from "react-icons/md";
 
-const Select = ({ items, value, onChange, textBefore, className }) => {
+const Select = ({
+  items,
+  value,
+  onChange,
+  textBefore,
+  className,
+  iconClassName,
+}) => {
   const [active, setActive] = useState(false);
 
   return (
     <div className={`relative flex items-center w-fit ${className}`}>
       <button
         type="button"
-        className="flex bg-secondary py-2 px-4 rounded-lg"
+        className="flex bg-secondary py-2 px-4 rounded-lg w-full"
         onClick={() => setActive(!active)}
         onBlur={() => setActive(false)}
       >
-        {(value && items?.filter((item) => item.value === value)[0]?.text) ||
-          items[0].text}
+        {(value && items?.find((item) => item.value === value)?.text) ||
+          items?.[0].text}
         {/* {active ? (
           <MdExpandLess className="ml-2 text-black/50" />
         ) : (
@@ -22,7 +29,7 @@ const Select = ({ items, value, onChange, textBefore, className }) => {
         <MdExpandMore
           className={`ml-2 text-black/50 transform transition-transform ${
             active ? "rotate-180" : ""
-          }`}
+          } ${iconClassName}`}
         />
       </button>
       {active && (
