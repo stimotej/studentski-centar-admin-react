@@ -2,7 +2,13 @@ import React from "react";
 import Item from "./Item";
 import ObavijestPreview from "./Preview";
 
-const Select = ({ obavijesti, value, onChange, handleDelete }) => {
+const Select = ({
+  obavijesti,
+  value,
+  onChange,
+  handleDelete,
+  isEvent = false,
+}) => {
   return (
     <div className="mt-10">
       {obavijesti?.map((obavijest) => (
@@ -13,6 +19,7 @@ const Select = ({ obavijesti, value, onChange, handleDelete }) => {
             obavijest={obavijest}
             active={obavijest.id === value?.id}
             onClick={() => onChange(obavijest)}
+            isEvent={isEvent}
           />
           {/* Item on phone */}
           <Item
@@ -23,6 +30,7 @@ const Select = ({ obavijesti, value, onChange, handleDelete }) => {
               if (obavijest.id === value?.id) onChange(null);
               else onChange(obavijest);
             }}
+            isEvent={isEvent}
           />
           {value?.id === obavijest.id && (
             <ObavijestPreview

@@ -3,7 +3,13 @@ const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 import { MdOutlineEdit, MdOutlineDelete, MdOpenInNew } from "react-icons/md";
 import Button from "../../Elements/Button";
 
-const Preview = ({ obavijest, handleDelete, className, title }) => {
+const Preview = ({
+  obavijest,
+  handleDelete,
+  className,
+  title,
+  isEvent = false,
+}) => {
   return (
     <div className={className + " break-all"}>
       {title !== false && (
@@ -22,7 +28,7 @@ const Preview = ({ obavijest, handleDelete, className, title }) => {
           link
           text="Uredi"
           icon={<MdOutlineEdit />}
-          to="/obavijesti/uredi-obavijest"
+          to={isEvent ? "kultura/uredi-event" : "/obavijesti/uredi-obavijest"}
           state={obavijest}
         />
         <Button

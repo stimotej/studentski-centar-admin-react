@@ -9,24 +9,9 @@ import "../styles/quill.css";
 import "react-quill/dist/quill.snow.css";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
-import { createTheme, ThemeProvider } from "@mui/material";
 
 // axios.defaults.baseURL = "https://unaprijedi.com/wp-json/wp/v2"
 axios.defaults.baseURL = "http://161.53.174.14/wp-json/wp/v2/";
-
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: "rgb(21, 195, 154)",
-    },
-    secondary: {
-      main: "#424242",
-    },
-  },
-  shape: {
-    borderRadius: 8,
-  },
-});
 
 function MyApp({ Component, pageProps }) {
   useEffect(() => {
@@ -52,9 +37,7 @@ function MyApp({ Component, pageProps }) {
       }}
     >
       <IconContext.Provider value={{ size: 24 }}>
-        <ThemeProvider theme={theme}>
-          <Component {...pageProps} />
-        </ThemeProvider>
+        <Component {...pageProps} />
         <ToastContainer
           position="bottom-right"
           autoClose={3000}

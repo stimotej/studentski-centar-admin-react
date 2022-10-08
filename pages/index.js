@@ -6,11 +6,11 @@ const LoginSelect = () => {
     <div className="flex flex-col items-center mb-12">
       <h1 className="text-5xl font-semibold mt-12 mb-5">Prijava</h1>
       <h3 className="px-5">Odaberite Vašu kategoriju za prijavu</h3>
-      <div className="flex flex-col items-center w-full lg:w-4/5 px-6 sm:flex-row mt-10 mb-20">
+      <div className="flex flex-col w-full lg:w-4/5 px-6 sm:flex-row mt-10 mb-20">
         <LoginCard
           theme="theme-obavijesti"
           title="Obavijesti"
-          text="Kontrola prikaza restorana, proizvoda i menija"
+          text="Izrada i uređivanje obavijesti"
           link="/obavijesti"
         />
         <LoginCard
@@ -18,6 +18,12 @@ const LoginSelect = () => {
           title="Prehrana"
           text="Kontrola prikaza restorana, proizvoda i menija"
           link="/prehrana"
+        />
+        <LoginCard
+          theme="theme-kultura"
+          title="Kultura"
+          text="Izrada i uređivanje evenata"
+          link="/kultura"
         />
         {/* <LoginCard
           theme="theme-smjestaj"

@@ -57,6 +57,10 @@ const Login = ({ from }) => {
       setUsername("express");
       setPassword("restoranexpress");
     }
+    if (from.toLowerCase() === "kultura") {
+      setUsername("kultura");
+      setPassword("kulturalozinka");
+    }
   };
 
   return (
@@ -104,6 +108,7 @@ const Login = ({ from }) => {
           <button
             className="text-primary mb-4 hover:underline"
             onClick={devLogin}
+            type="button"
           >
             Ispuni automatski (za testiranje)
           </button>

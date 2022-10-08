@@ -19,30 +19,16 @@ const QuillEditor = dynamic(
 );
 import StoredPostNote from "../../components/Obavijesti/Editor/StoredPostNote";
 import Layout from "../../components/Layout";
-import {
-  createObavijest,
-  updateObavijest,
-  useObavijesti,
-} from "../../lib/api/obavijesti";
-import { createMedia, useMedia } from "../../lib/api/obavijestiMedia";
-import { obavijestiCategoryId, userGroups } from "../../lib/constants";
+import { createMedia, useMedia } from "../../lib/api/eventsMedia";
+import { userGroups } from "../../lib/constants";
 import Loader from "../../components/Elements/Loader";
-import {
-  Checkbox,
-  FormControl,
-  FormControlLabel,
-  InputLabel,
-  MenuItem,
-  Radio,
-  RadioGroup,
-  TextField,
-} from "@mui/material";
+import { FormControlLabel, Radio, RadioGroup, TextField } from "@mui/material";
 import { useCategories } from "../../lib/api/categories";
-// import Select from "../../components/Elements/Select";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { MobileDatePicker } from "@mui/x-date-pickers/MobileDatePicker";
-import Select from "@mui/material/Select";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
+import { createEvent, updateEvent, useEvents } from "../../lib/api/events";
+import Autocomplete from "@mui/material/Autocomplete";
 
 const Editor = () => {
   const [storedPostNote, setStoredPostNote] = useState(false);
@@ -53,69 +39,55 @@ const Editor = () => {
     const token = window.localStorage.getItem("access_token");
     const username = window.localStorage.getItem("username");
 
-    if (!token || !userGroups["obavijesti"].includes(username))
-      router.push("/obavijesti/login");
+    if (!token || !userGroups["kultura"].includes(username))
+      router.push("/kultura/login");
 
     let storedPostExists = false;
     storedPostKeys.forEach((key) => {
       let storedPost = window.localStorage.getItem(key);
       if (storedPost?.length) storedPostExists = true;
-      if (key === "editor_content" && storedPost === "<p><br></p>")
+      if (key === "event_content" && storedPost === "<p><br></p>")
         storedPostExists = false;
-      if (key === "editor_status" && storedPost === "publish")
+      if (key === "event_status" && storedPost === "publish")
         storedPostExists = false;
     });
-    if (storedPostExists) setStoredPostNote(true);
+    if (storedPostExists && !Object.keys(router.query).length)
+      setStoredPostNote(true);
   }, []);
 
-  const { obavijesti, error, setObavijesti } = useObavijesti();
+  const { events, error, setEvents } = useEvents();
   const { categories, error: errorCategories, setCategories } = useCategories();
   const { mediaList, error: errorMedia, setMediaList } = useMedia();
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState(0);
-  const [status, setStatus] = useState("publish");
   const [imageId, setImageId] = useState("");
+  const [status, setStatus] = useState("publish");
 
-  const [startShowing, setStartShowing] = useState(null);
-  const [endShowing, setEndShowing] = useState(null);
-  const [showAlways, setShowAlways] = useState(false);
+  const [eventLocation, setEventLocation] = useState("");
+  const [eventDate, setEventDate] = useState(null);
+  const [eventType, setEventType] = useState("");
 
   const [image, setImage] = useState(null);
 
   useEffect(() => {
     if (Object.keys(router.query).length) {
-      const postCategory = router.query.categories.find(
-        (item) => parseInt(item) !== obavijestiCategoryId
-      );
       console.log("adsasd", router.query);
       setTitle(router.query.title || "");
       setContent(router.query.content || "");
-      setDescription(router.query.description || "");
-      setCategory(parseInt(postCategory) || null);
-      setStatus(router.query.status || "publish");
       setImageId(router.query.imageId || "");
-      setStartShowing(router.query.start_showing || null);
-      setEndShowing(router.query.end_showing || null);
-      setShowAlways(router.query.show_always === "true");
+      setStatus(router.query.status || "publish");
+      setEventLocation(router.query.event_location || "");
+      setEventDate(router.query.event_date || null);
+      setEventType(router.query.event_type || "");
     } else {
-      setTitle(window.localStorage.getItem("editor_title") || "");
-      setContent(window.localStorage.getItem("editor_content") || "");
-      setDescription(window.localStorage.getItem("editor_description") || "");
-      setCategory(
-        parseInt(window.localStorage.getItem("editor_category")) || null
-      );
-      setStatus(window.localStorage.getItem("editor_status") || "publish");
-      setImageId(window.localStorage.getItem("editor_image_id") || "");
-      setStartShowing(
-        window.localStorage.getItem("editor_start_showing") || null
-      );
-      setEndShowing(window.localStorage.getItem("editor_end_showing") || null);
-      setShowAlways(
-        window.localStorage.getItem("editor_show_always") === "true"
-      );
+      setTitle(window.localStorage.getItem("event_title") || "");
+      setContent(window.localStorage.getItem("event_content") || "");
+      setImageId(window.localStorage.getItem("event_image_id") || "");
+      setStatus(window.localStorage.getItem("event_status") || "publish");
+      setEventLocation(window.localStorage.getItem("event_location") || "");
+      setEventDate(window.localStorage.getItem("event_date") || null);
+      setEventType(window.localStorage.getItem("event_type") || "");
     }
   }, [categories]);
 
@@ -139,14 +111,30 @@ const Editor = () => {
   const storedPostKeys = [
     "editor_title",
     "editor_content",
-    "editor_description",
-    "editor_category",
     "editor_image_id",
     "editor_image_src",
-    "editor_status",
-    "editor_start_showing",
-    "editor_end_showing",
-    "editor_show_always",
+    "event_status",
+    "event_location",
+    "event_date",
+    "event_type",
+  ];
+
+  const eventLocations = [
+    "Teatar &TD",
+    "Galerija SC",
+    "Kiosk",
+    "Francuski paviljon",
+    "MM centar",
+    "Kino SC",
+    "SKUC",
+  ];
+  const eventTypes = [
+    "Predstava",
+    "Izložba",
+    "Film",
+    "Koncert",
+    "Tečaj",
+    "Radionica",
   ];
 
   const resetStoredPostAndState = () => {
@@ -156,66 +144,60 @@ const Editor = () => {
     setImage(null);
     setTitle("");
     setContent("");
-    setDescription("");
-    setCategory(null);
     setImageId(0);
     setStatus("publish");
-    setStartShowing(null);
-    setEndShowing(null);
-    setShowAlways(false);
+    setEventLocation("");
+    setEventDate(null);
+    setEventType("");
   };
 
   const handlePost = async () => {
     setLoading(true);
     if (Object.keys(router.query).length) {
       try {
-        const updatedObavijest = await updateObavijest(router.query.id, {
+        const updatedEvent = await updateEvent(router.query.id, {
           title: title,
           content: content,
-          description: description,
-          category: category,
-          status: status,
           imageId: imageId,
-          startShowing: startShowing,
-          endShowing: endShowing,
-          showAlways: showAlways,
+          status: status,
+          event_date: eventDate,
+          event_location: eventLocation,
+          event_type: eventType,
         });
 
-        let obavijestiCopy = [...obavijesti];
-        const index = obavijestiCopy.findIndex(
-          (obavijest) => obavijest.id === updatedObavijest.id
+        let eventsCopy = [...events];
+        const index = eventsCopy.findIndex(
+          (event) => event.id === updatedEvent.id
         );
-        obavijestiCopy[index] = updatedObavijest;
-        setObavijesti(obavijestiCopy);
+        eventsCopy[index] = updatedEvent;
+        setEvents(eventsCopy);
         toast.success("Uspješno spremljene promjene.");
       } catch (error) {
         if (error.response.data.data.status === 403)
-          toast.error("Nemate dopuštenje za uređivanje ove obavijesti");
-        else toast.error("Greška kod spremanja obavijesti");
+          toast.error("Nemate dopuštenje za uređivanje ovog eventa");
+        else toast.error("Greška kod spremanja eventa");
       } finally {
         setLoading(false);
       }
     } else {
       try {
-        const createdObavijest = await createObavijest({
+        const createdEvent = await createEvent({
           title: title,
           content: content,
-          description: description,
-          category: category,
-          status: status,
           imageId: imageId || 0,
-          startShowing: startShowing,
-          endShowing: endShowing,
-          showAlways: showAlways,
+          status: status,
+          event_date: eventDate,
+          event_location: eventLocation,
+          event_type: eventType,
         });
 
-        console.log("createdObavijest", createdObavijest);
+        console.log("createdEvent", createdEvent);
 
-        setObavijesti([...obavijesti, createdObavijest]);
+        setEvents([...events, createdEvent]);
         resetStoredPostAndState();
-        toast.success("Uspješno objavljena obavijest.");
+        toast.success("Uspješno objavljen event.");
       } catch (error) {
-        toast.error("Greška kod objavljivanja obavijesti.");
+        toast.error("Greška kod objavljivanja eventa.");
       } finally {
         setLoading(false);
       }
@@ -263,8 +245,8 @@ const Editor = () => {
           setImage(selectedImage);
           setImageId(selectedImage?.id);
           if (!router.query?.content) {
-            window.localStorage.setItem("editor_image_id", selectedImage?.id);
-            window.localStorage.setItem("editor_image_src", selectedImage?.src);
+            window.localStorage.setItem("event_image_id", selectedImage?.id);
+            window.localStorage.setItem("event_image_src", selectedImage?.src);
           }
         } else if (mediaDialog === "contentImage")
           // addImageToEditor(selectedImage.src);
@@ -302,7 +284,7 @@ const Editor = () => {
         loading={loading}
         handlePreview={handlePreview}
       >
-        <div className="mt-4">Slika obavijesti:</div>
+        <div className="mt-4">Slika eventa:</div>
         <button
           className="mt-2 w-full bg-secondary rounded-lg text-black/50"
           onClick={() => setMediaDialog("featuredImage")}
@@ -320,107 +302,83 @@ const Editor = () => {
             <div className="py-3">Odaberi sliku</div>
           )}
         </button>
-        <div className="mt-4">Opis:</div>
-        <textarea
+        {/* <div className="mt-4">Lokacija:</div>
+        <input
           className="w-full rounded-lg mt-2"
-          placeholder="Kratki opis obavijesti"
-          value={description}
+          placeholder="Npr. 'Galerija SC'"
+          value={eventLocation}
           onChange={(e) => {
-            setDescription(e.target.value);
+            setEventLocation(e.target.value);
             !router.query?.content &&
-              window.localStorage.setItem("editor_description", e.target.value);
+              window.localStorage.setItem("event_location", e.target.value);
+          }}
+        /> */}
+        <Autocomplete
+          className="bg-secondary w-full rounded-lg mt-6"
+          freeSolo
+          options={eventLocations}
+          renderInput={(params) => <TextField {...params} label="Lokacija" />}
+          value={eventLocation}
+          onChange={(e, val) => {
+            setEventLocation(val !== null ? val : "");
+            !router.query?.content &&
+              window.localStorage.setItem(
+                "event_location",
+                val !== null ? val : ""
+              );
           }}
         />
-        <div className="mt-4 mb-3">Prikazivanje na stranici:</div>
+        {/* <div className="mt-4">Program:</div>
+        <input
+          className="w-full rounded-lg mt-2"
+          placeholder="Npr. 'Predstava'"
+          value={eventType}
+          onChange={(e) => {
+            setEventType(e.target.value);
+            !router.query?.content &&
+              window.localStorage.setItem("event_type", e.target.value);
+          }}
+        /> */}
+        <Autocomplete
+          className="bg-secondary w-full rounded-lg mt-6"
+          freeSolo
+          options={eventTypes}
+          renderInput={(params) => <TextField {...params} label="Program" />}
+          value={eventType}
+          onChange={(e, val) => {
+            setEventType(val !== null ? val : "");
+            !router.query?.content &&
+              window.localStorage.setItem(
+                "event_type",
+                val !== null ? val : ""
+              );
+          }}
+        />
+        <div className="mt-4 mb-3">Datum i vrijeme eventa:</div>
         <LocalizationProvider dateAdapter={AdapterDateFns}>
           <div className="flex flex-col gap-4">
-            <MobileDatePicker
-              inputFormat="dd/MM/yyyy"
-              views={["day", "month", "year"]}
-              value={startShowing}
+            <DateTimePicker
+              inputFormat="dd/MM/yyyy HH:mm"
+              value={eventDate}
               toolbarTitle="Odaberite datum"
               className="bg-secondary rounded-lg"
-              label="Početak"
-              disabled={showAlways}
+              label="Odaberite datum"
               onChange={(value) => {
-                setStartShowing(value);
+                setEventDate(value);
                 !router.query?.content &&
-                  window.localStorage.setItem("editor_start_showing", value);
+                  window.localStorage.setItem("event_date", value);
               }}
               renderInput={(params) => <TextField {...params} />}
-            />
-            <MobileDatePicker
-              inputFormat="dd/MM/yyyy"
-              views={["day", "month", "year"]}
-              value={endShowing}
-              toolbarTitle="Odaberite datum"
-              className="bg-secondary rounded-lg"
-              label="Kraj"
-              disabled={showAlways}
-              onChange={(value) => {
-                setEndShowing(value);
-                !router.query?.content &&
-                  window.localStorage.setItem("editor_end_showing", value);
-              }}
-              renderInput={(params) => <TextField {...params} />}
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={showAlways}
-                  onChange={(e) => {
-                    setShowAlways(e.target.checked);
-                    !router.query?.content &&
-                      window.localStorage.setItem(
-                        "editor_show_always",
-                        e.target.checked
-                      );
-                  }}
-                />
-              }
-              label="Uvijek prikazuj"
             />
           </div>
         </LocalizationProvider>
-        {/* <div className="mt-4">Kategorija:</div> */}
-        <FormControl fullWidth className="mt-4 bg-secondary rounded-lg">
-          <InputLabel id="category-select">Kategorija</InputLabel>
-          <Select
-            labelId="category-select"
-            label="Kategorija"
-            value={category}
-            onChange={(e) => {
-              setCategory(e.target.value);
-              !router.query?.content &&
-                window.localStorage.setItem("editor_category", e.target.value);
-            }}
-          >
-            {categories?.map((item) => (
-              <MenuItem value={item.id}>{item.name}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        {/* <Select
-          items={categories?.map((item) => ({
-            text: item.name,
-            value: item.id,
-          }))}
-          value={category}
-          onChange={(value) => {
-            setCategory(value);
-            !router.query?.content &&
-              window.localStorage.setItem("editor_category", value);
-          }}
-          className="!w-full mt-2"
-          iconClassName="!ml-auto"
-        /> */}
         <div className="mt-4">Status:</div>
         <RadioGroup
           value={status}
           onChange={(e) => {
             setStatus(e.target.value);
             !router.query?.content &&
-              window.localStorage.setItem("editor_status", e.target.value);
+              window.localStorage.setItem("event_status", e.target.value);
           }}
         >
           <FormControlLabel
@@ -506,7 +464,7 @@ const Editor = () => {
             onChange={(value) => {
               setTitle(value);
               !router.query?.content &&
-                window.localStorage.setItem("editor_title", value);
+                window.localStorage.setItem("event_title", value);
             }}
           />
           {/* <QuillEditor
@@ -525,7 +483,7 @@ const Editor = () => {
               setContent(value);
               console.log("ql val: ", value);
               !router.query?.content &&
-                window.localStorage.setItem("editor_content", value);
+                window.localStorage.setItem("event_content", value);
             }}
             addImageToolbar={addImageToolbar}
             addYoutubeVideo={addYoutubeVideo}
