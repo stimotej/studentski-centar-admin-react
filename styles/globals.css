@@ -47,3 +47,9 @@ input::-webkit-calendar-picker-indicator {
     @apply outline-none px-3 py-2 bg-secondary;
   }
 }
+
+.MuiInputBase-root {
+  background-color: rgb(238, 238, 238) !important;
+  border-radius: 0.5rem;
+  width: 100%;
+}

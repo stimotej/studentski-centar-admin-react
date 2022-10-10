@@ -286,7 +286,7 @@ const Editor = () => {
       >
         <div className="mt-4">Slika eventa:</div>
         <button
-          className="mt-2 w-full bg-secondary rounded-lg text-black/50"
+          className="mt-2 w-full bg-secondary rounded-lg border border-black/20 hover:border-black text-black/60"
           onClick={() => setMediaDialog("featuredImage")}
         >
           {image?.src ? (
@@ -299,7 +299,7 @@ const Editor = () => {
               className="rounded-lg"
             />
           ) : (
-            <div className="py-3">Odaberi sliku</div>
+            <div className="py-4">Odaberi sliku</div>
           )}
         </button>
         {/* <div className="mt-4">Lokacija:</div>
@@ -314,7 +314,7 @@ const Editor = () => {
           }}
         /> */}
         <Autocomplete
-          className="bg-secondary w-full rounded-lg mt-6"
+          className="mt-6"
           freeSolo
           options={eventLocations}
           renderInput={(params) => <TextField {...params} label="Lokacija" />}
@@ -340,7 +340,7 @@ const Editor = () => {
           }}
         /> */}
         <Autocomplete
-          className="bg-secondary w-full rounded-lg mt-6"
+          className="mt-6"
           freeSolo
           options={eventTypes}
           renderInput={(params) => <TextField {...params} label="Program" />}
@@ -361,7 +361,6 @@ const Editor = () => {
               inputFormat="dd/MM/yyyy HH:mm"
               value={eventDate}
               toolbarTitle="Odaberite datum"
-              className="bg-secondary rounded-lg"
               label="Odaberite datum"
               onChange={(value) => {
                 setEventDate(value);
@@ -445,9 +444,7 @@ const Editor = () => {
           <TextField
             value={ytUrl}
             onChange={(e) => setYtUrl(e.target.value)}
-            variant="filled"
             label="Url"
-            className="w-full"
           />
         </Dialog>
       )}

@@ -103,13 +103,15 @@ const PrikazRestorana = ({ id, slika, naslov, opis }) => {
         htmlFor="image"
         className="relative w-full h-80 cursor-pointer rounded-xl shadow-md hover:shadow-lg transition-shadow"
       >
-        <Image
-          src={image ? URL.createObjectURL(image) : slika ? slika : ""}
-          alt="Slika restorana"
-          className="rounded-xl"
-          layout="fill"
-          objectFit="cover"
-        />
+        {(!!image || !!slika) && (
+          <Image
+            src={image ? URL.createObjectURL(image) : slika ? slika : ""}
+            alt="Slika restorana"
+            className="rounded-xl"
+            layout="fill"
+            objectFit="cover"
+          />
+        )}
       </label>
       <h4
         className="font-semibold pt-4 text-2xl"

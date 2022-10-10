@@ -41,6 +41,7 @@ import { useCategories } from "../../lib/api/categories";
 // import Select from "../../components/Elements/Select";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { MobileDatePicker } from "@mui/x-date-pickers/MobileDatePicker";
 import Select from "@mui/material/Select";
 
@@ -82,6 +83,7 @@ const Editor = () => {
   const [startShowing, setStartShowing] = useState(null);
   const [endShowing, setEndShowing] = useState(null);
   const [showAlways, setShowAlways] = useState(false);
+  const [eventDate, setEventDate] = useState(null);
 
   const [image, setImage] = useState(null);
 
@@ -100,6 +102,7 @@ const Editor = () => {
       setStartShowing(router.query.start_showing || null);
       setEndShowing(router.query.end_showing || null);
       setShowAlways(router.query.show_always === "true");
+      setEventDate(router.query.event_date || null);
     } else {
       setTitle(window.localStorage.getItem("editor_title") || "");
       setContent(window.localStorage.getItem("editor_content") || "");
@@ -116,6 +119,7 @@ const Editor = () => {
       setShowAlways(
         window.localStorage.getItem("editor_show_always") === "true"
       );
+      setEventDate(window.localStorage.getItem("editor_event_date") || null);
     }
   }, [categories]);
 
@@ -147,6 +151,7 @@ const Editor = () => {
     "editor_start_showing",
     "editor_end_showing",
     "editor_show_always",
+    "editor_event_date",
   ];
 
   const resetStoredPostAndState = () => {
@@ -163,6 +168,7 @@ const Editor = () => {
     setStartShowing(null);
     setEndShowing(null);
     setShowAlways(false);
+    setEventDate(null);
   };
 
   const handlePost = async () => {
@@ -179,6 +185,7 @@ const Editor = () => {
           startShowing: startShowing,
           endShowing: endShowing,
           showAlways: showAlways,
+          eventDate: eventDate,
         });
 
         let obavijestiCopy = [...obavijesti];
@@ -207,6 +214,7 @@ const Editor = () => {
           startShowing: startShowing,
           endShowing: endShowing,
           showAlways: showAlways,
+          eventDate: eventDate,
         });
 
         console.log("createdObavijest", createdObavijest);
@@ -304,7 +312,7 @@ const Editor = () => {
       >
         <div className="mt-4">Slika obavijesti:</div>
         <button
-          className="mt-2 w-full bg-secondary rounded-lg text-black/50"
+          className="mt-2 w-full bg-secondary rounded-lg border border-black/20 hover:border-black text-black/60"
           onClick={() => setMediaDialog("featuredImage")}
         >
           {image?.src ? (
@@ -315,15 +323,17 @@ const Editor = () => {
               height={image?.height || 50}
               layout="responsive"
               className="rounded-lg"
+              objectFit="cover"
             />
           ) : (
-            <div className="py-3">Odaberi sliku</div>
+            <div className="py-4">Odaberi sliku</div>
           )}
         </button>
-        <div className="mt-4">Opis:</div>
-        <textarea
-          className="w-full rounded-lg mt-2"
-          placeholder="Kratki opis obavijesti"
+        <TextField
+          className="w-full !mt-4"
+          label="Kratki opis obavijesti"
+          multiline
+          rows={4}
           value={description}
           onChange={(e) => {
             setDescription(e.target.value);
@@ -331,15 +341,31 @@ const Editor = () => {
               window.localStorage.setItem("editor_description", e.target.value);
           }}
         />
+        <FormControl fullWidth className="!mt-4">
+          <InputLabel id="category-select">Kategorija</InputLabel>
+          <Select
+            labelId="category-select"
+            label="Kategorija"
+            value={category}
+            onChange={(e) => {
+              setCategory(e.target.value);
+              !router.query?.content &&
+                window.localStorage.setItem("editor_category", e.target.value);
+            }}
+          >
+            {categories?.map((item) => (
+              <MenuItem value={item.id}>{item.name}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
         <div className="mt-4 mb-3">Prikazivanje na stranici:</div>
         <LocalizationProvider dateAdapter={AdapterDateFns}>
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col">
             <MobileDatePicker
               inputFormat="dd/MM/yyyy"
               views={["day", "month", "year"]}
               value={startShowing}
               toolbarTitle="Odaberite datum"
-              className="bg-secondary rounded-lg"
               label="Početak"
               disabled={showAlways}
               onChange={(value) => {
@@ -354,7 +380,7 @@ const Editor = () => {
               views={["day", "month", "year"]}
               value={endShowing}
               toolbarTitle="Odaberite datum"
-              className="bg-secondary rounded-lg"
+              className="!mt-4"
               label="Kraj"
               disabled={showAlways}
               onChange={(value) => {
@@ -365,6 +391,7 @@ const Editor = () => {
               renderInput={(params) => <TextField {...params} />}
             />
             <FormControlLabel
+              className="mt-1"
               control={
                 <Checkbox
                   checked={showAlways}
@@ -382,38 +409,23 @@ const Editor = () => {
             />
           </div>
         </LocalizationProvider>
-        {/* <div className="mt-4">Kategorija:</div> */}
-        <FormControl fullWidth className="mt-4 bg-secondary rounded-lg">
-          <InputLabel id="category-select">Kategorija</InputLabel>
-          <Select
-            labelId="category-select"
-            label="Kategorija"
-            value={category}
-            onChange={(e) => {
-              setCategory(e.target.value);
-              !router.query?.content &&
-                window.localStorage.setItem("editor_category", e.target.value);
-            }}
-          >
-            {categories?.map((item) => (
-              <MenuItem value={item.id}>{item.name}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        {/* <Select
-          items={categories?.map((item) => ({
-            text: item.name,
-            value: item.id,
-          }))}
-          value={category}
-          onChange={(value) => {
-            setCategory(value);
-            !router.query?.content &&
-              window.localStorage.setItem("editor_category", value);
-          }}
-          className="!w-full mt-2"
-          iconClassName="!ml-auto"
-        /> */}
+        <div className="mt-4 mb-3">Dodaj na kalendar:</div>
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <div className="flex flex-col gap-4">
+            <DateTimePicker
+              inputFormat="dd/MM/yyyy HH:mm"
+              value={eventDate}
+              toolbarTitle="Odaberite datum"
+              label="Odaberite datum"
+              onChange={(value) => {
+                setEventDate(value);
+                !router.query?.content &&
+                  window.localStorage.setItem("editor_event_date", value);
+              }}
+              renderInput={(params) => <TextField {...params} />}
+            />
+          </div>
+        </LocalizationProvider>
         <div className="mt-4">Status:</div>
         <RadioGroup
           value={status}
@@ -487,9 +499,7 @@ const Editor = () => {
           <TextField
             value={ytUrl}
             onChange={(e) => setYtUrl(e.target.value)}
-            variant="filled"
             label="Url"
-            className="w-full"
           />
         </Dialog>
       )}

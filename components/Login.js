@@ -5,6 +5,7 @@ import { MdArrowBack } from "react-icons/md";
 import Loader from "./Elements/Loader";
 import { login } from "../lib/api/auth";
 import { userGroups } from "../lib/constants";
+import { TextField } from "@mui/material";
 
 const Login = ({ from }) => {
   const [username, setUsername] = useState("");
@@ -82,27 +83,38 @@ const Login = ({ from }) => {
           Admin prijava
         </h4> */}
         {error && <span className="text-error mb-4">{error}</span>}
-        <form className="flex flex-col w-full" onSubmit={handleLogin}>
+        <form className="flex flex-col gap-4 w-full" onSubmit={handleLogin}>
           {/* <InputLabel text="Korisničko ime" /> */}
-          <input
-            type="text"
-            className={`px-4 py-2 rounded-lg mb-6 border border-black/50 focus:border-transparent focus:ring-1 ring-primary ${
-              error && "border border-error"
-            }`}
+          <TextField
             placeholder="Korisničko ime"
+            sx={{
+              "& .MuiOutlinedInput-root.Mui-focused": {
+                "& > fieldset": {
+                  borderColor:
+                    "rgba(var(--color-primary), var(--tw-bg-opacity))",
+                },
+              },
+            }}
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            error={error}
             required
           />
           {/* <InputLabel text="Lozinka" /> */}
-          <input
-            type="password"
-            className={`px-4 py-2 rounded-lg mb-6 border border-black/50 focus:border-transparent focus:ring-1 ring-primary ${
-              error && "border border-error"
-            }`}
+          <TextField
             placeholder="Lozinka"
+            sx={{
+              "& .MuiOutlinedInput-root.Mui-focused": {
+                "& > fieldset": {
+                  borderColor:
+                    "rgba(var(--color-primary), var(--tw-bg-opacity))",
+                },
+              },
+            }}
+            type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            error={error}
             required
           />
           <button

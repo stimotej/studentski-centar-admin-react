@@ -66,13 +66,18 @@ const Item = ({ obavijest, active, onClick, className, isEvent }) => {
                 {dayjs(obavijest.event_date).format("DD.MM.YYYY [u] HH:mm[h]")}
               </strong>
             </p>
-            <p className="text-sm">
-              Lokacija:{" "}
-              <span class="text-primary">{obavijest.event_location}</span>
-            </p>
-            <p className="text-sm">
-              Program: <span class="text-primary">{obavijest.event_type}</span>
-            </p>
+            {!!obavijest.event_location && (
+              <p className="text-sm">
+                Lokacija:{" "}
+                <span class="text-primary">{obavijest.event_location}</span>
+              </p>
+            )}
+            {!!obavijest.event_type && (
+              <p className="text-sm">
+                Program:{" "}
+                <span class="text-primary">{obavijest.event_type}</span>
+              </p>
+            )}
           </div>
         )}
         <p className="text-sm font-light my-2">{obavijest.description}</p>
@@ -82,7 +87,6 @@ const Item = ({ obavijest, active, onClick, className, isEvent }) => {
               {category} | {dayjs(obavijest.date).format("DD.MM.YYYY HH:mm[h]")}
             </p>
             <div className="text-sm">
-              {console.log("hhh", obavijest)}
               {obavijest.show_always ? (
                 <span class="text-orange-500">
                   Obavijest se uvijek prikazuje
@@ -98,6 +102,12 @@ const Item = ({ obavijest, active, onClick, className, isEvent }) => {
                   obavijest.end_showing
                 ).format("DD.MM.YYYY")}`}</span>
               )}
+              <p className="text-sm">
+                {!!obavijest.event_date &&
+                  `Datum na kalendaru: ${dayjs(obavijest.event_date).format(
+                    "DD.MM.YYYY HH:mm[h]"
+                  )}`}
+              </p>
             </div>
           </>
         )}

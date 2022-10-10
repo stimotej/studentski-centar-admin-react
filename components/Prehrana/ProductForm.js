@@ -209,9 +209,7 @@ const ProductForm = ({ product }) => {
           render={({ field }) => (
             <TextField
               {...field}
-              variant="filled"
               label="Naziv"
-              className="w-full"
               error={!!errors.name}
               helperText={errors.name && errors.name.message}
             />
@@ -225,11 +223,9 @@ const ProductForm = ({ product }) => {
           render={({ field }) => (
             <TextField
               {...field}
-              variant="filled"
               label="Opis"
               multiline
               minRows={3}
-              className="w-full"
               error={!!errors.description}
               helperText={errors.description && errors.description.message}
             />
@@ -254,7 +250,6 @@ const ProductForm = ({ product }) => {
           render={({ field }) => (
             <TextField
               {...field}
-              variant="filled"
               label="Cijena"
               type="number"
               InputProps={{
@@ -262,7 +257,6 @@ const ProductForm = ({ product }) => {
                   <InputAdornment position="end">HRK</InputAdornment>
                 ),
               }}
-              className="w-full"
               error={!!errors.price}
               helperText={errors.price && errors.price.message}
             />
@@ -274,13 +268,7 @@ const ProductForm = ({ product }) => {
           control={control}
           name="stockStatus"
           render={({ field }) => (
-            <TextField
-              {...field}
-              variant="filled"
-              label="Status zalihe"
-              select
-              className="w-full"
-            >
+            <TextField {...field} label="Status zalihe" select>
               <MenuItem value="instock">Na zalihi</MenuItem>
               <MenuItem value="outofstock">Nema na zalihi</MenuItem>
             </TextField>
@@ -295,9 +283,7 @@ const ProductForm = ({ product }) => {
             render={({ field }) => (
               <TextField
                 {...field}
-                variant="filled"
                 label="Alergeni"
-                className="w-full"
                 helperText="Unesite alergene odvojene zarezom"
               />
             )}
@@ -322,13 +308,11 @@ const ProductForm = ({ product }) => {
           render={({ field }) => (
             <TextField
               {...field}
-              variant="filled"
               label="Težina"
               type="number"
               InputProps={{
                 endAdornment: <InputAdornment position="end">g</InputAdornment>,
               }}
-              className="w-full"
               error={!!errors.weight}
               helperText={errors.weight && errors.weight.message}
             />

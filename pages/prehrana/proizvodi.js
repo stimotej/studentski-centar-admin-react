@@ -177,7 +177,7 @@ const Products = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Pretraži proizvode"
-              className="bg-background pl-2 pr-3 rounded"
+              className="pl-2 pr-3 !w-auto"
               startAdornment={
                 <InputAdornment position="start">
                   <FontAwesomeIcon icon={faMagnifyingGlass} className="mr-1" />
