@@ -50,6 +50,6 @@ input::-webkit-calendar-picker-indicator {
 
 .MuiInputBase-root {
   background-color: rgb(238, 238, 238) !important;
-  border-radius: 0.5rem;
+  border-radius: 0.5rem !important;
   width: 100%;
 }

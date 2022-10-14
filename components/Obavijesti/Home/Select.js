@@ -38,6 +38,7 @@ const Select = ({
               handleDelete={handleDelete}
               className="lg:hidden bg-white mb-8 shadow-lg rounded-lg"
               title={false}
+              isEvent={isEvent}
             />
           )}
         </div>

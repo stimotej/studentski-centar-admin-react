@@ -18,8 +18,9 @@ import { userGroups } from "../../lib/constants";
 import { deleteEvent, useEvents } from "../../lib/api/events";
 
 const Home = () => {
-  const { events, error, setEvents } = useEvents();
+  const { events: allEvents, error, setEvents } = useEvents();
 
+  const [events, setEventsState] = useState([]);
   const [event, setEvent] = useState(null);
   const [filteredEvents, setFilteredEvents] = useState([]);
 
@@ -42,6 +43,11 @@ const Home = () => {
   ];
 
   const router = useRouter();
+
+  useEffect(() => {
+    if (allEvents)
+      setEventsState(allEvents.filter((event) => !event.event_date));
+  }, [allEvents]);
 
   useEffect(() => {
     const token = window.localStorage.getItem("access_token");
@@ -110,11 +116,20 @@ const Home = () => {
   const handleDelete = async () => {
     setLoading(true);
     try {
-      const deletedEventId = await deleteEvent(deleteDialog.id);
+      const eventIds = allEvents
+        .filter((event) => event.event_id === deleteDialog.id.toString())
+        .map((event) => parseInt(event.id));
+      eventIds.push(deleteDialog.id);
+
+      await Promise.all(
+        eventIds.map((eventId) => {
+          return deleteEvent(eventId);
+        })
+      );
 
       let eventsCopy = [...events];
       const index = eventsCopy.findIndex(
-        (event) => event.id === deletedEventId
+        (event) => event.id === deleteDialog.id
       );
       eventsCopy.splice(index, 1);
       setEvents(eventsCopy, false);
@@ -160,7 +175,11 @@ const Home = () => {
               />
             </div>
           </div>
-          {events?.length > 0 ? (
+          {!error && !events ? (
+            <Loader className="w-10 h-10 mx-auto mt-12 border-primary" />
+          ) : error ? (
+            <div className="text-error mt-10">Greška kod učitavanja eventa</div>
+          ) : events.length > 0 ? (
             <ObavijestSelect
               obavijesti={
                 filteredEvents.length || search.length ? filteredEvents : events
@@ -170,14 +189,14 @@ const Home = () => {
               handleDelete={() => setDeleteDialog(event)}
               isEvent={true}
             />
-          ) : error ? (
-            <div className="text-error mt-10">Greška kod učitavanja eventa</div>
           ) : (
-            <Loader className="w-10 h-10 mx-auto mt-12 border-primary" />
+            <div className="text-gray-800 text-center mt-10">
+              Nema evenata za prikaz
+            </div>
           )}
         </div>
         <div className="flex-1 pl-5 hidden lg:block">
-          {events && (
+          {events?.length > 0 && (
             <ObavijestPreview
               obavijest={event}
               handleDelete={() => setDeleteDialog(event)}

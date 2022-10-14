@@ -22,13 +22,27 @@ import Layout from "../../components/Layout";
 import { createMedia, useMedia } from "../../lib/api/eventsMedia";
 import { userGroups } from "../../lib/constants";
 import Loader from "../../components/Elements/Loader";
-import { FormControlLabel, Radio, RadioGroup, TextField } from "@mui/material";
+import {
+  FormControlLabel,
+  IconButton,
+  Radio,
+  RadioGroup,
+  TextField,
+} from "@mui/material";
 import { useCategories } from "../../lib/api/categories";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
-import { createEvent, updateEvent, useEvents } from "../../lib/api/events";
+import {
+  createEvent,
+  deleteEvent,
+  updateEvent,
+  useEvents,
+} from "../../lib/api/events";
 import Autocomplete from "@mui/material/Autocomplete";
+import dayjs from "dayjs";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faXmark } from "@fortawesome/pro-regular-svg-icons";
 
 const Editor = () => {
   const [storedPostNote, setStoredPostNote] = useState(false);
@@ -65,8 +79,10 @@ const Editor = () => {
   const [status, setStatus] = useState("publish");
 
   const [eventLocation, setEventLocation] = useState("");
-  const [eventDate, setEventDate] = useState(null);
   const [eventType, setEventType] = useState("");
+
+  const [eventDate, setEventDate] = useState(null);
+  const [eventDates, setEventDates] = useState([]);
 
   const [image, setImage] = useState(null);
 
@@ -78,7 +94,7 @@ const Editor = () => {
       setImageId(router.query.imageId || "");
       setStatus(router.query.status || "publish");
       setEventLocation(router.query.event_location || "");
-      setEventDate(router.query.event_date || null);
+      setEventDates(router.query.event_dates.split(",") || []);
       setEventType(router.query.event_type || "");
     } else {
       setTitle(window.localStorage.getItem("event_title") || "");
@@ -86,7 +102,9 @@ const Editor = () => {
       setImageId(window.localStorage.getItem("event_image_id") || "");
       setStatus(window.localStorage.getItem("event_status") || "publish");
       setEventLocation(window.localStorage.getItem("event_location") || "");
-      setEventDate(window.localStorage.getItem("event_date") || null);
+      setEventDates(
+        window.localStorage.getItem("event_dates")?.split(",") || []
+      );
       setEventType(window.localStorage.getItem("event_type") || "");
     }
   }, [categories]);
@@ -115,7 +133,7 @@ const Editor = () => {
     "editor_image_src",
     "event_status",
     "event_location",
-    "event_date",
+    "event_dates",
     "event_type",
   ];
 
@@ -147,7 +165,7 @@ const Editor = () => {
     setImageId(0);
     setStatus("publish");
     setEventLocation("");
-    setEventDate(null);
+    setEventDates([]);
     setEventType("");
   };
 
@@ -155,25 +173,60 @@ const Editor = () => {
     setLoading(true);
     if (Object.keys(router.query).length) {
       try {
-        const updatedEvent = await updateEvent(router.query.id, {
+        const changedEvent = {
           title: title,
           content: content,
           imageId: imageId,
           status: status,
-          event_date: eventDate,
+          event_dates: eventDates
+            .map((date) => dayjs(date).toISOString())
+            .toString(),
           event_location: eventLocation,
           event_type: eventType,
-        });
+        };
+
+        const otherEvents = events.filter(
+          (event) => event.event_id === router.query.id
+        );
+
+        await updateEvent(router.query.id, changedEvent);
+
+        await Promise.all(
+          otherEvents.map((event) => {
+            return deleteEvent(event.id);
+          })
+        );
+
+        await Promise.all(
+          eventDates.map((date) => {
+            return createEvent({
+              ...changedEvent,
+              event_date: dayjs(date).toISOString(),
+              event_id: router.query.id,
+            });
+          })
+        );
+
+        // const updatedEvent = await updateEvent(router.query.id, {
+        //   title: title,
+        //   content: content,
+        //   imageId: imageId,
+        //   status: status,
+        //   event_date: eventDate,
+        //   event_location: eventLocation,
+        //   event_type: eventType,
+        // });
 
         let eventsCopy = [...events];
         const index = eventsCopy.findIndex(
-          (event) => event.id === updatedEvent.id
+          (event) => event.id === router.query.id
         );
-        eventsCopy[index] = updatedEvent;
+        eventsCopy[index] = router.query;
         setEvents(eventsCopy);
         toast.success("Uspješno spremljene promjene.");
       } catch (error) {
-        if (error.response.data.data.status === 403)
+        console.log("save error", error);
+        if (error?.response?.data?.data?.status === 403)
           toast.error("Nemate dopuštenje za uređivanje ovog eventa");
         else toast.error("Greška kod spremanja eventa");
       } finally {
@@ -181,22 +234,35 @@ const Editor = () => {
       }
     } else {
       try {
-        const createdEvent = await createEvent({
+        const newEvent = {
           title: title,
           content: content,
           imageId: imageId || 0,
           status: status,
-          event_date: eventDate,
+          event_dates: eventDates
+            .map((date) => dayjs(date).toISOString())
+            .toString(),
           event_location: eventLocation,
           event_type: eventType,
-        });
+        };
 
-        console.log("createdEvent", createdEvent);
+        const mainEvent = await createEvent(newEvent);
 
-        setEvents([...events, createdEvent]);
+        await Promise.all(
+          eventDates.map((date) => {
+            return createEvent({
+              ...newEvent,
+              event_date: dayjs(date).toISOString(),
+              event_id: mainEvent.id.toString(),
+            });
+          })
+        );
+
+        setEvents([...events, mainEvent]);
         resetStoredPostAndState();
         toast.success("Uspješno objavljen event.");
       } catch (error) {
+        console.log("Greška kod", error);
         toast.error("Greška kod objavljivanja eventa.");
       } finally {
         setLoading(false);
@@ -354,7 +420,7 @@ const Editor = () => {
               );
           }}
         />
-        <div className="mt-4 mb-3">Datum i vrijeme eventa:</div>
+        {/* <div className="mt-4 mb-3">Datum i vrijeme eventa:</div>
         <LocalizationProvider dateAdapter={AdapterDateFns}>
           <div className="flex flex-col gap-4">
             <DateTimePicker
@@ -369,6 +435,57 @@ const Editor = () => {
               }}
               renderInput={(params) => <TextField {...params} />}
             />
+          </div>
+        </LocalizationProvider> */}
+        <div className="mt-4 mb-3">Datumi eventa:</div>
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <div className="flex flex-col gap-4">
+            <DateTimePicker
+              inputFormat="dd/MM/yyyy HH:mm"
+              value={eventDate}
+              toolbarTitle="Dodaj datum"
+              label="Dodaj datum"
+              onAccept={(value) => {
+                setEventDates([...eventDates, value]);
+                !router.query?.content &&
+                  window.localStorage.setItem("event_dates", [
+                    ...eventDates,
+                    value,
+                  ]);
+              }}
+              onClose={() => setEventDate(null)}
+              onChange={(value) => {
+                setEventDate(value);
+              }}
+              renderInput={(params) => (
+                <TextField
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      setEventDates([...eventDates, eventDate]);
+                      setEventDate(null);
+                    }
+                  }}
+                  {...params}
+                />
+              )}
+            />
+          </div>
+          <div className="flex flex-col gap-1 mt-2">
+            {eventDates.length > 0 &&
+              eventDates.map((date) => (
+                <div className="flex items-center justify-between bg-secondary py-1 px-2 rounded-lg">
+                  <span>{dayjs(date).format("DD.MM.YYYY HH:mm[h]")}</span>
+                  <IconButton
+                    size="small"
+                    className="px-2"
+                    onClick={() => {
+                      setEventDates(eventDates.filter((item) => item !== date));
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faXmark} />
+                  </IconButton>
+                </div>
+              ))}
           </div>
         </LocalizationProvider>
         <div className="mt-4">Status:</div>

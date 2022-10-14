@@ -241,7 +241,11 @@ const Media = () => {
         </div>
       </div>
       <div className="flex flex-wrap px-2 sm:px-10 my-10">
-        {mediaList ? (
+        {!mediaList && !error ? (
+          <Loader className="w-10 h-10 mx-auto mt-12 border-primary" />
+        ) : error ? (
+          <div className="mt-10 text-error">Greška kod učitavanja medija</div>
+        ) : mediaList.length > 0 ? (
           (filteredMedia.length || search.length
             ? filteredMedia
             : mediaList
@@ -271,10 +275,10 @@ const Media = () => {
               </button>
             </div>
           ))
-        ) : error ? (
-          <div className="mt-10 text-error">Greška kod učitavanja medija</div>
         ) : (
-          <Loader className="w-10 h-10 mx-auto mt-12 border-primary" />
+          <div className="text-gray-800 text-center mt-10">
+            Nema medija za prikaz
+          </div>
         )}
       </div>
       {mediaDialog && (

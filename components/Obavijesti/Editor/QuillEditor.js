@@ -72,15 +72,17 @@ const Editor = ({
   );
 
   return (
-    <ReactQuill
-      ref={(el) => (reactQuillRef.current = el)}
-      value={value}
-      onChange={onChange}
-      className={`mt-4 ${className}`}
-      placeholder="Sadržaj..."
-      modules={modules}
-      formats={formats}
-    />
+    <>
+      <ReactQuill
+        ref={(el) => (reactQuillRef.current = el)}
+        value={value}
+        onChange={onChange}
+        className={`mt-4 ${className}`}
+        placeholder="Sadržaj..."
+        modules={modules}
+        formats={formats}
+      />
+    </>
   );
 };
 

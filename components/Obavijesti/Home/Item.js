@@ -61,9 +61,12 @@ const Item = ({ obavijest, active, onClick, className, isEvent }) => {
         {isEvent && (
           <div>
             <p className="text-sm">
-              Datum:{" "}
+              Datumi:{" "}
               <strong>
-                {dayjs(obavijest.event_date).format("DD.MM.YYYY [u] HH:mm[h]")}
+                {obavijest.event_dates
+                  .split(",")
+                  .map((date) => dayjs(date).format("DD.MM.YYYY [u] HH:mm[h]"))
+                  .join(", ")}
               </strong>
             </p>
             {!!obavijest.event_location && (

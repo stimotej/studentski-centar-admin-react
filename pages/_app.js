@@ -9,6 +9,10 @@ import "../styles/quill.css";
 import "react-quill/dist/quill.snow.css";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
+import dayjs from "dayjs";
+import minMax from "dayjs/plugin/minMax"; // load on demand
+
+dayjs.extend(minMax);
 
 // axios.defaults.baseURL = "https://unaprijedi.com/wp-json/wp/v2"
 axios.defaults.baseURL = "http://161.53.174.14/wp-json/wp/v2/";
