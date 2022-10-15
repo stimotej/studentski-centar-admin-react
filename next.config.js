@@ -1,5 +1,7 @@
 module.exports = {
   reactStrictMode: true,
+  basePath: "/zaposlenici",
+  assetPrefix: "/zaposlenici/",
   images: {
     domains: ["unaprijedi.com", "161.53.174.14"],
   },

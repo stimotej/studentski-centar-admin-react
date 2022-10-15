@@ -35,7 +35,13 @@ const Sidebar = ({ category }) => {
         } sm:flex flex-col items-center justify-between py-5 h-full w-20 shadow-lg`}
       >
         <div className="mx-4">
-          <Image src="/logo.svg" alt="SC Logo" width={1280} height={629} />
+          cd
+          <Image
+            src="/zaposlenici/logo.svg"
+            alt="SC Logo"
+            width={1280}
+            height={629}
+          />
         </div>
         <nav className="flex flex-col">
           {sidebarLinks[category].map((link, index) => (
