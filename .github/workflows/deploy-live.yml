@@ -1,0 +1,9 @@
+name: deploy-live
+run-name: Deploy Live
+on: [push]
+jobs:
+  deploy-live:
+    runs-on: ubuntu-latest
+    steps:
+      - run: npm run build
+      - run: pm2 restart zaposlenici
