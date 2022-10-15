@@ -472,8 +472,11 @@ const Editor = () => {
           </div>
           <div className="flex flex-col gap-1 mt-2">
             {eventDates.length > 0 &&
-              eventDates.map((date) => (
-                <div className="flex items-center justify-between bg-secondary py-1 px-2 rounded-lg">
+              eventDates.map((date, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between bg-secondary py-1 px-2 rounded-lg"
+                >
                   <span>{dayjs(date).format("DD.MM.YYYY HH:mm[h]")}</span>
                   <IconButton
                     size="small"

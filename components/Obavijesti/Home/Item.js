@@ -72,13 +72,13 @@ const Item = ({ obavijest, active, onClick, className, isEvent }) => {
             {!!obavijest.event_location && (
               <p className="text-sm">
                 Lokacija:{" "}
-                <span class="text-primary">{obavijest.event_location}</span>
+                <span className="text-primary">{obavijest.event_location}</span>
               </p>
             )}
             {!!obavijest.event_type && (
               <p className="text-sm">
                 Program:{" "}
-                <span class="text-primary">{obavijest.event_type}</span>
+                <span className="text-primary">{obavijest.event_type}</span>
               </p>
             )}
           </div>
@@ -91,17 +91,17 @@ const Item = ({ obavijest, active, onClick, className, isEvent }) => {
             </p>
             <div className="text-sm">
               {obavijest.show_always ? (
-                <span class="text-orange-500">
+                <span className="text-orange-500">
                   Obavijest se uvijek prikazuje
                 </span>
               ) : dayjs().isBefore(obavijest.start_showing) ? (
-                <span class="text-red-500">{`Obavijest se prikazuje od: ${dayjs(
+                <span className="text-red-500">{`Obavijest se prikazuje od: ${dayjs(
                   obavijest.start_showing
                 ).format("DD.MM.YYYY")}`}</span>
               ) : dayjs().isAfter(obavijest.end_showing) ? (
-                <span class="text-red-700">Obavijest se ne prikazuje</span>
+                <span className="text-red-700">Obavijest se ne prikazuje</span>
               ) : (
-                <span class="text-green-500">{`Obavijest se prikazuje do: ${dayjs(
+                <span className="text-green-500">{`Obavijest se prikazuje do: ${dayjs(
                   obavijest.end_showing
                 ).format("DD.MM.YYYY")}`}</span>
               )}

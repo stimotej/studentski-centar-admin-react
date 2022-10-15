@@ -28,7 +28,7 @@ var myToolbar = [
   ["image"], //add image here
 ];
 
-const dashboard = () => {
+const Dashboard = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [content, setContent] = useState("");
 
@@ -74,4 +74,4 @@ const dashboard = () => {
   );
 };
 
-export default dashboard;
+export default Dashboard;
