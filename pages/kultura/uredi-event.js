@@ -114,7 +114,7 @@ const Editor = () => {
       setImage(
         mediaList?.filter((media) => media.id === +router.query?.imageId)[0]
       );
-    else setImage({ src: window.localStorage.getItem("editor_image_src") });
+    else setImage({ src: window.localStorage.getItem("event_image_src") });
   }, [mediaList]);
 
   const [loading, setLoading] = useState(false);
@@ -127,10 +127,10 @@ const Editor = () => {
   const [selectedTab, setSelectedTab] = useState(0);
 
   const storedPostKeys = [
-    "editor_title",
-    "editor_content",
-    "editor_image_id",
-    "editor_image_src",
+    "event_title",
+    "event_content",
+    "event_image_id",
+    "event_image_src",
     "event_status",
     "event_location",
     "event_dates",
@@ -361,6 +361,7 @@ const Editor = () => {
               alt={image?.alt}
               width={image?.width || 50}
               height={image?.height || 50}
+              objectFit="cover"
               layout="responsive"
               className="rounded-lg"
             />
@@ -483,6 +484,14 @@ const Editor = () => {
                     className="px-2"
                     onClick={() => {
                       setEventDates(eventDates.filter((item) => item !== date));
+                      if (!router.query?.content) {
+                        eventDates.length - 1 > 0
+                          ? window.localStorage.setItem(
+                              "event_dates",
+                              eventDates.filter((item) => item !== date)
+                            )
+                          : window.localStorage.removeItem("event_dates");
+                      }
                     }}
                   >
                     <FontAwesomeIcon icon={faXmark} />
@@ -590,7 +599,7 @@ const Editor = () => {
             onChange={(value) => {
               setTitle(value);
               !router.query?.content &&
-                window.localStorage.setItem("editor_title", value);
+                window.localStorage.setItem("event_title", value);
             }}
             className="w-full mt-14 sm:mt-12 text-2xl bg-transparent font-semibold border-transparent focus:border-transparent focus:ring-0"
           /> */}

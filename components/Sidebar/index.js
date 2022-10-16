@@ -35,7 +35,6 @@ const Sidebar = ({ category }) => {
         } sm:flex flex-col items-center justify-between py-5 h-full w-20 shadow-lg`}
       >
         <div className="mx-4">
-          cd
           <Image
             src="/zaposlenici/logo.svg"
             alt="SC Logo"
