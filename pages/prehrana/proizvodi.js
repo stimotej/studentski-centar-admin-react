@@ -44,10 +44,6 @@ import axios from "axios";
 const Products = () => {
   const { products, error, loading, setProducts } = useProducts();
 
-  useEffect(() => {
-    console.log("ppppp", products);
-  }, [products]);
-
   const [selectedProducts, setSelectedProducts] = useState([]);
 
   const router = useRouter();

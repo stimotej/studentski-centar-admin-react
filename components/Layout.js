@@ -49,6 +49,20 @@ const Layout = ({ children }) => {
     },
   });
 
+  const themePoslovi = createTheme({
+    palette: {
+      primary: {
+        main: "rgb(86, 131, 154)",
+      },
+      secondary: {
+        main: "#424242",
+      },
+    },
+    shape: {
+      borderRadius: 8,
+    },
+  });
+
   return (
     <ThemeProvider
       theme={
@@ -56,6 +70,8 @@ const Layout = ({ children }) => {
           ? themePrehrana
           : category === "kultura"
           ? themeKultura
+          : category === "poslovi"
+          ? themePoslovi
           : themeObavijesti
       }
     >

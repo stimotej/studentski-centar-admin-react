@@ -20,26 +20,14 @@ import {
   updateMedia,
   useMedia,
 } from "../../lib/api/media";
-import { obavijestiCategoryId, userGroups } from "../../lib/constants";
+import { jobsCategoryId, userGroups } from "../../lib/constants";
 import axios from "axios";
 
 // const mediaUrl = "https://unaprijedi.com/wp-json/wp/v2/media";
 const mediaUrl = "http://161.53.174.14/wp-json/wp/v2/media";
 
 const Media = () => {
-  const { mediaList, error, setMediaList } = useMedia(obavijestiCategoryId);
-
-  useEffect(() => {
-    axios
-      .get(mediaUrl, {
-        params: {
-          per_page: 100,
-          page: 2,
-          timestamp: new Date().getTime(),
-        },
-      })
-      .then((response) => console.table(response.data));
-  }, []);
+  const { mediaList, error, setMediaList } = useMedia(jobsCategoryId);
 
   const [filteredMedia, setFilteredMedia] = useState([]);
 
@@ -74,8 +62,8 @@ const Media = () => {
     const token = window.localStorage.getItem("access_token");
     const username = window.localStorage.getItem("username");
 
-    if (!token || !userGroups["obavijesti"].includes(username))
-      router.push("/obavijesti/login");
+    if (!token || !userGroups["poslovi"].includes(username))
+      router.push("/poslovi/login");
   }, []);
 
   const handleSearch = (e) => {
@@ -134,7 +122,7 @@ const Media = () => {
           reader.result,
           selectedFile.type,
           selectedFile.name,
-          obavijestiCategoryId
+          jobsCategoryId
         );
 
         toast.success("Uspješno prenešena datoteka");
@@ -242,7 +230,11 @@ const Media = () => {
         </div>
       </div>
       <div className="flex flex-wrap px-2 sm:px-10 my-10">
-        {mediaList ? (
+        {!mediaList && !error ? (
+          <Loader className="w-10 h-10 mx-auto mt-12 border-primary" />
+        ) : error ? (
+          <div className="mt-10 text-error">Greška kod učitavanja medija</div>
+        ) : mediaList.length > 0 ? (
           (filteredMedia.length || search.length
             ? filteredMedia
             : mediaList
@@ -272,10 +264,10 @@ const Media = () => {
               </button>
             </div>
           ))
-        ) : error ? (
-          <div className="mt-10 text-error">Greška kod učitavanja medija</div>
         ) : (
-          <Loader className="w-10 h-10 mx-auto mt-12 border-primary" />
+          <div className="text-gray-800 text-center mt-10">
+            Nema medija za prikaz
+          </div>
         )}
       </div>
       {mediaDialog && (

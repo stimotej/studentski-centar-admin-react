@@ -19,15 +19,15 @@ import {
   deleteMedia,
   updateMedia,
   useMedia,
-} from "../../lib/api/eventsMedia";
-import { userGroups } from "../../lib/constants";
+} from "../../lib/api/media";
+import { eventsCategoryId, userGroups } from "../../lib/constants";
 import axios from "axios";
 
 // const mediaUrl = "https://unaprijedi.com/wp-json/wp/v2/media";
 const mediaUrl = "http://161.53.174.14/wp-json/wp/v2/media";
 
 const Media = () => {
-  const { mediaList, error, setMediaList } = useMedia();
+  const { mediaList, error, setMediaList } = useMedia(eventsCategoryId);
 
   useEffect(() => {
     axios
@@ -133,7 +133,8 @@ const Media = () => {
         const createdMedia = await createMedia(
           reader.result,
           selectedFile.type,
-          selectedFile.name
+          selectedFile.name,
+          eventsCategoryId
         );
 
         toast.success("Uspješno prenešena datoteka");

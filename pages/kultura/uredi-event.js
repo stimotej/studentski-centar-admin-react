@@ -6,9 +6,6 @@ import Sidebar from "../../components/Obavijesti/Editor/Sidebar";
 import dynamic from "next/dynamic";
 import { toast } from "react-toastify";
 import Dialog from "../../components/Elements/Dialog";
-import MediaSelect from "../../components/Obavijesti/MediaSelect";
-import Tabs, { Tab, Content } from "../../components/Elements/Tabs/Tabs";
-import MediaFileInput from "../../components/Elements/MediaFileInput";
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 const QuillEditor = dynamic(
   () => import("../../components/Obavijesti/Editor/QuillEditor"),
@@ -19,8 +16,8 @@ const QuillEditor = dynamic(
 );
 import StoredPostNote from "../../components/Obavijesti/Editor/StoredPostNote";
 import Layout from "../../components/Layout";
-import { createMedia, useMedia } from "../../lib/api/eventsMedia";
-import { userGroups } from "../../lib/constants";
+import { useMedia } from "../../lib/api/media";
+import { eventsCategoryId, userGroups } from "../../lib/constants";
 import Loader from "../../components/Elements/Loader";
 import {
   FormControlLabel,
@@ -43,6 +40,7 @@ import Autocomplete from "@mui/material/Autocomplete";
 import dayjs from "dayjs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/pro-regular-svg-icons";
+import MediaSelectDialog from "../../components/MediaSelectDialog";
 
 const Editor = () => {
   const [storedPostNote, setStoredPostNote] = useState(false);
@@ -71,7 +69,11 @@ const Editor = () => {
 
   const { events, error, setEvents } = useEvents();
   const { categories, error: errorCategories, setCategories } = useCategories();
-  const { mediaList, error: errorMedia, setMediaList } = useMedia();
+  const {
+    mediaList,
+    error: errorMedia,
+    setMediaList,
+  } = useMedia(eventsCategoryId);
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -118,13 +120,8 @@ const Editor = () => {
   }, [mediaList]);
 
   const [loading, setLoading] = useState(false);
-  const [addMediaLoading, setAddMediaLoading] = useState(false);
 
   const [mediaDialog, setMediaDialog] = useState(null);
-  const [selectedImage, setSelectedImage] = useState(null);
-
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [selectedTab, setSelectedTab] = useState(0);
 
   const storedPostKeys = [
     "event_title",
@@ -272,31 +269,6 @@ const Editor = () => {
 
   const handlePreview = () => {};
 
-  const handleAddMedia = async () => {
-    setAddMediaLoading(true);
-    var reader = new FileReader();
-    reader.onloadend = async () => {
-      try {
-        const createdMedia = await createMedia(
-          reader.result,
-          selectedFile.type,
-          selectedFile.name
-        );
-
-        toast.success("Uspješno prenešena datoteka");
-        setMediaList([...mediaList, createdMedia]);
-        setSelectedFile(null);
-        setSelectedTab(0);
-        setSelectedImage(createdMedia);
-      } catch (error) {
-        toast.error("Greška kod prijenosa datoteke");
-      } finally {
-        setAddMediaLoading(false);
-      }
-    };
-    reader.readAsArrayBuffer(selectedFile);
-  };
-
   // Add image to editor by changing src state
   const [src, setSrc] = useState(null);
 
@@ -304,25 +276,17 @@ const Editor = () => {
     setMediaDialog("contentImage");
   };
 
-  const handleSelectMedia = () => {
-    if (selectedTab === 0) {
-      if (selectedImage) {
-        if (mediaDialog === "featuredImage") {
-          setImage(selectedImage);
-          setImageId(selectedImage?.id);
-          if (!router.query?.content) {
-            window.localStorage.setItem("event_image_id", selectedImage?.id);
-            window.localStorage.setItem("event_image_src", selectedImage?.src);
-          }
-        } else if (mediaDialog === "contentImage")
-          // addImageToEditor(selectedImage.src);
-          setSrc(selectedImage.src);
-        setMediaDialog(null);
-        setSelectedImage(null);
+  const handleSelectMedia = (value) => {
+    if (mediaDialog === "featuredImage") {
+      setImage(value);
+      setImageId(value?.id);
+      if (!router.query?.content) {
+        window.localStorage.setItem("event_image_id", value?.id);
+        window.localStorage.setItem("event_image_src", value?.src);
       }
-    } else {
-      handleAddMedia();
-    }
+    } else if (mediaDialog === "contentImage")
+      // addImageToEditor(selectedImage.src);
+      setSrc(value.src);
   };
 
   const [ytModal, setYtModal] = useState(false);
@@ -521,44 +485,13 @@ const Editor = () => {
           />
         </RadioGroup>
       </Sidebar>
-      {mediaDialog && (
-        <Dialog
-          title="Odaberite sliku"
-          handleClose={() => {
-            setMediaDialog(null);
-            setSelectedFile(null);
-            setSelectedTab(0);
-            if (!image) setSelectedImage(null);
-            else setSelectedImage(image);
-          }}
-          actions
-          actionText={selectedTab === 0 ? "Odaberi" : "Prenesi"}
-          handleAction={handleSelectMedia}
-          loading={selectedTab === 1 && addMediaLoading}
-        >
-          <Tabs
-            value={selectedTab}
-            onTabChange={(tabId) => setSelectedTab(tabId)}
-          >
-            <Tab>Zbirka medija</Tab>
-            <Tab>Prenesi datoteku</Tab>
-            <Content>
-              <MediaSelect
-                mediaList={mediaList}
-                value={selectedImage}
-                onChange={(value) => setSelectedImage(value)}
-                onDoubleClick={handleSelectMedia}
-              />
-            </Content>
-            <Content>
-              <MediaFileInput
-                value={selectedFile}
-                onChange={(value) => setSelectedFile(value)}
-              />
-            </Content>
-          </Tabs>
-        </Dialog>
-      )}
+      <MediaSelectDialog
+        opened={mediaDialog}
+        onClose={() => setMediaDialog(false)}
+        value={image}
+        onSelect={handleSelectMedia}
+        categoryId={eventsCategoryId}
+      />
       {ytModal && (
         <Dialog
           title="YouTube video"
@@ -568,7 +501,6 @@ const Editor = () => {
           actions
           actionText={"Dodaj"}
           handleAction={handleAddYtVideo}
-          loading={selectedTab === 1 && addMediaLoading}
         >
           <TextField
             value={ytUrl}

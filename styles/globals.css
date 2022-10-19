@@ -27,6 +27,9 @@
   .theme-kultura {
     --color-primary: 207, 36, 42;
   }
+  .theme-poslovi {
+    --color-primary: 86, 131, 154;
+  }
 }
 
 @layer utilities {
