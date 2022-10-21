@@ -95,7 +95,7 @@ const Poslovi = () => {
                       banners.filter((item) => item !== banner)
                     );
                   }}
-                  className="flex items-center w-9 gap-1 bg-secondary hover:bg-gray-200 rounded-lg self-end"
+                  className="w-9 self-end"
                 >
                   <FontAwesomeIcon icon={faXmark} size="sm" />
                 </IconButton>

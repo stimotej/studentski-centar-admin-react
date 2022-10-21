@@ -1,11 +1,11 @@
 import {
   faCheck,
-  faCheckCircle,
   faMagnifyingGlass,
   faStar,
   faUpRightFromSquare,
   faXmark,
 } from "@fortawesome/pro-regular-svg-icons";
+import { faStar as faStarSolid } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   IconButton,
@@ -14,12 +14,14 @@ import {
   TableCell,
   Tooltip,
 } from "@mui/material";
+import axios from "axios";
 import dayjs from "dayjs";
 import { useRouter } from "next/router";
 import React from "react";
 import { useState } from "react";
 import { useEffect } from "react";
 import { MdAdd } from "react-icons/md";
+import { toast } from "react-toastify";
 import MyTable from "../../components/Elements/Table";
 import Header from "../../components/Header";
 import Layout from "../../components/Layout";
@@ -92,6 +94,27 @@ const SviPoslovi = () => {
         ?.toLowerCase()
         ?.includes(searchValue)
     );
+  };
+
+  const handleAllow = (e, jobId) => {
+    e.stopPropagation();
+    axios
+      .post("https://api.spajalica.hr/v2/jobs/admin/allow/" + jobId)
+      .then((res) => {
+        setJobs([...jobs.filter((item) => item.id !== jobId), res.data.job]);
+        toast.success("Uspješno ste dozvolili prikaz posla na stranici");
+      })
+      .catch((err) => toast.error("Greška kod potvrde posla"));
+  };
+
+  const handleFeatured = (e, jobId) => {
+    e.stopPropagation();
+    axios
+      .post("https://api.spajalica.hr/v2/jobs/admin/feature/" + jobId)
+      .then((res) => {
+        setJobs([...jobs.filter((item) => item.id !== jobId), res.data.job]);
+      })
+      .catch((err) => toast.error("Greška kod postavljanja istaknutog posla"));
   };
 
   return (
@@ -196,22 +219,32 @@ const SviPoslovi = () => {
               </TableCell>
               <TableCell>
                 <div className="flex gap-1 items-center">
-                  <Tooltip title="Dozvoli posao" arrow>
-                    <IconButton>
-                      <FontAwesomeIcon
-                        icon={faCheck}
-                        className="text-green-600"
-                        size="sm"
-                      />
-                    </IconButton>
-                  </Tooltip>
-                  <div className="h-5 w-px bg-gray-500 mx-1"></div>
+                  {!row.allowed_sc && (
+                    <>
+                      <Tooltip
+                        title={
+                          row.allowed_sc ? "Zabrani posao" : "Potvrdi posao"
+                        }
+                        arrow
+                      >
+                        <IconButton onClick={(e) => handleAllow(e, row.id)}>
+                          <FontAwesomeIcon
+                            icon={faCheck}
+                            className={"w-5 text-green-600"}
+                            size="sm"
+                          />
+                        </IconButton>
+                      </Tooltip>
+                      <div className="h-5 w-px bg-gray-500 mx-1"></div>
+                    </>
+                  )}
                   <Tooltip title="Otvori posao" arrow>
                     <IconButton
                       color="primary"
-                      onClick={() =>
-                        window.open(`http://161.53.174.14/posao/?id=${row.id}`)
-                      }
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.open(`http://161.53.174.14/posao/?id=${row.id}`);
+                      }}
                     >
                       <FontAwesomeIcon
                         icon={faUpRightFromSquare}
@@ -220,16 +253,23 @@ const SviPoslovi = () => {
                       />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title="Postavi kao istaknuti posao" arrow>
+                  <Tooltip
+                    title={
+                      row.featured_sc
+                        ? "Ukloni status istaknutog posla"
+                        : "Postavi kao istaknuti posao"
+                    }
+                    arrow
+                  >
                     <IconButton
                       color="primary"
-                      onClick={() =>
-                        window.open(`http://161.53.174.14/posao/?id=${row.id}`)
-                      }
+                      onClick={(e) => handleFeatured(e, row.id)}
                     >
                       <FontAwesomeIcon
-                        icon={faStar}
-                        className="text-gray-400"
+                        icon={row.featured_sc ? faStarSolid : faStar}
+                        className={
+                          row.featured_sc ? "text-[#FFDF00]" : "text-gray-400"
+                        }
                         size="sm"
                       />
                     </IconButton>
@@ -237,9 +277,15 @@ const SviPoslovi = () => {
                 </div>
               </TableCell>
               <TableCell>
-                <div className="py-2 px-4 bg-green-600 text-white font-semibold rounded-full text-center w-fit">
-                  Dozvoljen
-                </div>
+                {row.allowed_sc ? (
+                  <div className="py-2 px-4 text-green-600 font-semibold rounded-full text-center w-fit">
+                    Dozvoljen
+                  </div>
+                ) : (
+                  <div className="py-2 px-4 text-gray-600 font-semibold rounded-full text-center w-fit">
+                    Čeka dozvolu
+                  </div>
+                )}
               </TableCell>
             </>
           )}
