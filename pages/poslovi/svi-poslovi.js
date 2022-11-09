@@ -208,7 +208,7 @@ const SviPoslovi = () => {
           rowCells={(row) => (
             <>
               <TableCell>
-                <strong>{row.company.short_name}</strong>
+                <strong>{row?.company?.short_name || row?.company_name}</strong>
               </TableCell>
               <TableCell>{row.title}</TableCell>
               <TableCell>
@@ -278,11 +278,11 @@ const SviPoslovi = () => {
               </TableCell>
               <TableCell>
                 {row.allowed_sc ? (
-                  <div className="py-2 px-4 text-green-600 font-semibold rounded-full text-center w-fit">
+                  <div className="text-green-600 font-semibold rounded-full text-center w-fit">
                     Dozvoljen
                   </div>
                 ) : (
-                  <div className="py-2 px-4 text-gray-600 font-semibold rounded-full text-center w-fit">
+                  <div className="text-gray-600 font-semibold rounded-full text-center w-fit">
                     Čeka dozvolu
                   </div>
                 )}
