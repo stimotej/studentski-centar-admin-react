@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { toast } from "react-toastify";
 import { useRouter } from "next/router";
 import { MdAdd } from "react-icons/md";
 import {
@@ -14,11 +13,12 @@ import Select from "../../components/Elements/Select";
 import Loader from "../../components/Elements/Loader";
 import Dialog from "../../components/Elements/Dialog";
 import Layout from "../../components/Layout";
-import { deleteObavijest, useObavijesti } from "../../lib/api/obavijesti";
 import { userGroups } from "../../lib/constants";
+import { useDeleteObavijest, useObavijesti } from "../../features/obavijesti";
 
 const Home = () => {
-  const { obavijesti, error, setObavijesti } = useObavijesti();
+  const { data: obavijesti, isLoading, isError } = useObavijesti();
+  const setObavijesti = () => {};
 
   const [obavijest, setObavijest] = useState(null);
   const [filteredObavijesti, setFilteredObavijesti] = useState([]);
@@ -27,8 +27,6 @@ const Home = () => {
   const [sort, setSort] = useState("title_asc");
 
   const [deleteDialog, setDeleteDialog] = useState(null);
-
-  const [loading, setLoading] = useState(false);
 
   const sortSelect = [
     {
@@ -49,15 +47,11 @@ const Home = () => {
 
     if (!token || !userGroups["obavijesti"].includes(username))
       router.push("/obavijesti/login");
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (obavijesti) setObavijest(obavijesti[0]);
   }, [obavijesti]);
-
-  useEffect(() => {
-    if (error) console.log("err", error);
-  }, [error]);
 
   const handleSearch = (e) => {
     setSearch(e.target.value);
@@ -108,26 +102,15 @@ const Home = () => {
     }
   };
 
-  const handleDelete = async () => {
-    setLoading(true);
-    try {
-      const deletedObavijestId = await deleteObavijest(deleteDialog.id);
+  const { mutate: deleteObavijest, isLoading: isDeleting } =
+    useDeleteObavijest();
 
-      let obavijestiCopy = [...obavijesti];
-      const index = obavijestiCopy.findIndex(
-        (obavijest) => obavijest.id === deletedObavijestId
-      );
-      obavijestiCopy.splice(index, 1);
-      setObavijesti(obavijestiCopy, false);
-      toast.success("Uspješno obrisana obavijest");
-      setDeleteDialog(null);
-    } catch (error) {
-      if (error.response.data.data.status === 403)
-        toast.error("Nemate dopuštenje za brisanje ove obavijesti");
-      else toast.error("Greška kod brisanja obavijesti");
-    } finally {
-      setLoading(false);
-    }
+  const handleDelete = async () => {
+    deleteObavijest(deleteDialog.id, {
+      onSuccess: () => {
+        setDeleteDialog(null);
+      },
+    });
   };
 
   return (
@@ -161,7 +144,13 @@ const Home = () => {
               />
             </div>
           </div>
-          {obavijesti?.length > 0 ? (
+          {isLoading ? (
+            <Loader className="w-10 h-10 mx-auto mt-12 border-primary" />
+          ) : isError ? (
+            <div className="text-error mt-10">
+              Greška kod učitavanja obavijesti
+            </div>
+          ) : obavijesti?.length > 0 ? (
             <ObavijestSelect
               obavijesti={
                 filteredObavijesti.length || search.length
@@ -172,12 +161,8 @@ const Home = () => {
               onChange={(value) => setObavijest(value)}
               handleDelete={() => setDeleteDialog(obavijest)}
             />
-          ) : error ? (
-            <div className="text-error mt-10">
-              Greška kod učitavanja obavijesti
-            </div>
           ) : (
-            <Loader className="w-10 h-10 mx-auto mt-12 border-primary" />
+            <div className="text-error mt-10">Nema obavijesti za prikaz</div>
           )}
         </div>
         <div className="flex-1 pl-5 hidden lg:block">
@@ -195,7 +180,7 @@ const Home = () => {
             actions
             actionText="Obriši"
             handleAction={handleDelete}
-            loading={loading}
+            loading={isDeleting}
             small
           >
             <p>

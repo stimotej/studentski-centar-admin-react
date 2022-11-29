@@ -34,11 +34,13 @@ const SelectedActions = ({
           <span className="text-black text-opacity-50">Obriši</span>
         </button>
         {selected.length === 1 ? (
-          <Link href={{ pathname: linkTo, query: linkState }}>
-            <a className="flex items-center rounded-lg px-4 py-2 hover:bg-secondary/50">
-              <MdOutlineEdit className="mr-2 text-primary" size={22} />
-              <span className="text-black text-opacity-50">Uredi</span>
-            </a>
+          <Link
+            href={{ pathname: linkTo, query: linkState }}
+            passHref
+            className="flex items-center rounded-lg px-4 py-2 hover:bg-secondary/50"
+          >
+            <MdOutlineEdit className="mr-2 text-primary" size={22} />
+            <span className="text-black text-opacity-50">Uredi</span>
           </Link>
         ) : (
           <div />

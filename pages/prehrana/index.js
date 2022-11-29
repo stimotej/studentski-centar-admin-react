@@ -55,11 +55,13 @@ const Home = () => {
             Menu prikaz
           </h3>
           <div className="flex w-full mt-5 md:mt-8">
-            <Link href="/prehrana/menu-prikaz">
-              <a className="flex items-center justify-between bg-secondary transition-shadow shadow hover:shadow-lg rounded-xl p-4 w-full">
-                <span className="font-semibold">Prikaz menija</span>
-                <MdOutlinePlayArrow />
-              </a>
+            <Link
+              href="/prehrana/menu-prikaz"
+              passHref
+              className="flex items-center justify-between bg-secondary transition-shadow shadow hover:shadow-lg rounded-xl p-4 w-full"
+            >
+              <span className="font-semibold">Prikaz menija</span>
+              <MdOutlinePlayArrow />
             </Link>
           </div>
         </div>

@@ -192,11 +192,13 @@ const ProductForm = ({ product }) => {
 
   return (
     <div className="px-5 md:w-2/3 lg:w-1/2 mx-auto">
-      <Link href="/prehrana/proizvodi">
-        <a className="flex items-center font-semibold pt-12 mb-8">
-          <MdArrowBack className="mr-2" />
-          Povratak
-        </a>
+      <Link
+        href="/prehrana/proizvodi"
+        passHref
+        className="flex items-center font-semibold pt-12 mb-8"
+      >
+        <MdArrowBack className="mr-2" />
+        Povratak
       </Link>
       <h1 className="text-3xl font-semibold pb-10">
         {product ? "Uredi proizvod" : "Dodaj novi proizvod"}

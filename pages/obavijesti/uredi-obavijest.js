@@ -34,7 +34,6 @@ import {
   RadioGroup,
   TextField,
 } from "@mui/material";
-import { useCategories } from "../../lib/api/categories";
 // import Select from "../../components/Elements/Select";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -42,6 +41,11 @@ import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { MobileDatePicker } from "@mui/x-date-pickers/MobileDatePicker";
 import Select from "@mui/material/Select";
 import MediaSelectDialog from "../../components/MediaSelectDialog";
+import {
+  useCategories,
+  useCreateObavijest,
+  useUpdateObavijest,
+} from "../../features/obavijesti";
 
 const Editor = () => {
   const [storedPostNote, setStoredPostNote] = useState(false);
@@ -65,10 +69,9 @@ const Editor = () => {
         storedPostExists = false;
     });
     if (storedPostExists) setStoredPostNote(true);
-  }, []);
+  }, [router]);
 
-  const { obavijesti, error, setObavijesti } = useObavijesti();
-  const { categories, error: errorCategories, setCategories } = useCategories();
+  const { data: categories } = useCategories();
   const {
     mediaList,
     error: errorMedia,
@@ -123,7 +126,7 @@ const Editor = () => {
       );
       setEventDate(window.localStorage.getItem("editor_event_date") || null);
     }
-  }, [categories]);
+  }, [categories, router.query]);
 
   useEffect(() => {
     if (Object.keys(router.query).length)
@@ -131,9 +134,7 @@ const Editor = () => {
         mediaList?.filter((media) => media.id === +router.query?.imageId)[0]
       );
     else setImage({ src: window.localStorage.getItem("editor_image_src") });
-  }, [mediaList]);
-
-  const [loading, setLoading] = useState(false);
+  }, [mediaList, router.query]);
 
   const [mediaDialog, setMediaDialog] = useState(null);
 
@@ -168,63 +169,34 @@ const Editor = () => {
     setEventDate(null);
   };
 
+  // Update and create handlers
+
+  const { mutate: createObavijest, isLoading: isCreating } =
+    useCreateObavijest();
+  const { mutate: updateObavijest, isLoading: isUpdating } =
+    useUpdateObavijest();
+
   const handlePost = async () => {
-    setLoading(true);
-    if (Object.keys(router.query).length) {
-      try {
-        const updatedObavijest = await updateObavijest(router.query.id, {
-          title: title,
-          content: content,
-          description: description,
-          category: category,
-          status: status,
-          imageId: imageId,
-          startShowing: startShowing,
-          endShowing: endShowing,
-          showAlways: showAlways,
-          eventDate: eventDate,
-        });
-
-        let obavijestiCopy = [...obavijesti];
-        const index = obavijestiCopy.findIndex(
-          (obavijest) => obavijest.id === updatedObavijest.id
-        );
-        obavijestiCopy[index] = updatedObavijest;
-        setObavijesti(obavijestiCopy);
-        toast.success("Uspješno spremljene promjene.");
-      } catch (error) {
-        if (error.response.data.data.status === 403)
-          toast.error("Nemate dopuštenje za uređivanje ove obavijesti");
-        else toast.error("Greška kod spremanja obavijesti");
-      } finally {
-        setLoading(false);
-      }
-    } else {
-      try {
-        const createdObavijest = await createObavijest({
-          title: title,
-          content: content,
-          description: description,
-          category: category,
-          status: status,
-          imageId: imageId || 0,
-          startShowing: startShowing,
-          endShowing: endShowing,
-          showAlways: showAlways,
-          eventDate: eventDate,
-        });
-
-        console.log("createdObavijest", createdObavijest);
-
-        setObavijesti([...obavijesti, createdObavijest]);
-        resetStoredPostAndState();
-        toast.success("Uspješno objavljena obavijest.");
-      } catch (error) {
-        toast.error("Greška kod objavljivanja obavijesti.");
-      } finally {
-        setLoading(false);
-      }
-    }
+    const newPost = {
+      title: title,
+      content: content,
+      description: description,
+      category: category,
+      status: status,
+      imageId: imageId || 0,
+      startShowing: startShowing,
+      endShowing: endShowing,
+      showAlways: showAlways,
+      eventDate: eventDate,
+    };
+    if (Object.keys(router.query).length)
+      updateObavijest({ id: router.query.id, obavijest: newPost });
+    else
+      createObavijest(newPost, {
+        onSuccess: () => {
+          resetStoredPostAndState();
+        },
+      });
   };
 
   const handlePreview = () => {};
@@ -271,7 +243,7 @@ const Editor = () => {
       <Sidebar
         saveObavijest={router.query ? true : false}
         handlePost={handlePost}
-        loading={loading}
+        loading={isCreating || isUpdating}
         handlePreview={handlePreview}
       >
         <div className="mt-4">Slika obavijesti:</div>

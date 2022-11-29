@@ -527,7 +527,7 @@ const UrediPosao = () => {
             )}
           />
 
-          {/* LABELS */}
+          {/* SKILLS */}
           <Controller
             control={control}
             name="skills"
@@ -549,14 +549,14 @@ const UrediPosao = () => {
                   <TextField
                     {...params}
                     label="Obavezna znanja"
-                    placeholder="Favorites"
+                    placeholder="Unesi znanje"
                   />
                 )}
               />
             )}
           />
 
-          {/* SKILLS */}
+          {/* LABELS */}
           <Controller
             control={control}
             name="labels"
@@ -578,7 +578,7 @@ const UrediPosao = () => {
                   <TextField
                     {...params}
                     label="Poželjne vještine"
-                    placeholder="Favorites"
+                    placeholder="Unesi vještinu"
                   />
                 )}
               />

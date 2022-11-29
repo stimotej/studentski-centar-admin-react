@@ -108,6 +108,7 @@ const MenuList = () => {
               </Tooltip>
               {nSelected === 1 && (
                 <Link
+                  passHref
                   href={{
                     pathname: "/prehrana/dnevni-menu",
                     query: {

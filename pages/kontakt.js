@@ -66,11 +66,9 @@ const Contact = () => {
           <Button type="submit" text="POŠALJI" loading={loading} primary />
         </form>
       </div>
-      <Link href="/">
-        <a className="flex items-center font-semibold mt-8">
-          <MdArrowBack className="mr-2" />
-          Povratak na odabir kategorija
-        </a>
+      <Link href="/" passHref className="flex items-center font-semibold mt-8">
+        <MdArrowBack className="mr-2" />
+        Povratak na odabir kategorija
       </Link>
     </div>
   );

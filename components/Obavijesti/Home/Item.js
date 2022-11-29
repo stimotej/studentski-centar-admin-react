@@ -3,11 +3,11 @@ import Image from "next/image";
 import { useEffect } from "react";
 import { useState } from "react";
 import { MdOutlineImage } from "react-icons/md";
-import { useCategories } from "../../../lib/api/categories";
+import { useCategories } from "../../../features/obavijesti";
 import { obavijestiCategoryId } from "../../../lib/constants";
 
 const Item = ({ obavijest, active, onClick, className, isEvent }) => {
-  const { categories } = useCategories();
+  const { data: categories } = useCategories();
   const [category, setCategory] = useState("");
 
   useEffect(() => {
@@ -19,7 +19,7 @@ const Item = ({ obavijest, active, onClick, className, isEvent }) => {
         if (item.id === parseInt(postCategory)) setCategory(item.name);
       });
     }
-  }, [categories]);
+  }, [categories, isEvent, obavijest.categories]);
 
   return (
     <div
@@ -29,15 +29,13 @@ const Item = ({ obavijest, active, onClick, className, isEvent }) => {
       onClick={onClick}
     >
       {obavijest.image ? (
-        <div className="w-28 h-28 relative mr-4">
-          <Image
-            src={obavijest.image}
-            alt={obavijest.title}
-            layout="fill"
-            objectFit="cover"
-            className="rounded-lg"
-          />
-        </div>
+        <Image
+          src={obavijest.image}
+          alt={obavijest.title}
+          width={112}
+          height={112}
+          className="rounded-lg object-cover w-28 h-28 mr-4"
+        />
       ) : (
         <div className="w-28 mr-4">
           <MdOutlineImage className="w-24 h-24 text-black/50 mx-auto" />

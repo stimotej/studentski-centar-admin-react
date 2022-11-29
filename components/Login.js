@@ -66,6 +66,10 @@ const Login = ({ from }) => {
       setUsername("poslovi");
       setPassword("poslovilozinka");
     }
+    if (from.toLowerCase() === "smjestaj") {
+      setUsername("smjestaj");
+      setPassword("smjestajlozinka");
+    }
   };
 
   return (
@@ -101,7 +105,7 @@ const Login = ({ from }) => {
             }}
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            error={error}
+            error={!!error}
             required
           />
           {/* <InputLabel text="Lozinka" /> */}
@@ -118,7 +122,7 @@ const Login = ({ from }) => {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            error={error}
+            error={!!error}
             required
           />
           <button
@@ -138,11 +142,9 @@ const Login = ({ from }) => {
         </form>
       </div>
 
-      <Link href="/">
-        <a className="flex items-center font-semibold mt-12">
-          <MdArrowBack className="mr-2" />
-          Povratak na odabir kategorija
-        </a>
+      <Link href="/" className="flex items-center font-semibold mt-12" passHref>
+        <MdArrowBack className="mr-2" />
+        Povratak na odabir kategorija
       </Link>
     </section>
   );

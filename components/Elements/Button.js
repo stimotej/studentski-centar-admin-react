@@ -29,23 +29,24 @@ const Button = ({
   else style = `${baseStyle} bg-secondary text-black`;
 
   return link ? (
-    <Link href={{ pathname: to, query: state }}>
-      <a className={`${style} ${className}`} target={openInNewTab && "_blank"}>
-        {icon && (
-          <div className={!responsive && text ? "mr-2" : ""}>{icon}</div>
-        )}
-        <div
-          className={
-            responsive
-              ? text
-                ? "hidden sm:block sm:ml-2"
-                : "hidden sm:block"
-              : ""
-          }
-        >
-          {text}
-        </div>
-      </a>
+    <Link
+      href={{ pathname: to, query: state }}
+      passHref
+      className={`${style} ${className}`}
+      target={openInNewTab && "_blank"}
+    >
+      {icon && <div className={!responsive && text ? "mr-2" : ""}>{icon}</div>}
+      <div
+        className={
+          responsive
+            ? text
+              ? "hidden sm:block sm:ml-2"
+              : "hidden sm:block"
+            : ""
+        }
+      >
+        {text}
+      </div>
     </Link>
   ) : (
     <button

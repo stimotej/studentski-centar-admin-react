@@ -210,7 +210,11 @@ const SviPoslovi = () => {
               <TableCell>
                 <strong>{row?.company?.short_name || row?.company_name}</strong>
               </TableCell>
-              <TableCell>{row.title}</TableCell>
+              <TableCell>
+                <Tooltip title={row.title} arrow>
+                  <p className="line-clamp-1 w-40">{row.title}</p>
+                </Tooltip>
+              </TableCell>
               <TableCell>
                 {dayjs(row.created_at).format("DD.MM.YYYY [u] HH:mm[h]")}
               </TableCell>

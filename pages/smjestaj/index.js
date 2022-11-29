@@ -37,9 +37,9 @@ const Poslovi = () => {
       .catch((err) => setBannersError(err))
       .finally(() => setLoadingBanners(false));
 
-    if (!token || !userGroups["poslovi"].includes(username))
-      router.push("/poslovi/login");
-  }, [router]);
+    if (!token || !userGroups["smjestaj"].includes(username))
+      router.push("/smjestaj/login");
+  }, []);
 
   const handlePublishBanners = (bannerList) => {
     const token = window.localStorage.getItem("access_token");
@@ -99,14 +99,13 @@ const Poslovi = () => {
                 >
                   <FontAwesomeIcon icon={faXmark} size="sm" />
                 </IconButton>
-                <div className="flex w-auto h-[200px] rounded-md">
+                <div className="relative w-auto h-[200px] rounded-md">
                   {!!banner && (
                     <Image
                       src={banner}
-                      alt="Banner"
-                      className="rounded-lg w-full h-auto object-cover"
-                      width={240}
-                      height={120}
+                      layout="fill"
+                      objectFit="cover"
+                      className="rounded-lg"
                     />
                   )}
                 </div>

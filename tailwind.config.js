@@ -27,5 +27,5 @@ module.exports = {
       maxHeight: { 90: "90%" },
     },
   },
-  plugins: [],
+  plugins: [require("@tailwindcss/line-clamp")],
 };

@@ -12,17 +12,16 @@ const SidebarLink = ({ icon, to, button, onClick }) => {
       <div className="w-5 h-5">{icon}</div>
     </button>
   ) : (
-    <Link href={to}>
-      <a
-        onClick={onClick}
-        className={`p-3 my-1 rounded-lg ${
-          router.pathname === to
-            ? "bg-primary shadow shadow-obavijesti/50 text-white"
-            : "hover:bg-secondary text-black/60"
-        }`}
-      >
-        {icon}
-      </a>
+    <Link
+      href={to}
+      onClick={onClick}
+      className={`p-3 my-1 rounded-lg ${
+        router.pathname === to
+          ? "bg-primary shadow shadow-obavijesti/50 text-white"
+          : "hover:bg-secondary text-black/60"
+      }`}
+    >
+      {icon}
     </Link>
   );
 };
