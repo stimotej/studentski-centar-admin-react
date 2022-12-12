@@ -30,12 +30,12 @@ const LoginSelect = () => {
           text="Pregled i upravljanje poslova"
           link="/poslovi/login"
         />
-        <LoginCard
+        {/* <LoginCard
           theme="theme-smjestaj"
           title="Smještaj"
           text="Upravljanje obavijestima i domovima"
           link="/smjestaj/login"
-        />
+        /> */}
       </div>
       {/* <span className="font-light mb-5 px-6 text-center">
         Za sva pitanja, prijedloge za izmjenu, uočavanje grešaka u radu stustava
