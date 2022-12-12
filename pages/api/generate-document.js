@@ -5,7 +5,6 @@ import CompanyDocument from "../../components/CompanyDocument";
 const documentCategoryId = 163;
 
 export default async function handler(req, res) {
-  console.log("req", req.body);
   if (req.method !== "POST") {
     res.status(405).json({ message: `Method "${req.method}" not allowed` });
     return;
