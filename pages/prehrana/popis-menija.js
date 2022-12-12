@@ -2,23 +2,50 @@ import React, { useEffect, useState } from "react";
 import { MdAdd, MdOutlineVisibility } from "react-icons/md";
 import Header from "../../components/Header";
 import Layout from "../../components/Layout";
-import { useMenus } from "../../lib/api/menus";
-import { useProducts } from "../../lib/api/products";
 import { useRouter } from "next/router";
 import { userGroups } from "../../lib/constants";
 import MyTable from "../../components/Elements/Table";
-import { Button, IconButton, TableCell, Tooltip } from "@mui/material";
+import {
+  Button,
+  IconButton,
+  InputAdornment,
+  InputBase,
+  TableCell,
+  Tooltip,
+} from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrash, faPen } from "@fortawesome/pro-regular-svg-icons";
+import {
+  faTrash,
+  faPen,
+  faMagnifyingGlass,
+} from "@fortawesome/pro-regular-svg-icons";
 import Link from "next/link";
 import dayjs from "dayjs";
 import ChangeDateDialog from "../../components/Prehrana/Menus/ChangeDateDialog";
 import DeleteDialog from "../../components/Prehrana/Menus/DeleteDialog";
 import PreviewDialog from "../../components/Prehrana/Menus/PreviewDialog";
+import { useMenus } from "../../features/menus";
+import useDebounce from "../../lib/useDebounce";
 
 const MenuList = () => {
-  const { products } = useProducts();
-  const { menus, error, loading, setMenus } = useMenus();
+  const [page, setPage] = useState(1);
+  const [sort, setSort] = useState("date|asc");
+  const [search, setSearch] = useState("");
+
+  const debouncedSearch = useDebounce(search, 300);
+
+  const {
+    data: menus,
+    isLoading,
+    isError,
+    totalNumberOfItems,
+    itemsPerPage,
+  } = useMenus({
+    orderby: sort?.split("|")?.[0],
+    order: sort?.split("|")?.[1],
+    search: debouncedSearch,
+    page,
+  });
 
   const [selectedMenus, setSelectedMenus] = useState([]);
 
@@ -44,22 +71,22 @@ const MenuList = () => {
 
   const headCells = [
     {
-      id: "date",
+      id: "menu_date",
       sort: true,
       label: "Datum",
     },
     {
-      id: "createdAt",
+      id: "date",
       sort: true,
       label: "Kreirano",
     },
     {
-      id: "updatedAt",
+      id: "modified",
       sort: true,
       label: "Uređeno",
     },
     {
-      id: "change-date",
+      id: "change_date",
       sort: false,
       label: "Promijeni datum",
     },
@@ -89,11 +116,48 @@ const MenuList = () => {
           onSelectionChange={(selected) => setSelectedMenus(selected)}
           defaultOrder="asc"
           defaultOrderBy="date"
-          // containerClassName="mt-6"
-          // enableRowSelect={false}
-          // displayToolbar={false}
+          error={isError}
+          errorMessage="Greška kod dohvaćanja menija"
+          rowsPerPage={itemsPerPage}
+          totalNumberOfItems={totalNumberOfItems}
+          enableSelectAll={false}
+          onChangePage={(nextPage) => {
+            console.log(nextPage);
+            setPage(nextPage + 1);
+          }}
+          customSort
+          onChangeSort={(field, order) => {
+            setSort([field, order].join("|"));
+          }}
           noDataText="Nema menija za prikaz"
-          loading={loading}
+          loading={isLoading}
+          titleComponent={
+            <InputBase
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Pretraži proizvode"
+              className="pl-2 pr-3 !w-auto"
+              startAdornment={
+                <InputAdornment position="start">
+                  <FontAwesomeIcon icon={faMagnifyingGlass} className="mr-1" />
+                </InputAdornment>
+              }
+              endAdornment={
+                search.length > 0 && (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setSearch("")}
+                      edge="end"
+                      className="text-sm w-8 aspect-square"
+                    >
+                      <FontAwesomeIcon icon={faXmark} />
+                    </IconButton>
+                  </InputAdornment>
+                )
+              }
+            />
+          }
           selectedAction={(nSelected) => (
             <div className="flex gap-3 mr-3">
               <Tooltip

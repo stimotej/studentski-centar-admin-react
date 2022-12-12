@@ -4,8 +4,6 @@ import Image from "next/image";
 import Header from "../../components/Obavijesti/Editor/Header";
 import Sidebar from "../../components/Obavijesti/Editor/Sidebar";
 import dynamic from "next/dynamic";
-import { toast } from "react-toastify";
-import Dialog from "../../components/Elements/Dialog";
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 const QuillEditor = dynamic(
   () => import("../../components/Obavijesti/Editor/QuillEditor"),
@@ -16,12 +14,6 @@ const QuillEditor = dynamic(
 );
 import StoredPostNote from "../../components/Obavijesti/Editor/StoredPostNote";
 import Layout from "../../components/Layout";
-import {
-  createObavijest,
-  updateObavijest,
-  useObavijesti,
-} from "../../lib/api/obavijesti";
-import { useMedia } from "../../lib/api/media";
 import { obavijestiCategoryId, userGroups } from "../../lib/constants";
 import Loader from "../../components/Elements/Loader";
 import {
@@ -46,6 +38,7 @@ import {
   useCreateObavijest,
   useUpdateObavijest,
 } from "../../features/obavijesti";
+import MyDialog from "../../components/Elements/MyDialog";
 
 const Editor = () => {
   const [storedPostNote, setStoredPostNote] = useState(false);
@@ -72,11 +65,6 @@ const Editor = () => {
   }, [router]);
 
   const { data: categories } = useCategories();
-  const {
-    mediaList,
-    error: errorMedia,
-    setMediaList,
-  } = useMedia(obavijestiCategoryId);
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -98,6 +86,7 @@ const Editor = () => {
         (item) => parseInt(item) !== obavijestiCategoryId
       );
       console.log("adsasd", router.query);
+      setImage({ src: router.query.image } || null);
       setTitle(router.query.title || "");
       setContent(router.query.content || "");
       setDescription(router.query.description || "");
@@ -109,6 +98,9 @@ const Editor = () => {
       setShowAlways(router.query.show_always === "true");
       setEventDate(router.query.event_date || null);
     } else {
+      setImage(
+        { src: window.localStorage.getItem("editor_image_src") } || null
+      );
       setTitle(window.localStorage.getItem("editor_title") || "");
       setContent(window.localStorage.getItem("editor_content") || "");
       setDescription(window.localStorage.getItem("editor_description") || "");
@@ -127,14 +119,6 @@ const Editor = () => {
       setEventDate(window.localStorage.getItem("editor_event_date") || null);
     }
   }, [categories, router.query]);
-
-  useEffect(() => {
-    if (Object.keys(router.query).length)
-      setImage(
-        mediaList?.filter((media) => media.id === +router.query?.imageId)[0]
-      );
-    else setImage({ src: window.localStorage.getItem("editor_image_src") });
-  }, [mediaList, router.query]);
 
   const [mediaDialog, setMediaDialog] = useState(null);
 
@@ -226,7 +210,6 @@ const Editor = () => {
   const [videoId, setVideoId] = useState("");
 
   const addYoutubeVideo = () => {
-    console.log("yt");
     setYtModal(true);
   };
 
@@ -392,23 +375,21 @@ const Editor = () => {
         onSelect={handleSelectMedia}
         categoryId={obavijestiCategoryId}
       />
-      {ytModal && (
-        <Dialog
-          title="YouTube video"
-          handleClose={() => {
-            setYtModal(false);
-          }}
-          actions
-          actionText={"Dodaj"}
-          handleAction={handleAddYtVideo}
-        >
-          <TextField
-            value={ytUrl}
-            onChange={(e) => setYtUrl(e.target.value)}
-            label="Url"
-          />
-        </Dialog>
-      )}
+      <MyDialog
+        opened={ytModal}
+        setOpened={setYtModal}
+        title="YouTube video"
+        actionTitle={"Dodaj"}
+        onClick={handleAddYtVideo}
+      >
+        <TextField
+          value={ytUrl}
+          onChange={(e) => setYtUrl(e.target.value)}
+          label="Url"
+          className="mt-2"
+          fullWidth
+        />
+      </MyDialog>
       <div className="pr-0 lg:pr-72">
         <div className="px-5 py-10 md:p-12">
           <ReactQuill

@@ -27,22 +27,29 @@ const Preview = ({
         <Button
           link
           text="Uredi"
+          variant="outlined"
+          // color="secondary"
           icon={<MdOutlineEdit />}
-          to={isEvent ? "kultura/uredi-event" : "/obavijesti/uredi-obavijest"}
+          to={isEvent ? "/kultura/uredi-event" : "/obavijesti/uredi-obavijest"}
           state={obavijest}
         />
         <Button
-          text="Obriši"
-          icon={<MdOutlineDelete />}
-          onClick={handleDelete}
-          className="ml-4"
-        />
-        <Button
           text="Otvori"
+          variant="outlined"
+          // color="secondary"
           icon={<MdOpenInNew />}
           link
           openInNewTab
           to={obavijest?.link}
+          className="ml-4"
+        />
+        <Button
+          text="Obriši"
+          variant="outlined"
+          color="error"
+          // color="secondary"
+          icon={<MdOutlineDelete />}
+          onClick={handleDelete}
           className="ml-4"
         />
       </div>

@@ -7,46 +7,27 @@ import {
   DialogTitle,
   IconButton,
 } from "@mui/material";
-import { deleteMenu, useMenus } from "../../../lib/api/menus";
 import { toast } from "react-toastify";
 import LoadingButton from "@mui/lab/LoadingButton";
 import { faXmark } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useState } from "react";
 import clsx from "clsx";
+import { useDeleteMenu } from "../../../features/menus";
 
 const DeleteDialog = ({ deleteModal, setDeleteModal, selectedMenus }) => {
-  const { menus, error, loading, setMenus } = useMenus();
-
-  const [deleteLoading, setDeleteLoading] = useState(false);
-
-  const deleteMenusState = (menuIds) => {
-    let menusCopy = [...menus];
-    let index = 0;
-    menuIds.forEach((id) => {
-      index = menusCopy.findIndex((menu) => menu._id === id);
-      menusCopy.splice(index, 1);
-    });
-    setMenus(menusCopy);
-  };
+  const { mutateAsync: deleteMenu, isLoading: isDeleting } =
+    useDeleteMenu(false);
 
   const handleDelete = () => {
-    setDeleteLoading(true);
-
     let requests = selectedMenus.map((menuId) => deleteMenu(menuId));
 
     Promise.all(requests)
       .then((res) => {
         toast.success(`Uspješno obrisano ${selectedMenus.length} menija`);
-        deleteMenusState(selectedMenus);
+        setDeleteModal(false);
       })
       .catch((error) => {
         toast.error("Greška kod brisanja menija");
-        console.log(error);
-      })
-      .finally(() => {
-        setDeleteLoading(false);
-        setDeleteModal(false);
       });
   };
   return (
@@ -79,9 +60,9 @@ const DeleteDialog = ({ deleteModal, setDeleteModal, selectedMenus }) => {
           Odustani
         </Button>
         <LoadingButton
-          loading={deleteLoading}
+          loading={isDeleting}
           onClick={handleDelete}
-          className={clsx(!deleteLoading && "!text-error hover:!bg-error/5")}
+          className={clsx(!isDeleting && "!text-error hover:!bg-error/5")}
         >
           Obriši
         </LoadingButton>

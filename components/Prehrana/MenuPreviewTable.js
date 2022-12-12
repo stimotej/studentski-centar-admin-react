@@ -35,7 +35,7 @@ const MenuPreviewTable = ({ title, menu, products, className, fields }) => {
                       key={index}
                     >
                       {product?.name || (
-                        <div className="text-error">Proizvod uklonjen</div>
+                        <div className="text-error">Proizvod je uklonjen</div>
                       )}
                       {product?.stock === "outofstock" && (
                         <HiOutlineExclamationCircle className="w-5 h-5 mr-1 text-error" />

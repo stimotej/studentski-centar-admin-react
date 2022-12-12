@@ -1,6 +1,7 @@
 import React from "react";
 import Button from "../../Elements/Button";
 import { MdClose } from "react-icons/md";
+import { IconButton } from "@mui/material";
 
 const StoredPostNote = ({ text, handleReset, handleClose }) => {
   return (
@@ -13,12 +14,12 @@ const StoredPostNote = ({ text, handleReset, handleClose }) => {
           onClick={handleReset}
           primary
         />
-        <Button
-          icon={<MdClose />}
-          className="ml-2 bg-transparent shadow-none hover:bg-white/30 hover:shadow-none"
+        <IconButton
+          className="ml-2 bg-transparent text-white shadow-none hover:bg-white/30 hover:shadow-none"
           onClick={handleClose}
-          primary
-        />
+        >
+          <MdClose />
+        </IconButton>
       </div>
     </div>
   );

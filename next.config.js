@@ -1,4 +1,6 @@
-module.exports = {
+const withFonts = require("nextjs-fonts");
+
+module.exports = withFonts({
   reactStrictMode: true,
   basePath: "/zaposlenici",
   assetPrefix: "/zaposlenici/",
@@ -25,4 +27,4 @@ module.exports = {
     PUSHER_SECRET: "9311f17b7b7e9c82f52f",
     PUSHER_CLUSTER: "eu",
   },
-};
+});

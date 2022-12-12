@@ -1,29 +1,51 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  useInfiniteQuery,
+} from "@tanstack/react-query";
 import axios from "axios";
 import { obavijestiCategoryId } from "../../lib/constants";
 import formatObavijest from "./format";
 import obavijestiKeys from "./queries";
 import { toast } from "react-toastify";
+import { useRef } from "react";
 
-export const useObavijesti = (options) => {
-  return useQuery(
-    obavijestiKeys.obavijesti,
-    async () => {
+export const useObavijesti = (filters, options) => {
+  const postsPerPage = 10;
+  const totalPages = useRef(0);
+
+  return useInfiniteQuery(
+    obavijestiKeys.obavijestiFiltered(filters),
+    async ({ pageParam }) => {
       const response = await axios.get(
         "http://161.53.174.14/wp-json/wp/v2/posts",
         {
           params: {
             categories: obavijestiCategoryId,
-            per_page: 100,
+            orderby: filters?.orderby,
+            order: filters?.order,
+            search: filters?.search,
+            per_page: postsPerPage,
+            page: pageParam,
             timestamp: new Date().getTime(),
             status: ["publish", "draft"],
           },
         }
       );
+      totalPages.current = response.headers?.["x-wp-totalpages"];
       return response.data;
     },
     {
-      select: (data) => data.map((item) => formatObavijest(item)),
+      select: (data) => ({
+        ...data,
+        pages: data.pages.map((page) =>
+          page.map((obavijest) => formatObavijest(obavijest))
+        ),
+      }),
+      getNextPageParam: (lastPage, pages) => {
+        if (pages.length + 1 <= totalPages.current) return pages.length + 1;
+      },
       ...options,
     }
   );

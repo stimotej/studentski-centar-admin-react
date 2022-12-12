@@ -10,19 +10,16 @@ import Header from "../../components/Header";
 import { MdOutlineSaveAlt } from "react-icons/md";
 import DateInput from "../../components/Elements/DateInput";
 import Layout from "../../components/Layout";
-import { createMenu, updateMenu, useMenus } from "../../lib/api/menus";
-import {
-  getMenuProducts,
-  updateMultipleProducts,
-  useProducts,
-} from "../../lib/api/products";
 import { updateRestaurant, useRestaurant } from "../../lib/api/restaurant";
 import { userGroups } from "../../lib/constants";
 import LoadingButton from "@mui/lab/LoadingButton";
+import { useCreateMenu, useMenus, useUpdateMenu } from "../../features/menus";
+import { useUpdateRestaurant } from "../../features/restaurant";
+import { useProducts } from "../../features/products";
 
 const NewDnevniMenu = () => {
-  const { products, error: errorProducts, setProducts } = useProducts();
-  const { menus, error: errorMenus, setMenus } = useMenus();
+  const { data: products, isError: errorProducts } = useProducts();
+  const { data: menus, isError: errorMenus } = useMenus();
 
   const router = useRouter();
 
@@ -35,10 +32,6 @@ const NewDnevniMenu = () => {
   const [menu, setMenu] = useState(null);
 
   const [selectedMenu, setSelectedMenu] = useState("dorucak-menu");
-
-  const [saveLoading, setSaveLoading] = useState(false);
-
-  const [saveSiteLoading, setSaveSiteLoading] = useState(false);
 
   let postTags = [];
   const postTagsMap = useRef({
@@ -94,22 +87,6 @@ const NewDnevniMenu = () => {
     const index = activeMenu.findIndex((id) => id === productId);
     activeMenu.splice(index, 1);
     setMenu(menuCopy);
-  };
-
-  const formatSiteMenu = (siteMenu) => {
-    const mealName = siteMenu.name.split("-")[0];
-    const menuName = siteMenu.name.split("-")[1];
-    return {
-      id: siteMenu.id,
-      meta_data: [
-        {
-          key: "woosb_ids",
-          value:
-            menu[mealName] &&
-            menu[mealName][menuName]?.map((id) => `${id}/1`).toString(),
-        },
-      ],
-    };
   };
 
   const formatMenuItems = (products, mealName) => {
@@ -168,73 +145,43 @@ const NewDnevniMenu = () => {
     return formated;
   };
 
+  const { mutate: createMenu, isLoading: isCreating } = useCreateMenu();
+  const { mutate: updateMenu, isLoading: isUpdating } = useUpdateMenu();
+
   const handleSaveMenu = async () => {
-    if (date) {
-      setSaveLoading(true);
-      if (menu?.id) {
-        try {
-          const updatedMenu = await updateMenu(menu.id, menu);
-
-          toast.success("Uspješno spremljene promijenjene menija");
-
-          let menusCopy = [...menus];
-          let index = menusCopy.findIndex((item) =>
-            compareDates(item.date, updatedMenu.date)
-          );
-          menusCopy[index] = updatedMenu;
-          setMenus(menusCopy);
-        } catch (error) {
-          toast.error(`Greška kod spremanja menija`);
-        } finally {
-          setSaveLoading(false);
-        }
-      } else {
-        try {
-          const createdMenu = await createMenu({
-            date: date,
-            dorucak: menu?.dorucak || {},
-            rucak: menu?.rucak || {},
-            vecera: menu?.vecera || {},
-            ostalo: menu?.ostalo || {},
-          });
-
-          toast.success("Uspješno spremljen menu");
-          let menusCopy = [...menus];
-          menusCopy.push(createdMenu);
-          setMenus(menusCopy);
-        } catch (error) {
-          toast.error(`Greška kod spremanja menija`);
-        } finally {
-          setSaveLoading(false);
-        }
-      }
-    } else {
+    if (!date) {
       toast.error("Odaberite datum");
+      return;
+    }
+
+    if (menu?.id) {
+      updateMenu({ id: menu.id, ...menu });
+    } else {
+      createMenu({
+        menu_date: date,
+        dorucak: menu?.dorucak || {},
+        rucak: menu?.rucak || {},
+        vecera: menu?.vecera || {},
+        ostalo: menu?.ostalo || {},
+      });
     }
   };
 
+  const { mutate: updateRestaurant, isLoading: isUpdatingRestaurant } =
+    useUpdateRestaurant();
+
   const handleSaveSite = async () => {
-    setSaveSiteLoading(true);
-    try {
-      await updateRestaurant({
+    updateRestaurant(
+      {
         meta: formatMenu(menu),
         tags: postTags,
-      });
-
-      toast.success(`Menu uspješno objavljen na stranicu`);
-
-      // const menuProducts = await getMenuProducts();
-
-      // const res = await updateMultipleProducts({
-      //   update: menuProducts.map((group) => formatSiteMenu(group)),
-      // });
-    } catch (error) {
-      console.log("err", error);
-      toast.error(`Greška kod objavljivanja menija na stranicu`);
-    } finally {
-      postTags = [];
-      setSaveSiteLoading(false);
-    }
+      },
+      {
+        onSettled: () => {
+          postTags = [];
+        },
+      }
+    );
   };
 
   useEffect(() => {
@@ -252,8 +199,8 @@ const NewDnevniMenu = () => {
         title="Dnevni menu"
         text="Spremi"
         icon={<MdOutlineSaveAlt />}
-        loading={saveLoading}
-        disabled={saveLoading}
+        loading={isCreating || isUpdating}
+        disabled={isCreating || isUpdating}
         onClick={handleSaveMenu}
         primary
         responsive
@@ -287,7 +234,7 @@ const NewDnevniMenu = () => {
             // />
             <LoadingButton
               variant="outlined"
-              loading={saveSiteLoading}
+              loading={isUpdatingRestaurant}
               onClick={handleSaveSite}
             >
               Objavi na stranicu

@@ -7,11 +7,7 @@ import {
 } from "react-icons/md";
 import Header from "../../components/Header";
 import Layout from "../../components/Layout";
-import {
-  createProduct,
-  updateProduct,
-  useProducts,
-} from "../../lib/api/products";
+import { createProduct, updateProduct } from "../../lib/api/products";
 import { useRouter } from "next/router";
 import { userGroups } from "../../lib/constants";
 import Script from "next/script";
@@ -39,10 +35,28 @@ import replaceCroatian from "../../lib/replaceCroatian";
 import LoadingButton from "@mui/lab/LoadingButton";
 import DeleteDialog from "../../components/Prehrana/Products/DeleteDialog";
 import StockDialog from "../../components/Prehrana/Products/StockDialog";
-import axios from "axios";
+import useDebounce from "../../lib/useDebounce";
+import { useProducts, useUpdateProduct } from "../../features/products";
 
 const Products = () => {
-  const { products, error, loading, setProducts } = useProducts();
+  const [page, setPage] = useState(1);
+  const [sort, setSort] = useState("title|desc");
+  const [search, setSearch] = useState("");
+
+  const debouncedSearch = useDebounce(search, 300);
+
+  const {
+    data: products,
+    isError,
+    isLoading,
+    totalNumberOfItems,
+    itemsPerPage,
+  } = useProducts({
+    orderby: sort?.split("|")?.[0],
+    order: sort?.split("|")?.[1],
+    search: debouncedSearch,
+    page,
+  });
 
   const [selectedProducts, setSelectedProducts] = useState([]);
 
@@ -56,70 +70,25 @@ const Products = () => {
       router.push("/prehrana/login");
   }, []);
 
-  const [search, setSearch] = useState("");
-
-  const searchFilter = (item) => {
-    var searchValue = search.replace(
-      /[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi,
-      ""
-    );
-    searchValue = replaceCroatian(searchValue).toLowerCase();
-    return replaceCroatian(item?.name)?.toLowerCase()?.includes(searchValue);
-  };
-
-  const changeStockState = (id, stock) => {
-    let productsCopy = [...products];
-    if (Array.isArray(id)) {
-      id.forEach((productId) => {
-        let index = productsCopy.findIndex(
-          (product) => product.id === productId
-        );
-        productsCopy[index]["stock"] = stock;
-      });
-    } else {
-      let index = productsCopy.findIndex((product) => product.id === id);
-      productsCopy[index]["stock"] = stock;
-    }
-    setProducts(productsCopy);
-  };
-
   const [stockLoading, setStockLoading] = useState(null);
-  const { mutate } = useSWRConfig();
 
-  const handleChangeStock = async (id, stock) => {
+  const { mutate: updateProduct } = useUpdateProduct();
+
+  const handleChangeStock = (id, stock) => {
     let changedStock = stock === "instock" ? "outofstock" : "instock";
-    // changeStockState(id, changedStock);
-
-    let productsCopy = [...products];
-    const index = productsCopy.findIndex((product) => product.id === id);
-    productsCopy[index].stock = changedStock;
-    // mutate("products", productsCopy, { revalidate: false });
-
-    // console.log(productsCopy);
-
     setStockLoading(id);
-    try {
-      await mutate("proizvodi", async (productsCurrent) => {
-        const updatedProduct = await updateProduct(id, {
-          stockStatus: changedStock,
-        });
 
-        const filteredProducts = productsCurrent?.filter(
-          (product) => product.id !== id
-        );
-        return [...filteredProducts, updatedProduct];
-      });
-      // await updateProduct(id, {
-      //   stock: changedStock,
-      // });
-    } catch (error) {
-      productsCopy[index].stock = stock;
-      console.log("ggggg", error);
-      // mutate("products", productsCopy);
-      toast.error("Greška prilikom postavljanja zalihe");
-    } finally {
-      setStockLoading(null);
-    }
+    updateProduct(
+      {
+        id,
+        stockStatus: changedStock,
+      },
+      {
+        onSettled: () => {
+          setStockLoading(null);
+        },
+      }
+    );
   };
 
   const headCells = [
@@ -129,7 +98,7 @@ const Products = () => {
       label: "Slika",
     },
     {
-      id: "name",
+      id: "title",
       sort: true,
       label: "Naziv",
     },
@@ -145,7 +114,7 @@ const Products = () => {
     },
     {
       id: "stock",
-      sort: true,
+      sort: false,
       label: "Zaliha",
     },
   ];
@@ -165,8 +134,30 @@ const Products = () => {
         responsive
       />
       <div className="px-5 md:px-10">
-        {/* <ProductsHeader searchValue={search} handleSearch={handleSearch} /> */}
         <MyTable
+          headCells={headCells}
+          rows={products || []}
+          onSelectionChange={(selected) => setSelectedProducts(selected)}
+          defaultOrder="desc"
+          defaultOrderBy="title"
+          error={isError}
+          errorMessage="Greška kod dohvaćanja proizvoda"
+          rowsPerPage={itemsPerPage}
+          totalNumberOfItems={totalNumberOfItems}
+          enableSelectAll={false}
+          onChangePage={(nextPage) => {
+            console.log(nextPage);
+            setPage(nextPage + 1);
+          }}
+          customSort
+          onChangeSort={(field, order) => {
+            setSort([field, order].join("|"));
+          }}
+          // containerClassName="mt-6"
+          // enableRowSelect={false}
+          // displayToolbar={false}
+          noDataText="Nema proizvoda za prikaz"
+          loading={isLoading}
           titleComponent={
             <InputBase
               type="text"
@@ -194,16 +185,6 @@ const Products = () => {
               }
             />
           }
-          headCells={headCells}
-          rows={!!products ? products?.filter(searchFilter) : []}
-          onSelectionChange={(selected) => setSelectedProducts(selected)}
-          defaultOrder="asc"
-          defaultOrderBy="name"
-          // containerClassName="mt-6"
-          // enableRowSelect={false}
-          // displayToolbar={false}
-          noDataText="Nema proizvoda za prikaz"
-          loading={loading}
           selectedAction={(nSelected) => (
             <div className="flex gap-3 mr-3">
               <Tooltip
@@ -272,7 +253,7 @@ const Products = () => {
                   loading={stockLoading === row.id}
                   loadingPosition="start"
                   variant="outlined"
-                  color="secondary"
+                  color={row.stock === "instock" ? "primary" : "error"}
                   onClick={(e) => {
                     e.stopPropagation();
                     handleChangeStock(row.id, row.stock);
@@ -294,7 +275,6 @@ const Products = () => {
         <StockDialog
           stockModal={stockModal}
           setStockModal={setStockModal}
-          changeStockState={changeStockState}
           selectedProducts={selectedProducts}
         />
         <DeleteDialog

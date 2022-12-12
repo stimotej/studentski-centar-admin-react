@@ -4,13 +4,13 @@ import Loader from "../../components/Elements/Loader";
 import Link from "next/link";
 import { MdOutlinePlayArrow } from "react-icons/md";
 import Layout from "../../components/Layout";
-import { useRestaurant } from "../../lib/api/restaurant";
 import { useEffect } from "react";
 import { userGroups } from "../../lib/constants";
 import { useRouter } from "next/router";
+import { useRestaurant } from "../../features/restaurant";
 
 const Home = () => {
-  const { restaurant, error } = useRestaurant();
+  const { data: restaurant, isError: error } = useRestaurant();
 
   const router = useRouter();
 

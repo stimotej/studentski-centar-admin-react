@@ -12,7 +12,7 @@ const Item = ({ obavijest, active, onClick, className, isEvent }) => {
 
   useEffect(() => {
     if (categories && !isEvent) {
-      const postCategory = obavijest.categories.find(
+      const postCategory = obavijest.categories?.find(
         (item) => parseInt(item) !== obavijestiCategoryId
       );
       categories.forEach((item) => {

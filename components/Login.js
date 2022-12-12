@@ -5,9 +5,11 @@ import { MdArrowBack } from "react-icons/md";
 import Loader from "./Elements/Loader";
 import { login } from "../lib/api/auth";
 import { userGroups } from "../lib/constants";
-import { TextField } from "@mui/material";
+import { Button, TextField } from "@mui/material";
+import { LoadingButton } from "@mui/lab";
+import clsx from "clsx";
 
-const Login = ({ from }) => {
+const Login = ({ from, title }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
@@ -28,8 +30,6 @@ const Login = ({ from }) => {
     setLoading(true);
     try {
       const user = await login(from, username, password);
-
-      console.log("user: ", user);
 
       if (user?.wrongCategory) {
         setError(user?.message);
@@ -74,7 +74,7 @@ const Login = ({ from }) => {
 
   return (
     <section
-      className={`flex flex-col items-center justify-center my-12 w-full ${
+      className={`flex flex-col items-center justify-center my-8 w-full ${
         "theme-" + from
       }`}
     >
@@ -83,7 +83,7 @@ const Login = ({ from }) => {
           Studentski centar
         </h3>
         <h1 className="font-bold text-5xl mt-2 text-primary capitalize">
-          {from}
+          {title || from}
         </h1>
       </div>
       <div className="flex flex-col w-full md:w-1/2 xl:w-2/5 p-10 mt-6 rounded-lg">
@@ -132,17 +132,26 @@ const Login = ({ from }) => {
           >
             Ispuni automatski (za testiranje)
           </button>
-          <button
+          <LoadingButton
+            variant="contained"
+            size="large"
             type="submit"
-            className="flex items-center justify-center uppercase text-sm text-white py-3 px-5 rounded-lg tracking-wide cursor-pointer shadow-md shadow-primary/50 hover:shadow-lg hover:shadow-primary/50 bg-primary transition-shadow"
+            color="primary"
+            className={clsx(
+              "!py-3 !rounded-lg",
+              loading
+                ? "!bg-gray-200 !shadow-none"
+                : "!bg-primary hover:!bg-primary"
+            )}
+            loading={loading}
+            // className="flex items-center justify-center uppercase text-sm text-white py-3 px-5 rounded-lg tracking-wide cursor-pointer shadow-md shadow-primary/50 hover:shadow-lg hover:shadow-primary/50 bg-primary transition-shadow"
           >
-            {loading && <Loader className="w-5 h-5 mr-3" />}
             Prijava
-          </button>
+          </LoadingButton>
         </form>
       </div>
 
-      <Link href="/" className="flex items-center font-semibold mt-12" passHref>
+      <Link href="/" className="flex items-center font-semibold mt-8" passHref>
         <MdArrowBack className="mr-2" />
         Povratak na odabir kategorija
       </Link>

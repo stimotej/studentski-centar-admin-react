@@ -1,81 +1,60 @@
+import { LoadingButton } from "@mui/lab";
 import Link from "next/link";
-import Loader from "./Loader";
+import { Fragment } from "react";
+import clsx from "clsx";
 
 const Button = ({
   link,
   to,
   state,
-  primary,
   error,
   text,
+  variant,
   type,
-  disabled,
+  color,
   icon,
   openInNewTab,
   loading,
   onClick,
   className,
-  responsive,
+  containerClassName,
 }) => {
-  const baseStyle =
-    "flex items-center justify-center px-4 py-2 rounded-lg shadow transition-shadow hover:shadow-md";
+  const LinkComponent = link ? Link : Fragment;
 
-  let style = "";
+  const linkProps = link
+    ? {
+        href: { pathname: to, query: state },
+        passHref: true,
+        className: containerClassName,
+        target: openInNewTab && "_blank",
+      }
+    : {};
 
-  if (primary)
-    style = `${baseStyle} bg-primary shadow-primary/50 text-white hover:shadow-primary/50`;
-  else if (error)
-    style = `${baseStyle} bg-error shadow-error/50 text-white hover:shadow-error/50`;
-  else style = `${baseStyle} bg-secondary text-black`;
-
-  return link ? (
-    <Link
-      href={{ pathname: to, query: state }}
-      passHref
-      className={`${style} ${className}`}
-      target={openInNewTab && "_blank"}
-    >
-      {icon && <div className={!responsive && text ? "mr-2" : ""}>{icon}</div>}
-      <div
-        className={
-          responsive
-            ? text
-              ? "hidden sm:block sm:ml-2"
-              : "hidden sm:block"
-            : ""
-        }
+  return (
+    <LinkComponent {...linkProps}>
+      <LoadingButton
+        type={type || "button"}
+        variant={variant || "contained"}
+        className={clsx(
+          "py-2",
+          !variant || variant === "contained"
+            ? error
+              ? "bg-error"
+              : color === "secondary"
+              ? "bg-zinc-300"
+              : "bg-primary"
+            : null,
+          className
+        )}
+        startIcon={icon}
+        color={error ? "error" : color || "primary"}
+        onClick={onClick}
+        loading={loading}
+        loadingPosition={icon ? "start" : undefined}
       >
         {text}
-      </div>
-    </Link>
-  ) : (
-    <button
-      type={type || "button"}
-      onClick={onClick}
-      className={`${style} ${className}`}
-      disabled={loading}
-    >
-      {loading ? (
-        <Loader
-          className={`w-5 h-5 ${!responsive && text ? "mr-2" : ""} ${
-            primary || error ? "border-white" : "border-black/60"
-          }`}
-        />
-      ) : (
-        icon && <div className={!responsive && text ? "mr-2" : ""}>{icon}</div>
-      )}
-      <div
-        className={
-          responsive
-            ? text
-              ? "hidden sm:block sm:ml-2"
-              : "hidden sm:block"
-            : ""
-        }
-      >
-        {text}
-      </div>
-    </button>
+      </LoadingButton>
+    </LinkComponent>
   );
 };
 

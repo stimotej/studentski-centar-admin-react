@@ -8,54 +8,37 @@ import {
   MenuItem,
   Select,
 } from "@mui/material";
-import { toast } from "react-toastify";
 import LoadingButton from "@mui/lab/LoadingButton";
 import { faXmark } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 import clsx from "clsx";
-import {
-  updateMultipleProducts,
-  updateProduct,
-  useProducts,
-} from "../../../lib/api/products";
-import { useSWRConfig } from "swr";
+import { useUpdateProduct } from "../../../features/products";
+import { toast } from "react-toastify";
 
-const StockDialog = ({
-  stockModal,
-  setStockModal,
-  changeStockState,
-  selectedProducts,
-}) => {
-  const { mutate } = useSWRConfig();
-  const { products, error, setProducts } = useProducts();
-
+const StockDialog = ({ stockModal, setStockModal, selectedProducts }) => {
   const [selectedStock, setSelectedStock] = useState("instock");
 
   const [loading, setLoading] = useState(false);
 
+  const { mutateAsync: updateProduct } = useUpdateProduct(false);
+
   const handleSave = () => {
     setLoading(true);
-    let previousStock = selectedStock === "instock" ? "outofstock" : "instock";
 
     let requests = selectedProducts.map((productId) =>
-      updateProduct(productId, {
-        stockStatus: selectedStock,
-      })
+      updateProduct({ id: productId, stockStatus: selectedStock })
     );
 
     Promise.all(requests)
       .then((res) => {
-        toast.success(
-          `Uspješno promijenjen status zalihe odabranim proizvodima`
-        );
-        changeStockState(selectedProducts, selectedStock);
         setStockModal(false);
+        toast.success(
+          "Uspješno je promijenjeno stanje zalihe odabranih proizvoda"
+        );
       })
-      .catch((error) => {
-        toast.error("Greška kod spremanja stanja zalihe");
-        changeStockState(selectedProducts, previousStock);
-        console.log(error);
+      .catch(() => {
+        toast.error("Greška kod spremanja stanja zalihe odabranih proizvoda.");
       })
       .finally(() => {
         setLoading(false);
@@ -84,6 +67,7 @@ const StockDialog = ({
           fullWidth
           value={selectedStock}
           onChange={(e) => setSelectedStock(e.target.value)}
+          className="mt-1"
         >
           <MenuItem value={"instock"}>Dostupno</MenuItem>
           <MenuItem value={"outofstock"}>Nedostupno</MenuItem>

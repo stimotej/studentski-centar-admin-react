@@ -16,11 +16,9 @@ import { Controller, useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import dayjs from "dayjs";
-import { useJobs } from "../../lib/api/jobs";
 import { useSkills } from "../../lib/api/skills";
 import { useCompanies } from "../../lib/api/companies";
-import { toast } from "react-toastify";
-import axios from "axios";
+import { useCreateJob } from "../../features/jobs";
 
 const options = {
   ALL_JOBS: "Svi Poslovi",
@@ -116,7 +114,6 @@ const UrediPosao = () => {
   const [type, setType] = useState(0);
   const [fromHome, setFromHome] = useState(false);
   const [rate, setRate] = useState(0);
-  const [loading, setLoading] = useState(false);
 
   const formOptions = {
     mode: "onChange",
@@ -150,25 +147,17 @@ const UrediPosao = () => {
 
   const values = watch();
 
-  const { setJobs } = useJobs();
+  const { mutate: createJob, isLoading: isCreating } = useCreateJob();
 
   const onSubmit = async (data) => {
-    console.log("onSubit data", data);
-    setLoading(true);
-    try {
-      const newJob = await axios.post(
-        "https://api.spajalica.hr/v2/jobs/admin",
-        { ...data, city: data.city || "FROM_HOME" }
-      );
-      console.log("New job: ", newJob);
-      setJobs();
-      router.back();
-    } catch (err) {
-      console.log("err", err.response);
-      toast.error("Greška prilikom objave posla");
-    } finally {
-      setLoading(false);
-    }
+    createJob(
+      { ...data, city: data.city || "FROM_HOME" },
+      {
+        onSuccess: () => {
+          router.back();
+        },
+      }
+    );
   };
 
   return (
@@ -586,17 +575,18 @@ const UrediPosao = () => {
           />
 
           <LoadingButton
-            variant="outlined"
+            variant="contained"
+            size="large"
             className={clsx(
-              "self-end",
-              !loading &&
-                "!border-primary/50 hover:!border-primary hover:!bg-primary/5 !text-primary"
+              "self-end"
+              // !loading &&
+              //   "!border-primary/50 hover:!border-primary hover:!bg-primary/5 !text-primary"
             )}
-            loading={loading}
+            loading={isCreating}
             disabled={!isValid}
             onClick={handleSubmit(onSubmit)}
           >
-            {Object.keys(router.query).length > 0 ? "Spremi" : "Objavi"}
+            {Object.keys(router.query).length > 0 ? "Spremi" : "Objavi posao"}
           </LoadingButton>
         </div>
       </div>

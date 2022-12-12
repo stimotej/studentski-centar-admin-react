@@ -7,7 +7,7 @@ const login = () => {
       <Head>
         <title>Login | Smjestaj</title>
       </Head>
-      <Login from="smjestaj" />
+      <Login from="smjestaj" title="Smještaj" />
     </>
   );
 };

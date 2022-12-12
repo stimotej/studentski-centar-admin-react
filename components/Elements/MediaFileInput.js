@@ -1,6 +1,7 @@
 import { forwardRef, useState } from "react";
 import Image from "next/image";
 import Dropzone from "react-dropzone";
+import clsx from "clsx";
 
 const MediaFileInput = forwardRef(({ value, onChange, className }, ref) => {
   const [dragOver, setDragOver] = useState(false);
@@ -23,29 +24,27 @@ const MediaFileInput = forwardRef(({ value, onChange, className }, ref) => {
       {({ getRootProps, getInputProps }) => (
         <div
           {...getRootProps()}
-          className={`text-center p-5 sm:p-8 md:p-12 border cursor-pointer border-dashed text-black/50 rounded-lg ${
+          className={clsx(
+            "text-center p-5 sm:p-8 md:p-12 border cursor-pointer border-dashed text-black/50 rounded-lg",
             dragOver
               ? "border-primary bg-secondary"
               : dragRejected
               ? "border-error"
-              : "border-black/50"
-          }
-            ${className}    
-            `}
+              : "border-black/50",
+            className
+          )}
         >
           <input {...getInputProps()} />
           {value && value !== "false" ? (
-            <div className="relative w-full h-80">
-              <Image
-                src={
-                  typeof value === "string" ? value : URL.createObjectURL(value)
-                }
-                layout="fill"
-                objectFit="contain"
-                className="rounded-lg mx-auto"
-                alt="Slika proizvoda"
-              />
-            </div>
+            <Image
+              src={
+                typeof value === "string" ? value : URL.createObjectURL(value)
+              }
+              width={200}
+              height={320}
+              className="rounded-lg mx-auto object-contain w-full h-auto"
+              alt="Slika proizvoda"
+            />
           ) : (
             <h3
               className={`text-lg font-semibold ${

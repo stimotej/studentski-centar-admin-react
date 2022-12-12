@@ -16,8 +16,11 @@ const QuillEditor = dynamic(
 );
 import StoredPostNote from "../../components/Obavijesti/Editor/StoredPostNote";
 import Layout from "../../components/Layout";
-import { useMedia } from "../../lib/api/media";
-import { eventsCategoryId, userGroups } from "../../lib/constants";
+import {
+  eventsCategoryId,
+  mainEventCategoryId,
+  userGroups,
+} from "../../lib/constants";
 import Loader from "../../components/Elements/Loader";
 import {
   FormControlLabel,
@@ -41,6 +44,14 @@ import dayjs from "dayjs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/pro-regular-svg-icons";
 import MediaSelectDialog from "../../components/MediaSelectDialog";
+import { useMedia, useMediaById } from "../../features/media";
+import {
+  useCreateEvent,
+  useCreateTag,
+  useDeleteEvent,
+  useEventsByTags,
+} from "../../features/events";
+import MyDialog from "../../components/Elements/MyDialog";
 
 const Editor = () => {
   const [storedPostNote, setStoredPostNote] = useState(false);
@@ -67,13 +78,25 @@ const Editor = () => {
       setStoredPostNote(true);
   }, []);
 
-  const { events, error, setEvents } = useEvents();
-  const { categories, error: errorCategories, setCategories } = useCategories();
-  const {
-    mediaList,
-    error: errorMedia,
-    setMediaList,
-  } = useMedia(eventsCategoryId);
+  const { data: events } = useEventsByTags(
+    {
+      tags: router.query?.tags,
+    },
+    {
+      enabled: !!router.query?.tags,
+    }
+  );
+  const { data: mediaLoaded, isInitialLoading: isLoadingMedia } = useMediaById(
+    router.query?.imageId,
+    {
+      onSettled: (media) => {},
+      enabled: !!router.query?.imageId,
+    }
+  );
+
+  useEffect(() => {
+    if (mediaLoaded) setImage(mediaLoaded);
+  }, [mediaLoaded]);
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -90,7 +113,6 @@ const Editor = () => {
 
   useEffect(() => {
     if (Object.keys(router.query).length) {
-      console.log("adsasd", router.query);
       setTitle(router.query.title || "");
       setContent(router.query.content || "");
       setImageId(router.query.imageId || "");
@@ -102,6 +124,7 @@ const Editor = () => {
       setTitle(window.localStorage.getItem("event_title") || "");
       setContent(window.localStorage.getItem("event_content") || "");
       setImageId(window.localStorage.getItem("event_image_id") || "");
+      setImage({ src: window.localStorage.getItem("event_image_src") });
       setStatus(window.localStorage.getItem("event_status") || "publish");
       setEventLocation(window.localStorage.getItem("event_location") || "");
       setEventDates(
@@ -109,15 +132,7 @@ const Editor = () => {
       );
       setEventType(window.localStorage.getItem("event_type") || "");
     }
-  }, [categories]);
-
-  useEffect(() => {
-    if (Object.keys(router.query).length)
-      setImage(
-        mediaList?.filter((media) => media.id === +router.query?.imageId)[0]
-      );
-    else setImage({ src: window.localStorage.getItem("event_image_src") });
-  }, [mediaList]);
+  }, [router.query]);
 
   const [loading, setLoading] = useState(false);
 
@@ -166,6 +181,10 @@ const Editor = () => {
     setEventType("");
   };
 
+  const { mutate: createTag } = useCreateTag();
+  const { mutateAsync: createEvent } = useCreateEvent(false);
+  const { mutateAsync: deleteEvent } = useDeleteEvent(false);
+
   const handlePost = async () => {
     setLoading(true);
     if (Object.keys(router.query).length) {
@@ -182,47 +201,29 @@ const Editor = () => {
           event_type: eventType,
         };
 
-        const otherEvents = events.filter(
-          (event) => event.event_id === router.query.id
+        const requestsDelete = events.filter((event) => deleteEvent(event.id));
+
+        await Promise.all(requestsDelete);
+
+        let requestsCreate = eventDates.map((date) =>
+          createEvent({
+            ...changedEvent,
+            event_date: dayjs(date).toISOString(),
+            tags: router.query.tags,
+          })
         );
-
-        await updateEvent(router.query.id, changedEvent);
-
-        await Promise.all(
-          otherEvents.map((event) => {
-            return deleteEvent(event.id);
+        requestsCreate.push(
+          createEvent({
+            ...changedEvent,
+            categories: [mainEventCategoryId],
+            tags: router.query.tags,
           })
         );
 
-        await Promise.all(
-          eventDates.map((date) => {
-            return createEvent({
-              ...changedEvent,
-              event_date: dayjs(date).toISOString(),
-              event_id: router.query.id,
-            });
-          })
-        );
+        await Promise.all(requestsCreate);
 
-        // const updatedEvent = await updateEvent(router.query.id, {
-        //   title: title,
-        //   content: content,
-        //   imageId: imageId,
-        //   status: status,
-        //   event_date: eventDate,
-        //   event_location: eventLocation,
-        //   event_type: eventType,
-        // });
-
-        let eventsCopy = [...events];
-        const index = eventsCopy.findIndex(
-          (event) => event.id === router.query.id
-        );
-        eventsCopy[index] = router.query;
-        setEvents(eventsCopy);
         toast.success("Uspješno spremljene promjene.");
       } catch (error) {
-        console.log("save error", error);
         if (error?.response?.data?.data?.status === 403)
           toast.error("Nemate dopuštenje za uređivanje ovog eventa");
         else toast.error("Greška kod spremanja eventa");
@@ -230,40 +231,48 @@ const Editor = () => {
         setLoading(false);
       }
     } else {
-      try {
-        const newEvent = {
-          title: title,
-          content: content,
-          imageId: imageId || 0,
-          status: status,
-          event_dates: eventDates
-            .map((date) => dayjs(date).toISOString())
-            .toString(),
-          event_location: eventLocation,
-          event_type: eventType,
-        };
+      const newEvent = {
+        title: title,
+        content: content,
+        imageId: imageId || 0,
+        status: status,
+        event_dates: eventDates
+          .map((date) => dayjs(date).toISOString())
+          .toString(),
+        event_location: eventLocation,
+        event_type: eventType,
+      };
 
-        const mainEvent = await createEvent(newEvent);
-
-        await Promise.all(
-          eventDates.map((date) => {
-            return createEvent({
+      createTag(`event-${Math.random()}`, {
+        onSuccess: (tag) => {
+          let requests = eventDates.map((date) =>
+            createEvent({
               ...newEvent,
               event_date: dayjs(date).toISOString(),
-              event_id: mainEvent.id.toString(),
-            });
-          })
-        );
+              tags: [tag.id],
+            })
+          );
+          requests.push(
+            createEvent({
+              ...newEvent,
+              categories: [mainEventCategoryId],
+              tags: [tag.id],
+            })
+          );
 
-        setEvents([...events, mainEvent]);
-        resetStoredPostAndState();
-        toast.success("Uspješno objavljen event.");
-      } catch (error) {
-        console.log("Greška kod", error);
-        toast.error("Greška kod objavljivanja eventa.");
-      } finally {
-        setLoading(false);
-      }
+          Promise.all(requests)
+            .then(() => {
+              resetStoredPostAndState();
+              toast.success("Event je uspješno izrađen.");
+            })
+            .catch((error) => {
+              if (error.response.data.data.status === 403)
+                toast.error("Nemate dopuštenje za izradu evenata.");
+              else toast.error("Greška kod izrade eventa.");
+            })
+            .finally(() => setLoading(false));
+        },
+      });
     }
   };
 
@@ -319,7 +328,9 @@ const Editor = () => {
           className="mt-2 w-full bg-secondary rounded-lg border border-black/20 hover:border-black text-black/60"
           onClick={() => setMediaDialog("featuredImage")}
         >
-          {image?.src ? (
+          {isLoadingMedia ? (
+            <div className="py-4">Učitavanje...</div>
+          ) : image?.src ? (
             <Image
               src={image?.src}
               alt={image?.alt}
@@ -492,23 +503,22 @@ const Editor = () => {
         onSelect={handleSelectMedia}
         categoryId={eventsCategoryId}
       />
-      {ytModal && (
-        <Dialog
-          title="YouTube video"
-          handleClose={() => {
-            setYtModal(false);
-          }}
-          actions
-          actionText={"Dodaj"}
-          handleAction={handleAddYtVideo}
-        >
+      <MyDialog
+        opened={ytModal}
+        setOpened={setYtModal}
+        title="YouTube video"
+        actionTitle="Dodaj"
+        onClick={handleAddYtVideo}
+      >
+        <div className="pt-2">
           <TextField
             value={ytUrl}
             onChange={(e) => setYtUrl(e.target.value)}
             label="Url"
+            fullWidth
           />
-        </Dialog>
-      )}
+        </div>
+      </MyDialog>
       <div className="pr-0 lg:pr-72">
         <div className="px-5 py-10 md:p-12">
           <ReactQuill

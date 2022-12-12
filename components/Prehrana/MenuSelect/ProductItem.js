@@ -10,7 +10,9 @@ const ProductItem = ({ product, handleRemoveItem }) => {
       }`}
     >
       <div>
-        {product?.name || <div className="text-error">Proizvod uklonjen</div>}
+        {product?.name || (
+          <div className="text-error">Proizvod je uklonjen</div>
+        )}
       </div>
       <div className="flex items-center">
         {product?.stock === "outofstock" && (

@@ -11,9 +11,10 @@ const Layout = ({ children }) => {
     palette: {
       primary: {
         main: "rgb(21, 195, 154)",
+        contrastText: "#ffffff",
       },
       secondary: {
-        main: "#424242",
+        main: "#fafafa",
       },
     },
     shape: {
@@ -27,7 +28,7 @@ const Layout = ({ children }) => {
         main: "rgb(43, 118, 223)",
       },
       secondary: {
-        main: "#424242",
+        main: "#fafafa",
       },
     },
     shape: {
@@ -41,7 +42,7 @@ const Layout = ({ children }) => {
         main: "rgb(207, 36, 42)",
       },
       secondary: {
-        main: "#424242",
+        main: "#fafafa",
       },
     },
     shape: {
@@ -55,7 +56,22 @@ const Layout = ({ children }) => {
         main: "rgb(86, 131, 154)",
       },
       secondary: {
-        main: "#424242",
+        main: "#fafafa",
+      },
+    },
+    shape: {
+      borderRadius: 8,
+    },
+  });
+
+  const themeSmjestaj = createTheme({
+    palette: {
+      primary: {
+        main: "rgb(250, 127, 40)",
+        contrastText: "#ffffff",
+      },
+      secondary: {
+        main: "#fafafa",
       },
     },
     shape: {
@@ -72,6 +88,8 @@ const Layout = ({ children }) => {
           ? themeKultura
           : category === "poslovi"
           ? themePoslovi
+          : category === "smjestaj"
+          ? themeSmjestaj
           : themeObavijesti
       }
     >

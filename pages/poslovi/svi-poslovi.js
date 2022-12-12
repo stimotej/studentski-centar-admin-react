@@ -14,20 +14,18 @@ import {
   TableCell,
   Tooltip,
 } from "@mui/material";
-import axios from "axios";
 import dayjs from "dayjs";
 import { useRouter } from "next/router";
 import React from "react";
 import { useState } from "react";
 import { useEffect } from "react";
 import { MdAdd } from "react-icons/md";
-import { toast } from "react-toastify";
 import MyTable from "../../components/Elements/Table";
 import Header from "../../components/Header";
 import Layout from "../../components/Layout";
-import { useJobs } from "../../lib/api/jobs";
+import { useAllowJob, useJobFeatured, useJobs } from "../../features/jobs";
 import { userGroups } from "../../lib/constants";
-import replaceCroatian from "../../lib/replaceCroatian";
+import useDebounce from "../../lib/useDebounce";
 
 const headCells = [
   {
@@ -63,16 +61,17 @@ const headCells = [
 ];
 
 const SviPoslovi = () => {
-  const { jobs, loading, setJobs } = useJobs();
+  const [search, setSearch] = useState("");
+
+  const debouncedSearch = useDebounce(search, 300);
+
+  const { data: jobs, isLoading } = useJobs({
+    search: debouncedSearch,
+  });
 
   const router = useRouter();
 
-  const [search, setSearch] = useState("");
   const [selectedJobs, setSelectedJobs] = useState([]);
-
-  useEffect(() => {
-    console.log("poslovi", jobs);
-  }, [jobs]);
 
   useEffect(() => {
     const token = window.localStorage.getItem("access_token");
@@ -82,39 +81,17 @@ const SviPoslovi = () => {
       router.push("/poslovi/login");
   }, []);
 
-  const searchFilter = (item) => {
-    var searchValue = search.replace(
-      /[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi,
-      ""
-    );
-    searchValue = replaceCroatian(searchValue).toLowerCase();
-    return (
-      replaceCroatian(item?.title)?.toLowerCase()?.includes(searchValue) ||
-      replaceCroatian(item?.company.short_name)
-        ?.toLowerCase()
-        ?.includes(searchValue)
-    );
-  };
+  const { mutate: allowJob } = useAllowJob();
+  const { mutate: setJobFeatured } = useJobFeatured();
 
   const handleAllow = (e, jobId) => {
     e.stopPropagation();
-    axios
-      .post("https://api.spajalica.hr/v2/jobs/admin/allow/" + jobId)
-      .then((res) => {
-        setJobs([...jobs.filter((item) => item.id !== jobId), res.data.job]);
-        toast.success("Uspješno ste dozvolili prikaz posla na stranici");
-      })
-      .catch((err) => toast.error("Greška kod potvrde posla"));
+    allowJob(jobId);
   };
 
   const handleFeatured = (e, jobId) => {
     e.stopPropagation();
-    axios
-      .post("https://api.spajalica.hr/v2/jobs/admin/feature/" + jobId)
-      .then((res) => {
-        setJobs([...jobs.filter((item) => item.id !== jobId), res.data.job]);
-      })
-      .catch((err) => toast.error("Greška kod postavljanja istaknutog posla"));
+    setJobFeatured(jobId);
   };
 
   return (
@@ -159,7 +136,7 @@ const SviPoslovi = () => {
             />
           }
           headCells={headCells}
-          rows={!!jobs ? jobs?.filter(searchFilter) : []}
+          rows={jobs || []}
           onSelectionChange={(selected) => setSelectedJobs(selected)}
           defaultOrder="desc"
           defaultOrderBy="created_at"
@@ -167,7 +144,7 @@ const SviPoslovi = () => {
           // enableRowSelect={false}
           // displayToolbar={false}
           noDataText="Nema poslova za prikaz"
-          loading={loading}
+          loading={isLoading}
           //   selectedAction={(nSelected) => (
           //     <div className="flex gap-3 mr-3">
           //       <Tooltip

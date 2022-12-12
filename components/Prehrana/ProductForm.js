@@ -3,21 +3,16 @@ import { useRouter } from "next/router";
 import { MdArrowBack } from "react-icons/md";
 import InputLabel from "../Elements/InputLabel";
 import AlergeniDialog from "./AlergeniDialog";
-import { toast } from "react-toastify";
 import MediaFileInput from "../Elements/MediaFileInput";
 import Link from "next/link";
-import { createMedia } from "../../lib/api/media";
-import {
-  createProduct,
-  updateProduct,
-  useProducts,
-} from "../../lib/api/products";
 import { Controller, useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Button, InputAdornment, MenuItem, TextField } from "@mui/material";
 import LoadingButton from "@mui/lab/LoadingButton";
-import clsx from "clsx";
+import { useCreateProduct, useUpdateProduct } from "../../features/products";
+import { useCreateMedia } from "../../features/media";
+import { userGroups } from "../../lib/constants";
 
 const schema = yup.object().shape({
   name: yup.string().required("Ovo polje je obavezno"),
@@ -28,14 +23,6 @@ const schema = yup.object().shape({
 });
 
 const ProductForm = ({ product }) => {
-  const { products, error, setProducts } = useProducts();
-
-  const parseDescription = (description) => {
-    const start = description.indexOf("<p>") + 3;
-    const end = description.indexOf("</p>");
-    return description.substring(start, end);
-  };
-
   const formOptions = {
     mode: "onChange",
     resolver: yupResolver(schema),
@@ -52,18 +39,10 @@ const ProductForm = ({ product }) => {
 
   const {
     handleSubmit,
-    reset,
-    watch,
     control,
-    formState: { isValid, isSubmitting, errors },
+    formState: { isValid, errors },
   } = useForm(formOptions);
 
-  const [allergens, setAllergens] = useState(
-    (product && product.allergens?.toString()) || ""
-  );
-  const [weight, setWeight] = useState(product ? product.weight : "");
-
-  const [loading, setLoading] = useState(false);
   const [showAlergeniDialog, setShowAlergeniDialog] = useState(false);
 
   const router = useRouter();
@@ -72,120 +51,80 @@ const ProductForm = ({ product }) => {
     const token = window.localStorage.getItem("access_token");
     const username = window.localStorage.getItem("username");
 
-    // if (!token || !userGroups["prehrana"].includes(username))
-    //   router.push("/prehrana/login");
+    if (!token || !userGroups["prehrana"].includes(username))
+      router.push("/prehrana/login");
   }, []);
 
-  const formatAllergens = (allergensString) => {
-    console.log("alergenii", allergensString);
-    if (!allergensString) return;
-    return allergensString
-      .toUpperCase()
-      .split(",")
-      .map((item) => item.trim());
-  };
+  const { mutate: createMedia, isLoading: isCreatingMedia } = useCreateMedia();
+  const { mutate: createProduct, isLoading: isCreating } = useCreateProduct();
+  const { mutate: updateProduct, isLoading: isUpdating } = useUpdateProduct();
 
   const onSubmit = async (data) => {
-    setLoading(true);
-
     if (!!data.image && data.image !== product?.image) {
       var reader = new FileReader();
       reader.onloadend = async () => {
-        setLoading(true);
-        try {
-          const imageId = await createMedia(
-            reader.result,
-            data.image.type,
-            data.image.name
-          );
+        createMedia(
+          {
+            body: reader.result,
+            type: data.image.type,
+            name: data.image.name,
+          },
+          {
+            onSuccess: (media) => {
+              const newProduct = {
+                ...data,
+                stock: data.stockStatus,
+                allergens: data.allergens,
+                price: data.price.toString(),
+                weight: data.weight.toString(),
+                image: media.id,
+              };
 
-          const createdProduct = {};
-          const newProduct = {
-            ...data,
-            stock: data.stockStatus,
-            allergens: data.allergens,
-            price: data.price.toString(),
-            weight: data.weight.toString(),
-            image: imageId,
-          };
-
-          if (product) {
-            createdProduct = await updateProduct(product.id, newProduct);
-          } else {
-            createdProduct = await createProduct(newProduct);
+              if (product) {
+                updateProduct(
+                  { id: product.id, ...newProduct },
+                  {
+                    onSuccess: () => {
+                      router.push("/prehrana/proizvodi");
+                    },
+                  }
+                );
+              } else {
+                createProduct(newProduct, {
+                  onSuccess: () => {
+                    router.push("/prehrana/proizvodi");
+                  },
+                });
+              }
+            },
           }
-
-          toast.success(
-            product ? "Uspješno spremljene promjene" : "Uspješno dodan proizvod"
-          );
-          let productsCopy = [...products];
-          if (product) {
-            let index = productsCopy.findIndex(
-              (item) => item.id === product.id
-            );
-            productsCopy[index] = createdProduct;
-          } else {
-            productsCopy.push(createdProduct);
-          }
-          console.log("copy", productsCopy);
-          setProducts(productsCopy);
-          router.push("/prehrana/proizvodi");
-        } catch (error) {
-          console.log(error.response);
-          toast.error(
-            product
-              ? "Greška kod spremanja promjena"
-              : "Greška kod dodavanja proizvoda"
-          );
-        } finally {
-          setLoading(false);
-        }
+        );
       };
       reader.readAsArrayBuffer(data.image);
     } else {
-      setLoading(true);
-      try {
-        const createdProduct = {};
-        const newProduct = {
-          ...data,
-          allergens: data.allergens,
-          price: data.price.toString(),
-          weight: data.weight.toString(),
-        };
-        delete newProduct.image;
+      const newProduct = {
+        ...data,
+        allergens: data.allergens,
+        price: data.price.toString(),
+        weight: data.weight.toString(),
+      };
+      delete newProduct.image;
 
-        console.log("Poslano: ", newProduct);
-
-        if (product) {
-          createdProduct = await updateProduct(product.id, newProduct);
-        } else {
-          createdProduct = await createProduct(newProduct);
-        }
-
-        console.log("Response Data:", createdProduct);
-        toast.success(
-          product ? "Uspješno spremljene promjene" : "Uspješno dodan proizvod"
+      if (product) {
+        updateProduct(
+          { id: product.id, ...newProduct },
+          {
+            onSuccess: () => {
+              router.push("/prehrana/proizvodi");
+            },
+          }
         );
-        let productsCopy = [...products];
-        if (product) {
-          console.log("hihiii");
-          let index = productsCopy.findIndex((item) => item.id === product.id);
-          productsCopy[index] = createdProduct;
-        } else {
-          productsCopy.push(createdProduct);
-        }
-        console.log("copy", productsCopy);
-        setProducts(productsCopy);
-        router.push("/prehrana/proizvodi");
-      } catch (error) {
-        console.log(error);
-        toast.error(
-          product
-            ? "Greška kod spremanja promjena"
-            : "Greška kod dodavanja proizvoda"
-        );
-      } finally {
-        setLoading(false);
+      } else {
+        createProduct(newProduct, {
+          onSuccess: () => {
+            router.push("/prehrana/proizvodi");
+          },
+        });
       }
     }
   };
@@ -322,13 +261,10 @@ const ProductForm = ({ product }) => {
         />
 
         <LoadingButton
-          variant="outlined"
-          className={clsx(
-            "self-end",
-            !loading &&
-              "!border-primary/50 hover:!border-primary hover:!bg-primary/5 !text-primary"
-          )}
-          loading={loading}
+          size="large"
+          variant="contained"
+          className="self-end bg-primary"
+          loading={isCreating || isCreatingMedia || isUpdating}
           disabled={!isValid}
           onClick={handleSubmit(onSubmit)}
         >

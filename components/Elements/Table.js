@@ -15,17 +15,10 @@ import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
 import Checkbox from "@mui/material/Checkbox";
 import IconButton from "@mui/material/IconButton";
-import Tooltip from "@mui/material/Tooltip";
 import { visuallyHidden } from "@mui/utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faBarsFilter,
-  faChevronDown,
-  faChevronUp,
-  faTrash,
-} from "@fortawesome/pro-solid-svg-icons";
+import { faChevronDown, faChevronUp } from "@fortawesome/pro-solid-svg-icons";
 import { useEffect } from "react";
-import { useRef } from "react";
 import clsx from "clsx";
 import { Collapse } from "@mui/material";
 
@@ -69,6 +62,7 @@ function EnhancedTableHead(props) {
     rowCount,
     onRequestSort,
     enableRowSelect,
+    enableSelectAll,
   } = props;
   const createSortHandler = (property) => (event) => {
     onRequestSort(event, property);
@@ -77,19 +71,23 @@ function EnhancedTableHead(props) {
   return (
     <TableHead>
       <TableRow>
-        {enableRowSelect && (
-          <TableCell padding="checkbox">
-            <Checkbox
-              color="primary"
-              indeterminate={numSelected > 0 && numSelected < rowCount}
-              checked={rowCount > 0 && numSelected === rowCount}
-              onChange={onSelectAllClick}
-              inputProps={{
-                "aria-label": "Odaberi sve",
-              }}
-            />
-          </TableCell>
-        )}
+        {enableRowSelect ? (
+          enableSelectAll ? (
+            <TableCell padding="checkbox">
+              <Checkbox
+                color="primary"
+                indeterminate={numSelected > 0 && numSelected < rowCount}
+                checked={rowCount > 0 && numSelected === rowCount}
+                onChange={onSelectAllClick}
+                inputProps={{
+                  "aria-label": "Odaberi sve",
+                }}
+              />
+            </TableCell>
+          ) : (
+            <TableCell></TableCell>
+          )
+        ) : null}
         {headCells.map((headCell) => (
           <TableCell
             key={headCell.id}
@@ -201,10 +199,17 @@ export default function MyTable({
   containerClassName,
   onSelectionChange,
   enableRowSelect = true,
+  enableSelectAll = true,
   displayToolbar = true,
   rowsPerPage = 10,
+  totalNumberOfItems,
+  customSort,
+  onChangeSort,
+  onChangePage,
   noDataText,
   loading,
+  error,
+  errorMessage,
   onRowClick,
   nowrap = true,
   enableRowExpand = false,
@@ -221,6 +226,7 @@ export default function MyTable({
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
+    onChangeSort && onChangeSort(property, isAsc ? "desc" : "asc");
   };
 
   const handleSelectAllClick = (event) => {
@@ -256,14 +262,16 @@ export default function MyTable({
     setSelected(newSelected);
   };
 
+  // If "totalNumberOfItems" prop exists, manually handle pagination
   useEffect(() => {
-    if ((page + 1) * rowsPerPage > rows.length) {
-      setPage(Math.max(0, Math.ceil(rows.length / rowsPerPage) - 1));
+    if ((page + 1) * rowsPerPage > rows?.length && !totalNumberOfItems) {
+      setPage(Math.max(0, Math.ceil(rows?.length / rowsPerPage) - 1));
     }
   }, [rows]);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
+    onChangePage && onChangePage(newPage);
   };
 
   // const handleChangeRowsPerPage = (event) => {
@@ -287,8 +295,13 @@ export default function MyTable({
 
   const isSelected = (id) => selected.indexOf(id) !== -1;
 
-  const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
+  const emptyRows = totalNumberOfItems
+    ? page > 0
+      ? Math.max(0, (1 + page) * rowsPerPage - totalNumberOfItems)
+      : 0
+    : page > 0
+    ? Math.max(0, (1 + page) * rowsPerPage - rows?.length)
+    : 0;
 
   return (
     <Box sx={{ width: "100%" }} className={containerClassName}>
@@ -317,11 +330,12 @@ export default function MyTable({
               orderBy={orderBy}
               onSelectAllClick={handleSelectAllClick}
               onRequestSort={handleRequestSort}
-              rowCount={rows.length}
+              rowCount={+totalNumberOfItems || rows?.length}
               enableRowSelect={enableRowSelect}
+              enableSelectAll={enableSelectAll}
             />
             <TableBody>
-              {rows.length <= 0 && loading ? (
+              {loading ? (
                 <TableRow
                   style={{
                     height: 53,
@@ -336,32 +350,44 @@ export default function MyTable({
                     Dohvaćanje podataka...
                   </TableCell>
                 </TableRow>
-              ) : (
-                rows.length <= 0 &&
-                !!noDataText && (
-                  <TableRow
-                    style={{
-                      height: 53,
-                    }}
+              ) : error ? (
+                <TableRow
+                  style={{
+                    height: 53,
+                  }}
+                >
+                  <TableCell
+                    colSpan={
+                      enableRowSelect ? headCells.length + 1 : headCells.length
+                    }
+                    className="!text-error"
                   >
-                    <TableCell
-                      colSpan={
-                        enableRowSelect
-                          ? headCells.length + 1
-                          : headCells.length
-                      }
-                      className="!text-black-80"
-                    >
-                      {noDataText}
-                    </TableCell>
-                  </TableRow>
-                )
-              )}
-              {/* if you don't need to support IE11, you can replace the `stableSort` call with:
-                 rows.slice().sort(getComparator(order, orderBy)) */}
-              {stableSort(rows, getComparator(order, orderBy))
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row, index) => {
+                    {errorMessage}
+                  </TableCell>
+                </TableRow>
+              ) : (totalNumberOfItems || rows?.length) <= 0 && !!noDataText ? (
+                <TableRow
+                  style={{
+                    height: 53,
+                  }}
+                >
+                  <TableCell
+                    colSpan={
+                      enableRowSelect ? headCells.length + 1 : headCells.length
+                    }
+                    className="!text-black-80"
+                  >
+                    {noDataText}
+                  </TableCell>
+                </TableRow>
+              ) : (
+                (customSort
+                  ? rows
+                  : stableSort(rows, getComparator(order, orderBy)).slice(
+                      page * rowsPerPage,
+                      page * rowsPerPage + rowsPerPage
+                    )
+                ).map((row, index) => {
                   const isItemSelected = isSelected(row.id);
                   const labelId = `enhanced-table-checkbox-${index}`;
 
@@ -433,7 +459,8 @@ export default function MyTable({
                       )}
                     </React.Fragment>
                   );
-                })}
+                })
+              )}
               {emptyRows > 0 && (
                 <TableRow
                   style={{
@@ -454,7 +481,7 @@ export default function MyTable({
           // rowsPerPageOptions={[5, 10, 25]}
           rowsPerPageOptions={[rowsPerPage]}
           component="div"
-          count={rows.length}
+          count={+totalNumberOfItems || rows?.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}

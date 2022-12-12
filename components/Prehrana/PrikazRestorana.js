@@ -10,6 +10,8 @@ import Button from "../Elements/Button";
 import Image from "next/image";
 import { updateRestaurant } from "../../lib/api/restaurant";
 import { createMedia } from "../../lib/api/media";
+import { useUpdateRestaurant } from "../../features/restaurant";
+import { useCreateMedia } from "../../features/media";
 
 const PrikazRestorana = ({ id, slika, naslov, opis }) => {
   function transform(node) {
@@ -42,49 +44,33 @@ const PrikazRestorana = ({ id, slika, naslov, opis }) => {
   const naslovRef = useRef("");
   const opisRef = useRef("");
 
-  const [loading, setLoading] = useState(false);
+  const { mutate: createMedia, isLoading: isCreatingMedia } = useCreateMedia();
+  const { mutate: updateRestaurant, isLoading: isUpdating } =
+    useUpdateRestaurant();
 
   const handleUpdatePost = async () => {
-    setLoading(true);
-
     if (image) {
       var reader = new FileReader();
       reader.onloadend = async () => {
-        try {
-          const imageId = await createMedia(
-            reader.result,
-            image.type,
-            image.name
-          );
-
-          await updateRestaurant({
-            title: naslovRef.current.innerHTML,
-            description: opisRef.current.innerHTML,
-            imageId: imageId,
-          });
-
-          toast.success("Uspješno spremljene promjene");
-        } catch (error) {
-          toast.error("Greška kod spremanja promjena");
-          console.log(error);
-        } finally {
-          setLoading(false);
-        }
+        createMedia(
+          { body: reader.result, type: image.type, name: image.name },
+          {
+            onSuccess: (media) => {
+              updateRestaurant({
+                title: naslovRef.current.innerHTML,
+                description: opisRef.current.innerHTML,
+                imageId: media.id,
+              });
+            },
+          }
+        );
       };
       reader.readAsArrayBuffer(image);
     } else {
-      try {
-        await updateRestaurant({
-          title: naslovRef.current.innerHTML,
-          description: opisRef.current.innerHTML,
-        });
-
-        toast.success("Uspješno spremljene promjene");
-      } catch (error) {
-        toast.error("Greška kod spremanja promjena");
-      } finally {
-        setLoading(false);
-      }
+      updateRestaurant({
+        title: naslovRef.current.innerHTML,
+        description: opisRef.current.innerHTML,
+      });
     }
   };
 
@@ -132,7 +118,7 @@ const PrikazRestorana = ({ id, slika, naslov, opis }) => {
 
       <Button
         text="Spremi"
-        loading={loading}
+        loading={isCreatingMedia || isUpdating}
         onClick={handleUpdatePost}
         className="w-fit mt-5"
         primary

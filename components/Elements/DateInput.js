@@ -37,7 +37,8 @@ const DateInput = ({ value, onChange, markedDays }) => {
     <div className="relative w-fit">
       <Button
         variant="outlined"
-        color="secondary"
+        className="!text-black !border-black hover:!bg-gray-100"
+        size="large"
         onClick={() => setActive(!active)}
       >
         {dayjs(value).format("DD.MM.YYYY")}

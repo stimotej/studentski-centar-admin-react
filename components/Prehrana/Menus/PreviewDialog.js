@@ -3,11 +3,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Dialog, DialogContent, DialogTitle, IconButton } from "@mui/material";
 import MenuPreviewTable from "../MenuPreviewTable";
 import dayjs from "dayjs";
-import { useProducts } from "../../../lib/api/products";
 import { useEffect, useState } from "react";
+import { useProducts } from "../../../features/products";
 
 const PreviewDialog = ({ showMenuPreviewDialog, setShowMenuPreviewDialog }) => {
-  const { products } = useProducts();
+  const { data: products } = useProducts();
   const [menu, setMenu] = useState(null);
 
   useEffect(() => {
