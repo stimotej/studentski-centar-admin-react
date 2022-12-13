@@ -17,12 +17,12 @@ export default async function handler(req, res) {
     return;
   }
 
-  if (!req.body?.roles?.includes("poslodavac")) {
-    res.status(401).json({
-      message: `Morate biti poslodavac za generiranje ovog dokumenta`,
-    });
-    return;
-  }
+  //   if (!req.body?.roles?.includes("poslodavac")) {
+  //     res.status(401).json({
+  //       message: `Morate biti poslodavac za generiranje ovog dokumenta`,
+  //     });
+  //     return;
+  //   }
 
   try {
     const documentFile = await renderToStream(
