@@ -42,13 +42,20 @@ export default async function handler(req, res) {
         },
       }
     );
-    await axios.post(
+    const mediaResponse = await axios.post(
       "http://161.53.174.14/wp-json/wp/v2/media/" + response.data.id,
       {
         categories: documentCategoryId,
         author: req.body?.user_id,
+      },
+      {
+        headers: {
+          Authorization: req.headers?.authorization,
+        },
       }
     );
+
+    res.status(200).json(mediaResponse.data);
   } catch (error) {
     const errorData = error.response?.data;
     if (errorData) res.status(errorData?.data?.status).json(errorData);
