@@ -12,8 +12,8 @@ import {
 Font.register({
   family: "Roboto",
   fonts: [
-    { src: "./public/fonts/Roboto-Regular.ttf", fontWeight: 400 },
-    { src: "./public/fonts/Roboto-Bold.ttf", fontWeight: 700 },
+    { src: "./fonts/Roboto-Regular.ttf", fontWeight: 400 },
+    { src: "./fonts/Roboto-Bold.ttf", fontWeight: 700 },
   ],
 });
 
@@ -136,11 +136,7 @@ const CompanyDocument = ({ userData }) => {
       <Page size="A4" style={styles.page}>
         <View style={styles.headerContainer}>
           <View style={styles.logoContainer}>
-            <Image
-              src="./public/logo.png"
-              alt="sc_logo"
-              style={styles.logoImg}
-            />
+            <Image src="./logo.png" alt="sc_logo" style={styles.logoImg} />
             <View>
               <Text style={styles.uppercase}>Sveučilište u Zagrebu</Text>
               <Text style={styles.uppercase}>Studentski centar u Zagrebu</Text>
@@ -245,7 +241,7 @@ const CompanyDocument = ({ userData }) => {
           <View style={styles.signatureColumn}>
             <Text style={styles.signatureTitle}>Za Student servis:</Text>
             <Image
-              src="./public/signature.png"
+              src="./signature.png"
               alt="sc_logo"
               style={styles.signatureImg}
             />
