@@ -52,6 +52,6 @@ export default async function handler(req, res) {
   } catch (error) {
     const errorData = error.response?.data;
     if (errorData) res.status(errorData?.data?.status).json(errorData);
-    else res.status(500).json({ message: "Došlo je do greške" });
+    else res.status(500).json({ message: "Došlo je do greške", error });
   }
 }
