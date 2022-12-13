@@ -1,10 +1,17 @@
 import { renderToStream } from "@react-pdf/renderer";
 import axios from "axios";
 import CompanyDocument from "../../components/CompanyDocument";
+import NextCors from "nextjs-cors";
 
 const documentCategoryId = 163;
 
 export default async function handler(req, res) {
+  await NextCors(req, res, {
+    methods: ["POST"],
+    origin: "*",
+    optionsSuccessStatus: 200,
+  });
+
   if (req.method !== "POST") {
     res.status(405).json({ message: `Method "${req.method}" not allowed` });
     return;
