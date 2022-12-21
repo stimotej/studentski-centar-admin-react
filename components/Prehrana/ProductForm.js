@@ -3,7 +3,6 @@ import { useRouter } from "next/router";
 import { MdArrowBack } from "react-icons/md";
 import InputLabel from "../Elements/InputLabel";
 import AlergeniDialog from "./AlergeniDialog";
-import MediaFileInput from "../Elements/MediaFileInput";
 import Link from "next/link";
 import { Controller, useForm } from "react-hook-form";
 import * as yup from "yup";
@@ -12,7 +11,9 @@ import { Button, InputAdornment, MenuItem, TextField } from "@mui/material";
 import LoadingButton from "@mui/lab/LoadingButton";
 import { useCreateProduct, useUpdateProduct } from "../../features/products";
 import { useCreateMedia } from "../../features/media";
-import { userGroups } from "../../lib/constants";
+import { prehranaCategoryId, userGroups } from "../../lib/constants";
+import MediaSelectDialog from "../MediaSelectDialog";
+import Image from "next/image";
 
 const schema = yup.object().shape({
   name: yup.string().required("Ovo polje je obavezno"),
@@ -29,7 +30,10 @@ const ProductForm = ({ product }) => {
     defaultValues: {
       name: product?.name || "",
       description: product?.description || "",
-      image: !!product?.image && product?.image !== "0" ? product?.image : "",
+      image:
+        !!product?.image && product?.image !== "false"
+          ? { src: product?.image }
+          : "",
       price: product?.price || "",
       stockStatus: product?.stock || "instock",
       allergens: product?.allergens || "",
@@ -41,7 +45,17 @@ const ProductForm = ({ product }) => {
     handleSubmit,
     control,
     formState: { isValid, errors },
+    setValue,
+    watch,
   } = useForm(formOptions);
+
+  const image = watch("image");
+
+  const [mediaDialog, setMediaDialog] = useState(false);
+
+  const handleSelectMedia = (value) => {
+    setValue("image", value, { shouldValidate: true });
+  };
 
   const [showAlergeniDialog, setShowAlergeniDialog] = useState(false);
 
@@ -53,79 +67,37 @@ const ProductForm = ({ product }) => {
 
     if (!token || !userGroups["prehrana"].includes(username))
       router.push("/prehrana/login");
-  }, []);
+  }, [router]);
 
   const { mutate: createMedia, isLoading: isCreatingMedia } = useCreateMedia();
   const { mutate: createProduct, isLoading: isCreating } = useCreateProduct();
   const { mutate: updateProduct, isLoading: isUpdating } = useUpdateProduct();
 
   const onSubmit = async (data) => {
-    if (!!data.image && data.image !== product?.image) {
-      var reader = new FileReader();
-      reader.onloadend = async () => {
-        createMedia(
-          {
-            body: reader.result,
-            type: data.image.type,
-            name: data.image.name,
-          },
-          {
-            onSuccess: (media) => {
-              const newProduct = {
-                ...data,
-                stock: data.stockStatus,
-                allergens: data.allergens,
-                price: data.price.toString(),
-                weight: data.weight.toString(),
-                image: media.id,
-              };
+    const newProduct = {
+      ...data,
+      stock: data.stockStatus,
+      allergens: data.allergens,
+      price: data.price.toString(),
+      weight: data.weight.toString(),
+      image: image.id ?? undefined,
+    };
 
-              if (product) {
-                updateProduct(
-                  { id: product.id, ...newProduct },
-                  {
-                    onSuccess: () => {
-                      router.push("/prehrana/proizvodi");
-                    },
-                  }
-                );
-              } else {
-                createProduct(newProduct, {
-                  onSuccess: () => {
-                    router.push("/prehrana/proizvodi");
-                  },
-                });
-              }
-            },
-          }
-        );
-      };
-      reader.readAsArrayBuffer(data.image);
-    } else {
-      const newProduct = {
-        ...data,
-        allergens: data.allergens,
-        price: data.price.toString(),
-        weight: data.weight.toString(),
-      };
-      delete newProduct.image;
-
-      if (product) {
-        updateProduct(
-          { id: product.id, ...newProduct },
-          {
-            onSuccess: () => {
-              router.push("/prehrana/proizvodi");
-            },
-          }
-        );
-      } else {
-        createProduct(newProduct, {
+    if (product) {
+      updateProduct(
+        { id: product.id, ...newProduct },
+        {
           onSuccess: () => {
             router.push("/prehrana/proizvodi");
           },
-        });
-      }
+        }
+      );
+    } else {
+      createProduct(newProduct, {
+        onSuccess: () => {
+          router.push("/prehrana/proizvodi");
+        },
+      });
     }
   };
 
@@ -174,15 +146,45 @@ const ProductForm = ({ product }) => {
         />
 
         {/* SLIKA */}
+        <MediaSelectDialog
+          opened={mediaDialog}
+          onClose={() => setMediaDialog(false)}
+          value={image}
+          onSelect={handleSelectMedia}
+          categoryId={prehranaCategoryId}
+        />
         <div className="flex flex-col gap-1">
           <InputLabel text="Slika" />
-          {/* <MediaFileInput value={image} onChange={(value) => setImage(value)} /> */}
+          <button
+            className="w-full bg-secondary rounded-lg border border-black/20 hover:border-black text-black/60"
+            onClick={() => setMediaDialog("featuredImage")}
+          >
+            {image?.src ? (
+              <Image
+                src={image?.src}
+                alt={image?.alt}
+                width={image?.width || 50}
+                height={image?.height || 50}
+                layout="responsive"
+                className="rounded-lg"
+                objectFit="cover"
+              />
+            ) : (
+              <div className="py-4">Odaberi sliku</div>
+            )}
+          </button>
+        </div>
+
+        {/* SLIKA */}
+        {/* <div className="flex flex-col gap-1">
+          <InputLabel text="Slika" />
+          {/* <MediaFileInput value={image} onChange={(value) => setImage(value)} /> *}
           <Controller
             control={control}
             name="image"
             render={({ field }) => <MediaFileInput {...field} />}
           />
-        </div>
+        </div> */}
 
         {/* CIJENA */}
         <Controller

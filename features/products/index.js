@@ -20,7 +20,7 @@ export const useProducts = (filters, options) => {
           orderby: newFilters?.orderby,
           order: newFilters?.order,
           search: newFilters?.search,
-          per_page: productsPerPage,
+          per_page: newFilters?.productsPerPage || productsPerPage,
           page: newFilters?.page,
           timestamp: new Date().getTime(),
         },

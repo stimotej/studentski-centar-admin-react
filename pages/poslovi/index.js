@@ -10,7 +10,11 @@ import Loader from "../../components/Elements/Loader";
 import Header from "../../components/Header";
 import Layout from "../../components/Layout";
 import MediaSelectDialog from "../../components/MediaSelectDialog";
-import { jobsCategoryId, jobsPageId, userGroups } from "../../lib/constants";
+import {
+  studentskiServisCategoryId,
+  jobsPageId,
+  userGroups,
+} from "../../lib/constants";
 
 const Poslovi = () => {
   const router = useRouter();
@@ -124,7 +128,7 @@ const Poslovi = () => {
           setBanners([...banners, val.src]);
           handlePublishBanners([...banners, val.src]);
         }}
-        categoryId={jobsCategoryId}
+        categoryId={studentskiServisCategoryId}
       />
     </Layout>
   );

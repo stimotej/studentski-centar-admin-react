@@ -117,7 +117,6 @@ export const useJobFeatured = () => {
         await queryClient.cancelQueries(jobKeys.jobs);
         const previousJobs = queryClient.getQueryData(jobKeys.jobs);
         queryClient.setQueryData(jobKeys.jobs, (old) => {
-          console.log("old", old);
           if (!old) return;
           const selectedJob = old.find((job) => job.id === id);
           return [
@@ -128,7 +127,6 @@ export const useJobFeatured = () => {
         return { previousJobs };
       },
       onSuccess: () => {
-        toast.success("Uspješno ste istaknuli ovaj posao");
         return queryClient.invalidateQueries(jobKeys.jobs);
       },
       onError: (err, id, context) => {

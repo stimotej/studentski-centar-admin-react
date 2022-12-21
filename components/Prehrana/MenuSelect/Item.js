@@ -1,20 +1,13 @@
 import ProductItem from "./ProductItem";
-import _uniqueId from "lodash/uniqueId";
 
 const MenuSelectItem = ({
   text,
-  products,
   onSelect,
   active,
-  productIds,
+  products,
   handleRemoveItem,
   value,
 }) => {
-  const getProductById = (productId) => {
-    const index = products.findIndex((product) => product.id === productId);
-    return products[index];
-  };
-
   return (
     <div
       className={`flex-1 mt-1 ring-inset md:mt-0 p-4 cursor-pointer rounded-lg transition ${
@@ -26,11 +19,11 @@ const MenuSelectItem = ({
     >
       <h4 className="uppercase font-semibold tracking-wide">{text}</h4>
       <div className="mt-4 flex flex-col">
-        {productIds?.map((productId) => (
+        {products?.map((product) => (
           <ProductItem
-            key={_uniqueId()}
-            product={getProductById(productId)}
-            handleRemoveItem={() => handleRemoveItem(value, productId)}
+            key={product.id}
+            product={product}
+            handleRemoveItem={() => handleRemoveItem(value, product.id)}
           />
         ))}
       </div>

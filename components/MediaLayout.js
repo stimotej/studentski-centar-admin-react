@@ -56,7 +56,7 @@ const MediaLayout = ({ categoryId, from }) => {
 
     if (!token || !userGroups[from].includes(username))
       router.push(`/${from}/login`);
-  }, []);
+  }, [from, router]);
 
   const { mutate: createMedia, isLoading: isCreating } = useCreateMedia();
   const { mutate: updateMedia, isLoading: isUpdating } = useUpdateMedia();

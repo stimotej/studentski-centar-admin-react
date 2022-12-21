@@ -19,10 +19,10 @@ export const useObavijesti = (filters, options) => {
     obavijestiKeys.obavijestiFiltered(filters),
     async ({ pageParam }) => {
       const response = await axios.get(
-        "http://161.53.174.14/wp-json/wp/v2/posts",
+        "http://161.53.174.14/wp-json/wp/v2/obavijesti",
         {
           params: {
-            categories: obavijestiCategoryId,
+            categories: filters?.categoryId,
             orderby: filters?.orderby,
             order: filters?.order,
             search: filters?.search,
@@ -56,13 +56,16 @@ export const useCategories = (options) => {
     obavijestiKeys.categories,
     async () => {
       const response = await axios.get(
-        "http://161.53.174.14/wp-json/wp/v2/categories"
+        "http://161.53.174.14/wp-json/wp/v2/categories",
+        {
+          params: {
+            parent: obavijestiCategoryId,
+          },
+        }
       );
       return response.data;
     },
     {
-      select: (data) =>
-        data.filter((item) => item.parent === obavijestiCategoryId),
       ...options,
     }
   );
@@ -74,14 +77,14 @@ export const useCreateObavijest = () => {
   return useMutation(
     async (obavijest) => {
       const response = await axios.post(
-        "http://161.53.174.14/wp-json/wp/v2/posts",
+        "http://161.53.174.14/wp-json/wp/v2/obavijesti",
         {
           title: obavijest?.title,
           excerpt: obavijest?.description,
           content: obavijest?.content,
           featured_media: obavijest?.imageId,
           status: obavijest?.status,
-          categories: [obavijestiCategoryId, obavijest?.category],
+          categories: [obavijest?.category],
           meta: {
             start_showing: obavijest?.startShowing,
             end_showing: obavijest?.endShowing,
@@ -112,14 +115,14 @@ export const useUpdateObavijest = () => {
   return useMutation(
     async ({ id, obavijest }) => {
       const response = await axios.post(
-        `http://161.53.174.14/wp-json/wp/v2/posts/${id}`,
+        `http://161.53.174.14/wp-json/wp/v2/obavijesti/${id}`,
         {
           title: obavijest?.title,
           excerpt: obavijest?.description,
           content: obavijest?.content,
           featured_media: obavijest?.imageId,
           status: obavijest?.status,
-          categories: [obavijestiCategoryId, obavijest?.category],
+          categories: [obavijest?.category],
           meta: {
             start_showing: obavijest?.startShowing,
             end_showing: obavijest?.endShowing,
@@ -150,7 +153,7 @@ export const useDeleteObavijest = () => {
   return useMutation(
     async (id) => {
       const response = await axios.delete(
-        `http://161.53.174.14/wp-json/wp/v2/posts/${id}`,
+        `http://161.53.174.14/wp-json/wp/v2/obavijesti/${id}`,
         {
           params: {
             force: true,

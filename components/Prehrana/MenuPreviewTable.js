@@ -1,6 +1,7 @@
+import { Tooltip } from "@mui/material";
 import { HiOutlineExclamationCircle } from "react-icons/hi";
 
-const MenuPreviewTable = ({ title, menu, products, className, fields }) => {
+const MenuPreviewTable = ({ title, menu, className, fields }) => {
   const headers = ["Menu", "Vege menu", "Izbor", "Prilozi"];
 
   return (
@@ -21,29 +22,27 @@ const MenuPreviewTable = ({ title, menu, products, className, fields }) => {
         <div className="flex">
           {fields.map((field, index) => (
             <ul key={index} className="flex-1">
-              {menu?.[field.split("-")[0]]?.[field.split("-")[1]]?.map(
-                (productId, index) => {
-                  let product = products?.filter(
-                    (item) => item.id === productId
-                  )[0];
-                  return (
-                    <li
-                      className={`flex items-center justify-between p-2 border ${
-                        product?.stock === "outofstock" &&
-                        "bg-error/5 border-error"
-                      }`}
-                      key={index}
-                    >
-                      {product?.name || (
-                        <div className="text-error">Proizvod je uklonjen</div>
-                      )}
-                      {product?.stock === "outofstock" && (
+              {menu?.products?.[field.split("-")[0]]?.[
+                field.split("-")[1]
+              ]?.map((product, index) => (
+                <li
+                  className={`flex items-center justify-between p-2 border ${
+                    product?.stock === "outofstock" && "bg-error/5 border-error"
+                  }`}
+                  key={index}
+                >
+                  {product?.title || (
+                    <div className="text-error">Proizvod je uklonjen</div>
+                  )}
+                  {product?.stock === "outofstock" && (
+                    <Tooltip title="Nema na stanju" arrow>
+                      <span>
                         <HiOutlineExclamationCircle className="w-5 h-5 mr-1 text-error" />
-                      )}
-                    </li>
-                  );
-                }
-              )}
+                      </span>
+                    </Tooltip>
+                  )}
+                </li>
+              ))}
             </ul>
           ))}
         </div>

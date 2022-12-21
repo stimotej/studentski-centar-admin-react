@@ -2,10 +2,9 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { MdArrowBack } from "react-icons/md";
-import Loader from "./Elements/Loader";
 import { login } from "../lib/api/auth";
 import { userGroups } from "../lib/constants";
-import { Button, TextField } from "@mui/material";
+import { TextField } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
 import clsx from "clsx";
 
@@ -69,6 +68,10 @@ const Login = ({ from, title }) => {
     if (from.toLowerCase() === "smjestaj") {
       setUsername("smjestaj");
       setPassword("smjestajlozinka");
+    }
+    if (from.toLowerCase() === "sport") {
+      setUsername("sport");
+      setPassword("sportlozinka");
     }
   };
 

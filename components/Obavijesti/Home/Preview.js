@@ -1,15 +1,25 @@
 import dynamic from "next/dynamic";
+import { useState } from "react";
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 import { MdOutlineEdit, MdOutlineDelete, MdOpenInNew } from "react-icons/md";
+import { useDeleteObavijest } from "../../../features/obavijesti";
 import Button from "../../Elements/Button";
+import MyDialog from "../../Elements/MyDialog";
 
-const Preview = ({
-  obavijest,
-  handleDelete,
-  className,
-  title,
-  isEvent = false,
-}) => {
+const Preview = ({ obavijest, className, title, isEvent = false, from }) => {
+  const [deleteDialog, setDeleteDialog] = useState(false);
+
+  const { mutate: deleteObavijest, isLoading: isDeleting } =
+    useDeleteObavijest();
+
+  const handleDelete = async () => {
+    deleteObavijest(obavijest.id, {
+      onSuccess: () => {
+        setDeleteDialog(false);
+      },
+    });
+  };
+
   return (
     <div className={className + " break-all"}>
       {title !== false && (
@@ -24,13 +34,24 @@ const Preview = ({
         </div>
       )}
       <div className="flex items-center px-3 mt-2 pt-5 lg:pt-0 lg:my-8">
+        <MyDialog
+          opened={deleteDialog}
+          setOpened={setDeleteDialog}
+          title="Brisanje obavijesti"
+          content="Jeste li sigurni da  želite obrisati odabranu obavijest?"
+          actionTitle="Obriši"
+          actionColor="error"
+          loading={isDeleting}
+          onClick={handleDelete}
+        />
+
         <Button
           link
           text="Uredi"
           variant="outlined"
           // color="secondary"
           icon={<MdOutlineEdit />}
-          to={isEvent ? "/kultura/uredi-event" : "/obavijesti/uredi-obavijest"}
+          to={isEvent ? "/kultura/uredi-event" : `/${from}/uredi-obavijest`}
           state={obavijest}
         />
         <Button
@@ -49,7 +70,7 @@ const Preview = ({
           color="error"
           // color="secondary"
           icon={<MdOutlineDelete />}
-          onClick={handleDelete}
+          onClick={() => setDeleteDialog(true)}
           className="ml-4"
         />
       </div>

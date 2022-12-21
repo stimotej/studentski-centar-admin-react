@@ -1,76 +1,60 @@
 import { faPlus } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { InputAdornment, OutlinedInput } from "@mui/material";
-import { useState, useRef } from "react";
-import { MdOutlineAdd } from "react-icons/md";
+import { useState } from "react";
+import Loader from "./Loader";
 
 const SearchBar = ({
   items,
   onSelected,
+  value,
+  loading,
+  onChange,
   className,
   displayItems,
   ...inputProps
 }) => {
-  const value = useRef("");
-  const [filteredItems, setFilteredItems] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
 
-  const handleSearch = (e) => {
-    value.current = e.target.value;
-    value.current.replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>{}[\]\\/]/gi, "");
-    let filtered = items.filter((item) => {
-      return item.name.toLowerCase().search(value.current.toLowerCase()) !== -1;
-    });
-    setFilteredItems(filtered.slice(0, displayItems));
-    if (filtered.length) setSelectedItem(filtered[0]);
-    if (!value.current.length) setFilteredItems([]);
-  };
-
   const handleSelect = (item) => {
-    onSelected(item.id);
-    setFilteredItems([]);
-    value.current = "";
+    onSelected(item);
+    onChange && onChange("");
   };
 
   const handleKeyPress = (e) => {
     if (e.key === "Enter") {
-      if (filteredItems.length) {
+      if (items.length) {
         handleSelect(selectedItem);
       }
     }
     if (e.key === "Tab" || e.key === "ArrowDown") {
-      if (filteredItems.length) {
+      if (items.length) {
         e.preventDefault();
-        let index = filteredItems.findIndex(
-          (item) => item.id === selectedItem.id
-        );
-        if (index >= filteredItems.length - 1) index = -1;
-        setSelectedItem(filteredItems[index + 1]);
+        let index = items.findIndex((item) => item.id === selectedItem?.id);
+        if (index >= items.length - 1) index = -1;
+        setSelectedItem(items[index + 1]);
       }
     }
     if (e.key === "ArrowUp") {
-      if (filteredItems.length) {
+      if (items.length) {
         e.preventDefault();
-        let index = filteredItems.findIndex(
-          (item) => item.id === selectedItem.id
-        );
-        if (index <= 0) index = filteredItems.length;
-        setSelectedItem(filteredItems[index - 1]);
+        let index = items.findIndex((item) => item.id === selectedItem?.id);
+        if (index <= 0) index = items.length;
+        setSelectedItem(items[index - 1]);
       }
     }
   };
 
   const handleOnBlur = () => {
-    value.current = "";
-    setFilteredItems([]);
+    onChange && onChange("");
   };
 
   return (
     <div className={`relative w-full ${className}`}>
       <OutlinedInput
         fullWidth
-        value={value.current}
-        onChange={handleSearch}
+        value={value}
+        onChange={(e) => onChange && onChange(e.target.value)}
         onKeyDown={handleKeyPress}
         onBlur={handleOnBlur}
         endAdornment={
@@ -80,28 +64,32 @@ const SearchBar = ({
         }
         {...inputProps}
       />
-      {filteredItems.length ? (
-        <>
-          <div className="absolute w-full shadow-md divide-y rounded-lg p-2 bg-white">
-            {filteredItems?.map((item) => (
+      {value ? (
+        <div className="absolute w-full shadow-md divide-y rounded-lg p-2 bg-white">
+          {loading ? (
+            <Loader className="w-6 h-6 my-3 mx-auto border-primary" />
+          ) : items.length > 0 ? (
+            items?.map((item) => (
               <div
                 key={item.id}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => handleSelect(item)}
                 className={`py-2 px-2 hover:rounded-md cursor-pointer ${
-                  item.id === selectedItem.id
+                  item.id === selectedItem?.id
                     ? "bg-primary text-white rounded-md"
                     : "bg-white text-black hover:bg-secondary"
                 }`}
               >
                 {item.name}
               </div>
-            ))}
-          </div>
-        </>
-      ) : (
-        <div />
-      )}
+            ))
+          ) : (
+            <div className="text-gray-600 py-2 px-2">
+              Nema rezultata za pretragu
+            </div>
+          )}
+        </div>
+      ) : null}
     </div>
   );
 };

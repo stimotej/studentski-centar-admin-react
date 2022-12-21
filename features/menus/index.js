@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import formatMenu from "./format";
 import menuKeys from "./queries";
 import jwt from "jsonwebtoken";
+import { usersRestaurantIds } from "../../lib/constants";
 
 export const useMenus = (filters, options) => {
   const queryClient = useQueryClient();
@@ -62,11 +63,37 @@ export const useMenus = (filters, options) => {
   };
 };
 
+export const useMenuByDate = (date, options) => {
+  return useQuery(
+    menuKeys.menuByDate(date),
+    async () => {
+      const response = await axios.get(
+        "http://161.53.174.14/wp-json/wp/v2/menus",
+        {
+          params: {
+            menu_date: date,
+          },
+        }
+      );
+      return response.data;
+    },
+    {
+      select: (menus) => (menus.length > 0 ? formatMenu(menus?.[0]) : {}),
+      staleTime: Infinity,
+      ...options,
+    }
+  );
+};
+
 export const useCreateMenu = () => {
   const queryClient = useQueryClient();
 
   return useMutation(
     async (menu) => {
+      const token = window.localStorage.getItem("access_token");
+      const currentUserId = jwt.decode(token).id;
+      const restaurantId = usersRestaurantIds[currentUserId];
+
       const response = await axios.post(
         "http://161.53.174.14/wp-json/wp/v2/menus",
         {
@@ -74,10 +101,8 @@ export const useCreateMenu = () => {
           status: "publish",
           meta: {
             menu_date: menu.menu_date,
-            dorucak: JSON.stringify(menu.dorucak),
-            rucak: JSON.stringify(menu.rucak),
-            vecera: JSON.stringify(menu.vecera),
-            ostalo: JSON.stringify(menu.ostalo),
+            menu_products: menu.products,
+            menu_restaurant_id: restaurantId,
           },
         }
       );
@@ -102,15 +127,17 @@ export const useUpdateMenu = (displayToasts = true) => {
 
   return useMutation(
     async (menu) => {
+      const token = window.localStorage.getItem("access_token");
+      const currentUserId = jwt.decode(token).id;
+      const restaurantId = usersRestaurantIds[currentUserId];
+
       const response = await axios.post(
         "http://161.53.174.14/wp-json/wp/v2/menus/" + menu.id,
         {
           meta: {
             menu_date: menu.menu_date && menu.menu_date,
-            dorucak: JSON.stringify(menu.dorucak),
-            rucak: JSON.stringify(menu.rucak),
-            vecera: JSON.stringify(menu.vecera),
-            ostalo: JSON.stringify(menu.ostalo),
+            menu_products: menu.products,
+            menu_restaurant_id: restaurantId,
           },
         }
       );

@@ -1,8 +1,8 @@
 import MediaLayout from "../../components/MediaLayout";
-import { jobsCategoryId } from "../../lib/constants";
+import { studentskiServisCategoryId } from "../../lib/constants";
 
 const MediaPage = () => {
-  return <MediaLayout from="poslovi" categoryId={jobsCategoryId} />;
+  return <MediaLayout from="poslovi" categoryId={studentskiServisCategoryId} />;
 };
 
 export default MediaPage;

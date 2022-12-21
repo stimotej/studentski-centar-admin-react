@@ -4,10 +4,8 @@ import { Dialog, DialogContent, DialogTitle, IconButton } from "@mui/material";
 import MenuPreviewTable from "../MenuPreviewTable";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
-import { useProducts } from "../../../features/products";
 
 const PreviewDialog = ({ showMenuPreviewDialog, setShowMenuPreviewDialog }) => {
-  const { data: products } = useProducts();
   const [menu, setMenu] = useState(null);
 
   useEffect(() => {
@@ -43,7 +41,6 @@ const PreviewDialog = ({ showMenuPreviewDialog, setShowMenuPreviewDialog }) => {
         <MenuPreviewTable
           title="Doručak"
           menu={menu}
-          products={products}
           fields={[
             "dorucak-menu",
             "dorucak-vege_menu",
@@ -56,7 +53,6 @@ const PreviewDialog = ({ showMenuPreviewDialog, setShowMenuPreviewDialog }) => {
           className="mt-5"
           title="Ručak"
           menu={menu}
-          products={products}
           fields={[
             "rucak-menu",
             "rucak-vege_menu",
@@ -69,7 +65,6 @@ const PreviewDialog = ({ showMenuPreviewDialog, setShowMenuPreviewDialog }) => {
           className="mt-5"
           title="Večera"
           menu={menu}
-          products={products}
           fields={[
             "vecera-menu",
             "vecera-vege_menu",

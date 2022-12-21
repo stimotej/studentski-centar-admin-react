@@ -4,13 +4,7 @@ import { toast } from "react-toastify";
 import jwt from "jsonwebtoken";
 import restaurantKeys from "./queries";
 import formatRestaurant from "./format";
-
-const usersRestaurantIds = {
-  6: 1111,
-  7: 1107,
-  8: 638,
-  12: 4678,
-};
+import { usersRestaurantIds } from "../../lib/constants";
 
 export const useRestaurant = (options) => {
   return useQuery(

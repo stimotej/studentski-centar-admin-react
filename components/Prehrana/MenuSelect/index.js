@@ -1,7 +1,7 @@
 import MenuSelectItem from "./Item";
 import Title from "./Title";
 
-const MenuSelect = ({ menu, value, onSelect, products, handleRemoveItem }) => {
+const MenuSelect = ({ menuProducts, value, onSelect, handleRemoveItem }) => {
   const menuNames = ["menu", "vege_menu", "izbor", "prilozi"];
 
   return (
@@ -12,10 +12,9 @@ const MenuSelect = ({ menu, value, onSelect, products, handleRemoveItem }) => {
           <MenuSelectItem
             key={index}
             text={menuName.split("_").join(" ")}
-            products={products}
             onSelect={() => onSelect(`dorucak-${menuName}`)}
             active={`dorucak-${menuName}` === value}
-            productIds={menu?.dorucak && menu?.dorucak[menuName]}
+            products={menuProducts?.["dorucak"]?.[menuName]}
             handleRemoveItem={handleRemoveItem}
             value={`dorucak-${menuName}`}
           />
@@ -28,10 +27,9 @@ const MenuSelect = ({ menu, value, onSelect, products, handleRemoveItem }) => {
           <MenuSelectItem
             key={index}
             text={menuName.split("_").join(" ")}
-            products={products}
             onSelect={() => onSelect(`rucak-${menuName}`)}
             active={`rucak-${menuName}` === value}
-            productIds={menu?.rucak && menu?.rucak[menuName]}
+            products={menuProducts?.["rucak"]?.[menuName]}
             handleRemoveItem={handleRemoveItem}
             value={`rucak-${menuName}`}
           />
@@ -44,10 +42,9 @@ const MenuSelect = ({ menu, value, onSelect, products, handleRemoveItem }) => {
           <MenuSelectItem
             key={index}
             text={menuName.split("_").join(" ")}
-            products={products}
             onSelect={() => onSelect(`vecera-${menuName}`)}
             active={`vecera-${menuName}` === value}
-            productIds={menu?.vecera && menu?.vecera[menuName]}
+            products={menuProducts?.["vecera"]?.[menuName]}
             handleRemoveItem={handleRemoveItem}
             value={`vecera-${menuName}`}
           />

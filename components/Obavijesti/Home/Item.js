@@ -1,26 +1,15 @@
 import dayjs from "dayjs";
 import Image from "next/image";
-import { useEffect } from "react";
-import { useState } from "react";
 import { MdOutlineImage } from "react-icons/md";
-import { useCategories } from "../../../features/obavijesti";
-import { obavijestiCategoryId } from "../../../lib/constants";
 
-const Item = ({ obavijest, active, onClick, className, isEvent }) => {
-  const { data: categories } = useCategories();
-  const [category, setCategory] = useState("");
-
-  useEffect(() => {
-    if (categories && !isEvent) {
-      const postCategory = obavijest.categories?.find(
-        (item) => parseInt(item) !== obavijestiCategoryId
-      );
-      categories.forEach((item) => {
-        if (item.id === parseInt(postCategory)) setCategory(item.name);
-      });
-    }
-  }, [categories, isEvent, obavijest.categories]);
-
+const Item = ({
+  obavijest,
+  active,
+  onClick,
+  className,
+  isEvent,
+  showCategory,
+}) => {
   return (
     <div
       className={`flex items-center rounded-lg p-2 cursor-pointer hover:bg-white hover:shadow-lg transition-shadow ${
@@ -85,7 +74,8 @@ const Item = ({ obavijest, active, onClick, className, isEvent }) => {
         {!isEvent && (
           <>
             <p className="text-sm">
-              {category} | {dayjs(obavijest.date).format("DD.MM.YYYY HH:mm[h]")}
+              {showCategory ? `${obavijest.category} | ` : null}
+              {dayjs(obavijest.date).format("DD.MM.YYYY HH:mm[h]")}
             </p>
             <div className="text-sm">
               {obavijest.show_always ? (

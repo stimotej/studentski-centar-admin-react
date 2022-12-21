@@ -48,12 +48,18 @@ const Sidebar = ({ category }) => {
               key={index}
               icon={link.icon}
               to={link.to}
+              title={link.title}
               onClick={() => setActive(false)}
             />
           ))}
         </nav>
         <div className="flex flex-col">
-          <Link icon={<MdOutlineLogout />} button onClick={handleLogOut} />
+          <Link
+            icon={<MdOutlineLogout />}
+            title="Odjava"
+            button
+            onClick={handleLogOut}
+          />
         </div>
       </aside>
       <Toggle active={active} onClick={() => setActive(!active)} />

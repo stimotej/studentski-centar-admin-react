@@ -57,7 +57,7 @@ const MenuList = () => {
 
     if (!token || !userGroups["prehrana"].includes(username))
       router.push("/prehrana/login");
-  }, []);
+  }, [router]);
 
   const [deleteModal, setDeleteModal] = useState(false);
   const [showMenuPreviewDialog, setShowMenuPreviewDialog] = useState({

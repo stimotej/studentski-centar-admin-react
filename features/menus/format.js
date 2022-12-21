@@ -5,10 +5,8 @@ const formatMenu = (menu) => ({
   createdAt: menu.date,
   updatedAt: menu.modified,
   userId: menu.author,
-  dorucak: JSON.parse(menu.meta.dorucak),
-  rucak: JSON.parse(menu.meta.rucak),
-  vecera: JSON.parse(menu.meta.vecera),
-  ostalo: JSON.parse(menu.meta.ostalo),
+  products: menu.meta.menu_products,
+  restaurantId: menu.meta.menu_restaurant_id,
   image: menu.image_url,
   imageId: menu.featured_media,
   description: menu.excerpt.rendered

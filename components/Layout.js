@@ -79,6 +79,21 @@ const Layout = ({ children }) => {
     },
   });
 
+  const themeSport = createTheme({
+    palette: {
+      primary: {
+        main: "rgb(0, 150, 136)",
+        contrastText: "#ffffff",
+      },
+      secondary: {
+        main: "#fafafa",
+      },
+    },
+    shape: {
+      borderRadius: 8,
+    },
+  });
+
   return (
     <ThemeProvider
       theme={
@@ -90,6 +105,8 @@ const Layout = ({ children }) => {
           ? themePoslovi
           : category === "smjestaj"
           ? themeSmjestaj
+          : category === "sport"
+          ? themeSport
           : themeObavijesti
       }
     >

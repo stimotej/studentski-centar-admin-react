@@ -7,8 +7,6 @@ import {
 } from "react-icons/md";
 import Header from "../../components/Header";
 import Layout from "../../components/Layout";
-import { createProduct, updateProduct } from "../../lib/api/products";
-import { useRouter } from "next/router";
 import { userGroups } from "../../lib/constants";
 import Script from "next/script";
 import MyTable from "../../components/Elements/Table";
@@ -20,7 +18,6 @@ import {
   TableCell,
   Tooltip,
 } from "@mui/material";
-import { useSWRConfig } from "swr";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faClipboardListCheck,
@@ -29,16 +26,15 @@ import {
   faXmark,
   faMagnifyingGlass,
 } from "@fortawesome/pro-regular-svg-icons";
-import { toast } from "react-toastify";
-import Link from "next/link";
-import replaceCroatian from "../../lib/replaceCroatian";
 import LoadingButton from "@mui/lab/LoadingButton";
 import DeleteDialog from "../../components/Prehrana/Products/DeleteDialog";
 import StockDialog from "../../components/Prehrana/Products/StockDialog";
 import useDebounce from "../../lib/useDebounce";
 import { useProducts, useUpdateProduct } from "../../features/products";
+import { useRouter } from "next/router";
+import Link from "next/link";
 
-const Products = () => {
+const ProductsPage = () => {
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState("title|desc");
   const [search, setSearch] = useState("");
@@ -300,4 +296,4 @@ const Products = () => {
   );
 };
 
-export default Products;
+export default ProductsPage;

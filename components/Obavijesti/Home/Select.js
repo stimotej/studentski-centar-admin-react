@@ -6,8 +6,9 @@ const Select = ({
   obavijesti,
   value,
   onChange,
-  handleDelete,
   isEvent = false,
+  showCategory = true,
+  from,
 }) => {
   return obavijesti?.map((obavijest) => (
     <div key={obavijest?.id}>
@@ -18,6 +19,7 @@ const Select = ({
         active={obavijest.id === value?.id}
         onClick={() => onChange(obavijest)}
         isEvent={isEvent}
+        showCategory={showCategory}
       />
       {/* Item on phone */}
       <Item
@@ -29,14 +31,15 @@ const Select = ({
           else onChange(obavijest);
         }}
         isEvent={isEvent}
+        showCategory={showCategory}
       />
       {value?.id === obavijest.id && (
         <ObavijestPreview
           obavijest={obavijest}
-          handleDelete={handleDelete}
           className="lg:hidden bg-white mb-8 shadow-lg rounded-lg"
           title={false}
           isEvent={isEvent}
+          from={from}
         />
       )}
     </div>
