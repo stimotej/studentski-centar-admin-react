@@ -171,7 +171,7 @@ const CompanyDocument = ({ userData }) => {
             <Text style={[styles.bold, styles.uppercase]}>
               Šifra poslodavca
             </Text>
-            <Text>(popunjava student)</Text>
+            <Text>(Popunjava Student servis)</Text>
             <Text style={[styles.bold, { marginTop: 12 }]}>U Zagrebu:</Text>
           </View>
         </View>
@@ -264,7 +264,7 @@ const CompanyDocument = ({ userData }) => {
           * Ovjerom i potpisom ovoga obrasca poslodavac ujedno potvrđuje da je
           upoznat s Općim uvjetima poslovanja Student servisa i dopušta Student
           servisu objavu potražnje studenata za rad (OGLAS) na mrežnim
-          stranicama oglašivaća s kojima Studentski centar u Zagrebu ima
+          stranicama oglašivača s kojima Studentski centar u Zagrebu ima
           potpisan sporazum. (24.07.2017.)
         </Text>
       </Page>

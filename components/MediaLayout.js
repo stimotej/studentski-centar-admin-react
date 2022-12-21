@@ -2,7 +2,12 @@ import { useState, useEffect, Fragment } from "react";
 import { useRouter } from "next/router";
 import { MdAdd } from "react-icons/md";
 import Image from "next/image";
-import { TextField } from "@mui/material";
+import {
+  ImageList,
+  ImageListItem,
+  ImageListItemBar,
+  TextField,
+} from "@mui/material";
 import { LoadingButton } from "@mui/lab";
 import MediaFileInput from "./Elements/MediaFileInput";
 import Loader from "./Elements/Loader";
@@ -145,9 +150,9 @@ const MediaLayout = ({ categoryId, from }) => {
         {isLoading ? (
           <Loader className="w-10 h-10 mx-auto mt-12 border-primary" />
         ) : isError ? (
-          <div className="mt-10 text-error">Greška kod učitavanja medija</div>
+          <div className="mt-4 text-error">Greška kod učitavanja medija</div>
         ) : mediaList.pages?.[0]?.length <= 0 ? (
-          <div className="mt-10 text-gray-500">Nema medija za prikaz</div>
+          <div className="mt-4 text-gray-500">Nema medija za prikaz</div>
         ) : (
           mediaList.pages?.map((group, index) => (
             <Fragment key={index}>
@@ -170,7 +175,8 @@ const MediaLayout = ({ categoryId, from }) => {
                       alt={media.alt || media.title || "Medij"}
                       width={media.width || 50}
                       height={media.height || 50}
-                      className="rounded-lg object-cover mx-auto"
+                      loading="lazy"
+                      className="rounded-lg object-cover mx-auto w-full auto"
                     />
                     <h3 className="mt-3 font-semibold text-left">
                       {media.title}
@@ -257,7 +263,10 @@ const MediaLayout = ({ categoryId, from }) => {
             />
             <h3 className="mt-4">URL medija:</h3>
             <div className="w-full py-2 px-3 mt-1 rounded-lg bg-secondary border-none">
-              <a href={mediaDialog?.src} className="text-primary break-words">
+              <a
+                href={mediaDialog?.src}
+                className="text-primary break-words underline"
+              >
                 {mediaDialog?.src}
               </a>
             </div>

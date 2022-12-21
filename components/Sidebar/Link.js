@@ -11,10 +11,10 @@ const SidebarLink = ({ icon, to, title, button, onClick }) => {
       <Button
         onClick={onClick}
         className={clsx(
-          "p-3 !w-fit rounded-lg",
+          "!p-3 !w-fit !rounded-lg",
           router.pathname === to
-            ? "bg-primary hover:bg-primary shadow hover:shadow-lg transition-shadow text-white"
-            : "hover:bg-secondary text-black/60"
+            ? "!bg-primary hover:!bg-primary !shadow hover:!shadow-lg !transition-shadow !text-white"
+            : "hover:!bg-secondary !text-black/60"
         )}
       >
         {icon}
@@ -26,10 +26,10 @@ const SidebarLink = ({ icon, to, title, button, onClick }) => {
         <Button
           onClick={onClick}
           className={clsx(
-            "p-3 !w-fit rounded-lg",
+            "!p-3 !w-fit !rounded-lg",
             router.pathname === to
-              ? "bg-primary hover:bg-primary shadow hover:shadow-lg transition-shadow text-white"
-              : "hover:bg-secondary text-black/60"
+              ? "!bg-primary hover:!bg-primary !shadow hover:!shadow-lg !transition-shadow !text-white"
+              : "hover:!bg-secondary !text-black/60"
           )}
         >
           {icon}

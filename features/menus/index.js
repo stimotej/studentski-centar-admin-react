@@ -6,6 +6,7 @@ import formatMenu from "./format";
 import menuKeys from "./queries";
 import jwt from "jsonwebtoken";
 import { usersRestaurantIds } from "../../lib/constants";
+import dayjs from "dayjs";
 
 export const useMenus = (filters, options) => {
   const queryClient = useQueryClient();
@@ -67,11 +68,15 @@ export const useMenuByDate = (date, options) => {
   return useQuery(
     menuKeys.menuByDate(date),
     async () => {
+      const token = window.localStorage.getItem("access_token");
+      const userId = jwt.decode(token).id;
+
       const response = await axios.get(
         "http://161.53.174.14/wp-json/wp/v2/menus",
         {
           params: {
             menu_date: date,
+            author: userId,
           },
         }
       );
@@ -100,7 +105,7 @@ export const useCreateMenu = () => {
           title: "Menu",
           status: "publish",
           meta: {
-            menu_date: menu.menu_date,
+            menu_date: dayjs(menu.menu_date).format("YYYY-MM-DD"),
             menu_products: menu.products,
             menu_restaurant_id: restaurantId,
           },
@@ -135,7 +140,8 @@ export const useUpdateMenu = (displayToasts = true) => {
         "http://161.53.174.14/wp-json/wp/v2/menus/" + menu.id,
         {
           meta: {
-            menu_date: menu.menu_date && menu.menu_date,
+            menu_date:
+              menu.menu_date && dayjs(menu.menu_date).format("YYYY-MM-DD"),
             menu_products: menu.products,
             menu_restaurant_id: restaurantId,
           },

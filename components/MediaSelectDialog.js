@@ -174,9 +174,10 @@ const MediaSelectDialog = ({
                       >
                         <Image
                           src={media.src}
-                          alt={media.alt ?? "Medij"}
-                          width={200}
-                          height={200}
+                          alt={media.alt || "Medij"}
+                          width={media.width || 200}
+                          height={media.height || 200}
+                          loading="lazy"
                           className={`relative w-full object-cover h-full rounded-lg ${
                             media.id === selectedImage?.id
                               ? "ring-2 ring-offset-2 ring-primary"
