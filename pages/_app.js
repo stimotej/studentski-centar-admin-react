@@ -7,6 +7,7 @@ import fetcher from "../lib/fetcher";
 import "../styles/globals.css";
 import "../styles/quill.css";
 import "react-quill/dist/quill.snow.css";
+import "react-quill/dist/quill.bubble.css";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 import dayjs from "dayjs";

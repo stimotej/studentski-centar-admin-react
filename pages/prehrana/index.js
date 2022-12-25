@@ -7,12 +7,22 @@ import Layout from "../../components/Layout";
 import { useEffect } from "react";
 import { userGroups } from "../../lib/constants";
 import { useRouter } from "next/router";
-import { useRestaurant } from "../../features/restaurant";
+import { useRestaurant, useUpdateRestaurant } from "../../features/restaurant";
+import dynamic from "next/dynamic";
+import { useState } from "react";
+import Button from "../../components/Elements/Button";
+const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
 const Home = () => {
   const { data: restaurant, isError: error } = useRestaurant();
 
   const router = useRouter();
+
+  const [workingHours, setWorkingHours] = useState("");
+
+  useEffect(() => {
+    if (restaurant) setWorkingHours(restaurant.radnoVrijeme);
+  }, [restaurant]);
 
   useEffect(() => {
     const token = window.localStorage.getItem("access_token");
@@ -20,7 +30,16 @@ const Home = () => {
 
     if (!token || !userGroups["prehrana"].includes(username))
       router.push("/prehrana/login");
-  }, []);
+  }, [router]);
+
+  const { mutate: updateRestaurant, isLoading: isUpdating } =
+    useUpdateRestaurant();
+
+  const handleUpdatePost = async () => {
+    updateRestaurant({
+      radnoVrijeme: workingHours,
+    });
+  };
 
   return (
     <Layout>
@@ -30,17 +49,15 @@ const Home = () => {
           <h3 className="uppercase text-primary text-sm tracking-wider mb-2">
             Prikaz restorana
           </h3>
-          <span className="mb-4 text-sm text-black text-opacity-50">
-            Uredite prikaz pritiskom na element koji želite urediti pa spremite
-            promjene
-          </span>
 
           {!!restaurant ? (
             <PrikazRestorana
               id={restaurant?.id}
               slika={restaurant?.image}
               naslov={restaurant?.title}
-              opis={restaurant?.description}
+              ponuda={restaurant?.ponuda}
+              info={restaurant?.info}
+              radnoVrijeme={restaurant?.radnoVrijeme}
             />
           ) : error ? (
             <div className="mt-10 text-error">
@@ -52,9 +69,29 @@ const Home = () => {
         </div>
         <div className="w-full md:w-1/2 p-2 md:p-6 mt-10 md:mt-0">
           <h3 className="uppercase text-primary text-sm tracking-wider">
-            Menu prikaz
+            Radno vrijeme
           </h3>
-          <div className="flex w-full mt-5 md:mt-8">
+          <ReactQuill
+            value={workingHours}
+            onChange={setWorkingHours}
+            className="mt-4 border rounded-lg"
+            modules={{
+              toolbar: [
+                ["bold", "italic", "underline"],
+                [{ list: "ordered" }, { list: "bullet" }],
+                [{ color: [] }, { background: [] }],
+                [{ align: ["", "center", "right", "justify"] }],
+              ],
+            }}
+          />
+          <Button
+            text="Spremi"
+            loading={isUpdating}
+            onClick={handleUpdatePost}
+            className="w-fit mt-5"
+            primary
+          />
+          {/* <div className="flex w-full mt-5 md:mt-8">
             <Link
               href="/prehrana/menu-prikaz"
               passHref
@@ -63,7 +100,7 @@ const Home = () => {
               <span className="font-semibold">Prikaz menija</span>
               <MdOutlinePlayArrow />
             </Link>
-          </div>
+          </div> */}
         </div>
       </div>
     </Layout>

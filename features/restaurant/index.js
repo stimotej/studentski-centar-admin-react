@@ -44,9 +44,12 @@ export const useUpdateRestaurant = () => {
         "http://161.53.174.14/wp-json/wp/v2/posts/" + restaurantId,
         {
           title: restaurant?.title,
-          excerpt: restaurant?.description,
           featured_media: restaurant?.imageId,
-          meta: restaurant?.meta,
+          meta: {
+            ponuda: restaurant?.ponuda,
+            radno_vrijeme: restaurant?.radnoVrijeme,
+            restaurant_info: restaurant?.info,
+          },
           tags: restaurant?.tags,
         }
       );
