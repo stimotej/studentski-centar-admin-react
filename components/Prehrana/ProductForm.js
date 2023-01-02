@@ -196,9 +196,7 @@ const ProductForm = ({ product }) => {
               label="Cijena"
               type="number"
               InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">HRK</InputAdornment>
-                ),
+                endAdornment: <InputAdornment position="end">€</InputAdornment>,
               }}
               error={!!errors.price}
               helperText={errors.price && errors.price.message}

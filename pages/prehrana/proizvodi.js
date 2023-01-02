@@ -243,7 +243,7 @@ const ProductsPage = () => {
                   Otvori
                 </Button>
               </TableCell>
-              <TableCell>{row.price} kn</TableCell>
+              <TableCell>{row.price} €</TableCell>
               <TableCell>
                 <LoadingButton
                   loading={stockLoading === row.id}

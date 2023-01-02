@@ -49,7 +49,6 @@ const Preview = ({ obavijest, className, title, isEvent = false, from }) => {
           link
           text="Uredi"
           variant="outlined"
-          // color="secondary"
           icon={<MdOutlineEdit />}
           to={isEvent ? "/kultura/uredi-event" : `/${from}/uredi-obavijest`}
           state={obavijest}
@@ -57,21 +56,19 @@ const Preview = ({ obavijest, className, title, isEvent = false, from }) => {
         <Button
           text="Otvori"
           variant="outlined"
-          // color="secondary"
           icon={<MdOpenInNew />}
           link
           openInNewTab
           to={obavijest?.link}
-          className="ml-4"
+          className="!ml-4"
         />
         <Button
           text="Obriši"
           variant="outlined"
           color="error"
-          // color="secondary"
           icon={<MdOutlineDelete />}
           onClick={() => setDeleteDialog(true)}
-          className="ml-4"
+          className="!ml-4"
         />
       </div>
       <ReactQuill

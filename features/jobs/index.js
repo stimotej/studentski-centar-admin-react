@@ -1,30 +1,77 @@
-import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import axios from "axios";
-import { toast } from "react-toastify";
-
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import formatJob from "./format";
 import jobKeys from "./queries";
+import { useEffect, useRef } from "react";
+import { toast } from "react-toastify";
 
 export const useJobs = (filters, options) => {
   const queryClient = useQueryClient();
-  return useQuery(
+
+  const jobsPerPage = 10;
+  const totalItems = useRef(0);
+  const totalPages = useRef(0);
+
+  const fetchJobs = async (newFilters) => {
+    const userId = window.localStorage.getItem("user_id");
+
+    const response = await axios.get(
+      "http://161.53.174.14/wp-json/wp/v2/jobs",
+      {
+        params: {
+          orderby: newFilters?.orderby,
+          order: newFilters?.order,
+          search: newFilters?.search,
+          per_page: jobsPerPage,
+          page: newFilters?.page,
+          author: userId,
+        },
+      }
+    );
+    totalItems.current = +(response.headers?.["x-wp-total"] || "0");
+    totalPages.current = +(response.headers?.["x-wp-totalpages"] || "0");
+    return response.data;
+  };
+
+  const queryData = useQuery(
     jobKeys.jobsFiltered(filters),
-    async () => {
-      const response = await axios.get(
-        "https://api.spajalica.hr/v2/super/secret/job/listing/admin",
-        {
-          params: {
-            job_title: filters?.search,
-          },
-        }
-      );
-      return response.data?.jobs;
-    },
+    async () => fetchJobs(filters),
     {
-      onSuccess: (jobs) => {
-        queryClient.setQueryData(jobKeys.jobs, jobs);
-      },
+      select: (jobs) => jobs.map((job) => formatJob(job)),
+      keepPreviousData: true,
+      staleTime: 5000,
       ...options,
     }
+  );
+
+  useEffect(() => {
+    if (filters.page) {
+      if (!queryData.isPreviousData && filters?.page < totalPages.current)
+        queryClient.prefetchQuery(
+          jobKeys.jobsFiltered({ ...filters, page: filters?.page + 1 }),
+          () => fetchJobs({ ...filters, page: (filters?.page || 0) + 1 })
+        );
+    }
+  }, [queryData.data, queryData.isPreviousData, filters, queryClient]);
+
+  return {
+    ...queryData,
+    itemsPerPage: jobsPerPage,
+    totalNumberOfItems: totalItems.current,
+    totalNumberOfPages: totalPages.current,
+  };
+};
+
+export const useJob = (id, options) => {
+  return useQuery(
+    jobKeys.job(id),
+    async () => {
+      const response = await axios.get(
+        "http://161.53.174.14/wp-json/wp/v2/jobs/" + id
+      );
+      return formatJob(response.data);
+    },
+    options
   );
 };
 
@@ -49,89 +96,69 @@ export const useCreateJob = () => {
   return useMutation(
     async (job) => {
       const response = await axios.post(
-        "https://api.spajalica.hr/v2/jobs/admin",
-        job
+        "http://161.53.174.14/wp-json/wp/v2/jobs",
+        {
+          title: job.job_title,
+          excerpt: job.job_description,
+          status: "publish",
+          meta: job,
+        }
       );
-      return response.data;
+      return formatJob(response.data);
     },
     {
       onSuccess: () => {
-        toast.success("Posao je uspješno objavljen");
+        return queryClient.invalidateQueries(jobKeys.jobs);
+      },
+    }
+  );
+};
+
+export const useUpdateJob = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    async ({ id, job }) => {
+      const response = await axios.post(
+        "http://161.53.174.14/wp-json/wp/v2/jobs/" + id,
+        {
+          title: job.job_title,
+          slug: job.job_title,
+          excerpt: job.job_description,
+          meta: job,
+        }
+      );
+      return formatJob(response.data);
+    },
+    {
+      onSuccess: () => {
         return queryClient.invalidateQueries(jobKeys.jobs);
       },
       onError: () => {
-        toast.error("Greška kod objave posla");
+        toast.error("Greška kod postavljanja posla");
       },
     }
   );
 };
 
-export const useAllowJob = () => {
+export const useDeleteJob = () => {
   const queryClient = useQueryClient();
 
   return useMutation(
     async (id) => {
-      const response = await axios.post(
-        "https://api.spajalica.hr/v2/jobs/admin/allow/" + id
+      const response = await axios.delete(
+        "http://161.53.174.14/wp-json/wp/v2/jobs/" + id,
+        {
+          params: {
+            force: true,
+          },
+        }
       );
       return response.data;
     },
     {
-      onMutate: async (id) => {
-        await queryClient.cancelQueries(jobKeys.jobs);
-        const previousJobs = queryClient.getQueryData(jobKeys.jobs);
-        queryClient.setQueryData(jobKeys.jobs, (old) => {
-          if (!old) return;
-          const selectedJob = old.find((job) => job.id === id);
-          return [
-            ...old.filter((job) => job.id !== id),
-            { ...selectedJob, allowed_sc: !selectedJob.allowed_sc },
-          ];
-        });
-        return { previousJobs };
-      },
-      onSuccess: () => {
-        toast.success("Uspješno ste dozvolili prikaz posla na stranici");
-        return queryClient.invalidateQueries(jobKeys.jobs);
-      },
-      onError: (err, id, context) => {
-        toast.error("Greška kod postavljanja posla");
-        return queryClient.setQueryData(jobKeys.jobs, context.previousJobs);
-      },
-    }
-  );
-};
-
-export const useJobFeatured = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation(
-    async (id) => {
-      const response = await axios.post(
-        "https://api.spajalica.hr/v2/jobs/admin/feature/" + id
-      );
-      return response.data;
-    },
-    {
-      onMutate: async (id) => {
-        await queryClient.cancelQueries(jobKeys.jobs);
-        const previousJobs = queryClient.getQueryData(jobKeys.jobs);
-        queryClient.setQueryData(jobKeys.jobs, (old) => {
-          if (!old) return;
-          const selectedJob = old.find((job) => job.id === id);
-          return [
-            ...old.filter((job) => job.id !== id),
-            { ...selectedJob, featured_sc: !selectedJob.featured_sc },
-          ];
-        });
-        return { previousJobs };
-      },
       onSuccess: () => {
         return queryClient.invalidateQueries(jobKeys.jobs);
-      },
-      onError: (err, id, context) => {
-        toast.error("Greška kod postavljanja posla");
-        return queryClient.setQueryData(jobKeys.jobs, context.previousJobs);
       },
     }
   );

@@ -5,6 +5,7 @@ import {
   Autocomplete,
   Checkbox,
   FormControlLabel,
+  InputAdornment,
   TextField,
 } from "@mui/material";
 import clsx from "clsx";
@@ -92,12 +93,12 @@ const schema = yup.object().shape({
   payment_rate: yup
     .number()
     .typeError("Mora biti broj")
-    .min(29.3, "Mora biti barem 29.30 kn/sat")
+    .min(4.38, "Mora biti barem 4.38 €/sat")
     .required("Ovo polje je obavezno"),
   payment_rate_max: yup
     .number()
     .typeError("Mora biti broj")
-    .min(29.3, "Mora biti barem 29.30 kn/sat")
+    .min(4.38, "Mora biti barem 4.38 €/sat")
     .required("Ovo polje je obavezno"),
   active_until: yup
     .date()
@@ -388,7 +389,7 @@ const UrediPosao = () => {
                 <span className="body">Raspon satnice</span>
               </button>
             </div>
-            <div className="flex mt-3 gap-4">
+            <div className="flex mt-3 gap-4 flex-wrap">
               <div className="flex-1 flex flex-col">
                 <Controller
                   control={control}
@@ -398,7 +399,14 @@ const UrediPosao = () => {
                       {...field}
                       onChange={(e) => {
                         field.onChange(e);
-                        setValue("payment_rate_max", e.target.value);
+                        rate === 0 &&
+                          setValue("payment_rate_max", e.target.value);
+                      }}
+                      type="number"
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">€</InputAdornment>
+                        ),
                       }}
                       label={rate === 0 ? "Satnica" : "Minimalna satnica"}
                       error={!!errors.payment_rate}
@@ -418,6 +426,11 @@ const UrediPosao = () => {
                       <TextField
                         {...field}
                         label="Maksimalna satnica"
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">€</InputAdornment>
+                          ),
+                        }}
                         error={!!errors.payment_rate_max}
                         helperText={
                           errors.payment_rate_max &&
@@ -428,7 +441,12 @@ const UrediPosao = () => {
                   />
                 </div>
               )}
-              <div className="flex-1 flex flex-col">
+              <div
+                className={clsx(
+                  "flex flex-col",
+                  rate === 1 ? "!w-full" : "flex-1"
+                )}
+              >
                 <Controller
                   control={control}
                   name="work_hours"

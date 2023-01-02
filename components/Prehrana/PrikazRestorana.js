@@ -11,6 +11,11 @@ import {
   MdDelete,
   MdEventNote,
   MdLocationPin,
+  MdRestaurantMenu,
+  MdRestaurant,
+  MdLunchDining,
+  MdCoffee,
+  MdLocalBar,
 } from "react-icons/md";
 import { IconButton, Tooltip } from "@mui/material";
 import MyDialog from "../Elements/MyDialog";
@@ -20,6 +25,11 @@ const iconList = [
   { name: "location_pin", Icon: MdLocationPin },
   { name: "event_note", Icon: MdEventNote },
   { name: "calendar_today", Icon: MdCalendarToday },
+  { name: "restaurant_menu", Icon: MdRestaurantMenu },
+  { name: "restaurant", Icon: MdRestaurant },
+  { name: "lunch_dining", Icon: MdLunchDining },
+  { name: "coffee", Icon: MdCoffee },
+  { name: "local_bar", Icon: MdLocalBar },
 ];
 
 const PrikazRestorana = ({ id, slika, naslov, ponuda, info, radnoVrijeme }) => {

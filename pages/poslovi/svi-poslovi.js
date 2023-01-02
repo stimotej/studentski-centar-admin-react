@@ -20,17 +20,17 @@ import React from "react";
 import { useState } from "react";
 import { useEffect } from "react";
 import { MdAdd } from "react-icons/md";
+import { toast } from "react-toastify";
 import MyTable from "../../components/Elements/Table";
 import Header from "../../components/Header";
 import Layout from "../../components/Layout";
-import { useAllowJob, useJobFeatured, useJobs } from "../../features/jobs";
+import { useJobs, useUpdateJob } from "../../features/jobs/index";
 import { userGroups } from "../../lib/constants";
 import useDebounce from "../../lib/useDebounce";
 
 const headCells = [
   {
     id: "company",
-    sort: true,
     label: "Poslodavac",
   },
   {
@@ -39,34 +39,42 @@ const headCells = [
     label: "Naziv",
   },
   {
-    id: "created_at",
+    id: "date",
     sort: true,
     label: "Objavljen",
   },
   {
     id: "active_until",
-    sort: true,
     label: "Aktivan do",
   },
   {
     id: "actions",
-    sort: true,
     label: "Radnje",
   },
   {
     id: "status",
-    sort: true,
     label: "Status",
   },
 ];
 
 const SviPoslovi = () => {
+  const [page, setPage] = useState(1);
+  const [sort, setSort] = useState("title|desc");
   const [search, setSearch] = useState("");
 
   const debouncedSearch = useDebounce(search, 300);
 
-  const { data: jobs, isLoading } = useJobs({
+  const {
+    data: jobs,
+    isLoading,
+    isError,
+    totalNumberOfItems,
+    itemsPerPage,
+  } = useJobs({
+    orderby: sort?.split("|")?.[0],
+    order: sort?.split("|")?.[1],
     search: debouncedSearch,
+    page,
   });
 
   const router = useRouter();
@@ -79,19 +87,25 @@ const SviPoslovi = () => {
 
     if (!token || !userGroups["poslovi"].includes(username))
       router.push("/poslovi/login");
-  }, []);
+  }, [router]);
 
-  const { mutate: allowJob } = useAllowJob();
-  const { mutate: setJobFeatured } = useJobFeatured();
+  const { mutate: updateJob } = useUpdateJob();
 
   const handleAllow = (e, jobId) => {
     e.stopPropagation();
-    allowJob(jobId);
+    updateJob(
+      { id: jobId, job: { job_allowed_sc: true } },
+      {
+        onSuccess: () => {
+          toast.success("Uspješno ste dozvolili prikaz posla na stranici");
+        },
+      }
+    );
   };
 
-  const handleFeatured = (e, jobId) => {
+  const handleFeatured = (e, jobId, isFeatured) => {
     e.stopPropagation();
-    setJobFeatured(jobId);
+    updateJob({ id: jobId, job: { job_featured: !isFeatured } });
   };
 
   return (
@@ -139,7 +153,20 @@ const SviPoslovi = () => {
           rows={jobs || []}
           onSelectionChange={(selected) => setSelectedJobs(selected)}
           defaultOrder="desc"
-          defaultOrderBy="created_at"
+          defaultOrderBy="title"
+          error={isError}
+          errorMessage="Greška kod dohvaćanja poslova"
+          rowsPerPage={itemsPerPage}
+          totalNumberOfItems={totalNumberOfItems}
+          enableSelectAll={false}
+          onChangePage={(nextPage) => {
+            console.log(nextPage);
+            setPage(nextPage + 1);
+          }}
+          customSort
+          onChangeSort={(field, order) => {
+            setSort([field, order].join("|"));
+          }}
           // containerClassName="mt-6"
           // enableRowSelect={false}
           // displayToolbar={false}
@@ -224,7 +251,7 @@ const SviPoslovi = () => {
                       color="primary"
                       onClick={(e) => {
                         e.stopPropagation();
-                        window.open(`http://161.53.174.14/posao/?id=${row.id}`);
+                        window.open(row.link);
                       }}
                     >
                       <FontAwesomeIcon
@@ -244,7 +271,9 @@ const SviPoslovi = () => {
                   >
                     <IconButton
                       color="primary"
-                      onClick={(e) => handleFeatured(e, row.id)}
+                      onClick={(e) =>
+                        handleFeatured(e, row.id, row.featured_sc)
+                      }
                     >
                       <FontAwesomeIcon
                         icon={row.featured_sc ? faStarSolid : faStar}
