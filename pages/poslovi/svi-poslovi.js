@@ -94,7 +94,7 @@ const SviPoslovi = () => {
   const handleAllow = (e, jobId) => {
     e.stopPropagation();
     updateJob(
-      { id: jobId, job: { job_allowed_sc: true } },
+      { id: jobId, job: { allowed_sc: true } },
       {
         onSuccess: () => {
           toast.success("Uspješno ste dozvolili prikaz posla na stranici");
@@ -105,7 +105,7 @@ const SviPoslovi = () => {
 
   const handleFeatured = (e, jobId, isFeatured) => {
     e.stopPropagation();
-    updateJob({ id: jobId, job: { job_featured: !isFeatured } });
+    updateJob({ id: jobId, job: { featured: !isFeatured } });
   };
 
   return (

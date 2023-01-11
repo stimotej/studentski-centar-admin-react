@@ -21,52 +21,6 @@ import { useSkills } from "../../lib/api/skills";
 import { useCompanies } from "../../lib/api/companies";
 import { useCreateJob } from "../../features/jobs";
 
-const options = {
-  ALL_JOBS: "Svi Poslovi",
-  NEW_JOBS: "Novi Poslovi",
-  JOBS_FOR_ME: "Za mene",
-  MY_JOBS: "Moji Poslovi",
-
-  XP_REQUIRED: "Potrebno iskustvo",
-  NO_XP_REQUIRED: "Nije potrebno iskustvo",
-  LONG_TERM: "Dugoročni posao",
-  SHORT_TERM: "Kratkoročni posao",
-  DRIVING_LICENSE: "Vozačka dozvola",
-  FOREIGN_LANGUAGE: "Znanje stranog jezika",
-  IT_KNOWLEDGE: "Informatičko znanje",
-  FIXED_HOURS: "Fiksno radno vrijeme",
-  FLEXIBLE_HOURS: "Fleksibilno radno vrijeme",
-  EXPERIENCES_OF_WORKING_WITH_CHILDREN_WITH_DISABILITIES:
-    "Iskustva rada s djecom s teškoćama",
-
-  ADMIN_OFFICE: "Administrativni i uredski poslovi",
-  PHYSICAL: "Fizički poslovi",
-  IT: "IT poslovi",
-  PRODUCTION_WAREHOUSE: "Proizvodnja i rad u skladištu",
-  TRAFFIC_TRANSPORT: "Promet i transport",
-  CARE_SOCIAL_SERVICE: "Skrb i socijalne usluge",
-  COMMERCE: "Trgovina",
-  TOURISM_CATERING: "Turizam i ugostiteljstvo",
-  PROMOTION_SALES: "Promidžba i prodaja",
-  OTHER: "Ostali poslovi",
-
-  JOB_CREATE_SUCCESS: "Posao uspješno objavljen",
-  JOB_CREATE_ERROR: "Dogodila se greška u objavi posla",
-
-  JOB_START: "Početak rada",
-  JOB_END: "Kraj rada",
-  EST_PAYMANT: "Očekivana zarada",
-  ABOUT_EMPLOYE: "O poslodavcu",
-  DETAILS: "Detalji",
-  DAYS: "dana",
-  DAY: "dan",
-
-  APP_ACTIVE: "Prijava čeka odgovor",
-  APP_INACTIVE: "Prijava nije aktivna",
-  APP_ACCEPTED: "Prijava prihvaćena",
-  APP_REJECTED: "Prijava odbijena",
-};
-
 const schema = yup.object().shape({
   company_name: yup.string().required("Ovo polje je obavezno"),
   title: yup.string().required("Ovo polje je obavezno"),
