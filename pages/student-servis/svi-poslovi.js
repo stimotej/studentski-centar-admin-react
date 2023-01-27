@@ -1,7 +1,9 @@
 import {
   faCheck,
   faMagnifyingGlass,
+  faPen,
   faStar,
+  faTrash,
   faUpRightFromSquare,
   faXmark,
 } from "@fortawesome/pro-regular-svg-icons";
@@ -15,6 +17,7 @@ import {
   Tooltip,
 } from "@mui/material";
 import dayjs from "dayjs";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import React from "react";
 import { useState } from "react";
@@ -24,24 +27,26 @@ import { toast } from "react-toastify";
 import MyTable from "../../components/Elements/Table";
 import Header from "../../components/Header";
 import Layout from "../../components/Layout";
-import { useJobs, useUpdateJob } from "../../features/jobs/index";
+import DeleteDialog from "../../components/Prehrana/jobs/DeleteDialog";
+import { useDeleteJob, useJobs, useUpdateJob } from "../../features/jobs/index";
 import { userGroups } from "../../lib/constants";
 import useDebounce from "../../lib/useDebounce";
 
 const headCells = [
   {
-    id: "company",
+    id: "company_name",
     label: "Poslodavac",
+    sort: true,
   },
   {
     id: "title",
-    sort: true,
     label: "Naziv",
+    sort: true,
   },
   {
     id: "date",
-    sort: true,
     label: "Objavljen",
+    sort: true,
   },
   {
     id: "active_until",
@@ -81,15 +86,18 @@ const SviPoslovi = () => {
 
   const [selectedJobs, setSelectedJobs] = useState([]);
 
+  const [deleteModal, setDeleteModal] = useState(false);
+
   useEffect(() => {
     const token = window.localStorage.getItem("access_token");
     const username = window.localStorage.getItem("username");
 
-    if (!token || !userGroups["poslovi"].includes(username))
-      router.push("/poslovi/login");
+    if (!token || !userGroups["student-servis"].includes(username))
+      router.push("/student-servis/login");
   }, [router]);
 
   const { mutate: updateJob } = useUpdateJob();
+  const { mutateAsync: deleteJob } = useDeleteJob();
 
   const handleAllow = (e, jobId) => {
     e.stopPropagation();
@@ -105,7 +113,34 @@ const SviPoslovi = () => {
 
   const handleFeatured = (e, jobId, isFeatured) => {
     e.stopPropagation();
-    updateJob({ id: jobId, job: { featured: !isFeatured } });
+    updateJob(
+      { id: jobId, job: { featured: !isFeatured } },
+      {
+        onError: (err) => {
+          console.error("err", err.reponse);
+        },
+      }
+    );
+  };
+
+  const handleDelete = () => {
+    setDeleteLoading(true);
+
+    let requests = selectedProducts.map((productId) =>
+      deleteProduct(productId)
+    );
+
+    Promise.all(requests)
+      .then((res) => {
+        toast.success(`Uspješno obrisano ${selectedProducts.length} proizvoda`);
+        setDeleteModal(false);
+      })
+      .catch((error) => {
+        toast.error("Greška kod brisanja proizvoda");
+      })
+      .finally(() => {
+        setDeleteLoading(false);
+      });
   };
 
   return (
@@ -113,11 +148,16 @@ const SviPoslovi = () => {
       <Header
         title="Poslovi"
         link
-        to="/poslovi/uredi-posao"
+        to="/student-servis/uredi-posao"
         text="Novi posao"
         icon={<MdAdd />}
         primary
         responsive
+      />
+      <DeleteDialog
+        deleteModal={deleteModal}
+        setDeleteModal={setDeleteModal}
+        selectedJobs={selectedJobs}
       />
       <div className="px-5 md:px-10">
         {/* <ProductsHeader searchValue={search} handleSearch={handleSearch} /> */}
@@ -151,7 +191,9 @@ const SviPoslovi = () => {
           }
           headCells={headCells}
           rows={jobs || []}
-          onSelectionChange={(selected) => setSelectedJobs(selected)}
+          onSelectionChange={(selected) => {
+            setSelectedJobs(selected);
+          }}
           defaultOrder="desc"
           defaultOrderBy="title"
           error={isError}
@@ -160,7 +202,6 @@ const SviPoslovi = () => {
           totalNumberOfItems={totalNumberOfItems}
           enableSelectAll={false}
           onChangePage={(nextPage) => {
-            console.log(nextPage);
             setPage(nextPage + 1);
           }}
           customSort
@@ -172,47 +213,41 @@ const SviPoslovi = () => {
           // displayToolbar={false}
           noDataText="Nema poslova za prikaz"
           loading={isLoading}
-          //   selectedAction={(nSelected) => (
-          //     <div className="flex gap-3 mr-3">
-          //       <Tooltip
-          //         title={
-          //           nSelected > 1
-          //             ? `Obriši proizvode (${nSelected})`
-          //             : "Obriši proizvod"
-          //         }
-          //         arrow
-          //       >
-          //         <IconButton onClick={() => setDeleteModal(true)}>
-          //           <FontAwesomeIcon icon={faTrash} />
-          //         </IconButton>
-          //       </Tooltip>
-          //       {nSelected === 1 && (
-          //         <Link
-          //           href={{
-          //             pathname: "/prehrana/uredi-proizvod",
-          //             query: products?.filter(
-          //               (item) => item?.id === selectedProducts[0]
-          //             )[0],
-          //           }}
-          //         >
-          //           <Tooltip title="Uredi proizvod" arrow>
-          //             <IconButton>
-          //               <FontAwesomeIcon icon={faPen} />
-          //             </IconButton>
-          //           </Tooltip>
-          //         </Link>
-          //       )}
-          //       <Tooltip title="Uredi stanje" arrow>
-          //         <IconButton onClick={() => setStockModal(true)}>
-          //           <FontAwesomeIcon icon={faClipboardListCheck} />
-          //         </IconButton>
-          //       </Tooltip>
-          //     </div>
-          //   )}
+          selectedAction={(nSelected) => (
+            <div className="flex gap-3 mr-3">
+              <Tooltip
+                title={
+                  nSelected > 1
+                    ? `Obriši poslove (${nSelected})`
+                    : "Obriši posao"
+                }
+                arrow
+              >
+                <IconButton onClick={() => setDeleteModal(true)}>
+                  <FontAwesomeIcon icon={faTrash} />
+                </IconButton>
+              </Tooltip>
+              {nSelected === 1 && (
+                <Link
+                  passHref
+                  href={{
+                    pathname: "/student-servis/uredi-posao",
+                    query: { id: selectedJobs[0] },
+                  }}
+                >
+                  <Tooltip title="Uredi posao" arrow>
+                    <IconButton>
+                      <FontAwesomeIcon icon={faPen} />
+                    </IconButton>
+                  </Tooltip>
+                </Link>
+              )}
+            </div>
+          )}
           rowCells={(row) => (
             <>
               <TableCell>
-                <strong>{row?.company?.short_name || row?.company_name}</strong>
+                <strong>{row?.company_name}</strong>
               </TableCell>
               <TableCell>
                 <Tooltip title={row.title} arrow>
@@ -251,7 +286,9 @@ const SviPoslovi = () => {
                       color="primary"
                       onClick={(e) => {
                         e.stopPropagation();
-                        window.open(row.link);
+                        window.open(
+                          `http://161.53.174.14/poslovi/posao/?id=${row.id}`
+                        );
                       }}
                     >
                       <FontAwesomeIcon

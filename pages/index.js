@@ -25,10 +25,10 @@ const LoginSelect = () => {
           link="/kultura/login"
         />
         <LoginCard
-          theme="theme-poslovi"
-          title="Poslovi"
-          text="Pregled i upravljanje poslova"
-          link="/poslovi/login"
+          theme="theme-student-servis"
+          title="Student servis"
+          text="Pregled i upravljanje"
+          link="/student-servis/login"
         />
         <LoginCard
           theme="theme-smjestaj"

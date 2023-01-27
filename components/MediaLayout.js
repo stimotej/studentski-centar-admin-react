@@ -3,6 +3,8 @@ import { useRouter } from "next/router";
 import { MdAdd } from "react-icons/md";
 import Image from "next/image";
 import {
+  Checkbox,
+  FormControlLabel,
   ImageList,
   ImageListItem,
   ImageListItemBar,
@@ -23,8 +25,17 @@ import {
 } from "../features/media";
 import useDebounce from "../lib/useDebounce";
 import SearchHeader from "./Elements/SearchHeader";
+import clsx from "clsx";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFile, faFilePdf } from "@fortawesome/pro-regular-svg-icons";
 
-const MediaLayout = ({ categoryId, from }) => {
+const imageDisplaySizeClasses = {
+  small: "w-1/3 sm:w-1/4 md:w-1/5 lg:w-1/6",
+  medium: "w-1/2 sm:w-1/3 md:w-1/4 lg:w-1/5",
+  large: "w-full sm:w-1/2 md:w-1/3 lg:w-1/4",
+};
+
+const MediaLayout = ({ categoryId, from, includeBanners }) => {
   const [sort, setSort] = useState("date|desc");
   const [search, setSearch] = useState("");
 
@@ -48,10 +59,14 @@ const MediaLayout = ({ categoryId, from }) => {
 
   const [title, setTitle] = useState("");
   const [alt, setAlt] = useState("");
+  const [isBanner, setIsBanner] = useState(false);
+  const [bannerUrl, setBannerUrl] = useState("");
 
   const [addNewDialog, setAddNewDialog] = useState(false);
 
   const [selectedFile, setSelectedFile] = useState(null);
+
+  const [size, setSize] = useState("medium");
 
   const router = useRouter();
 
@@ -94,6 +109,8 @@ const MediaLayout = ({ categoryId, from }) => {
         id: mediaDialog.id,
         title,
         alt,
+        isBanner,
+        bannerUrl,
       },
       {
         onSuccess: () => {
@@ -145,6 +162,8 @@ const MediaLayout = ({ categoryId, from }) => {
         setSearch={setSearch}
         sort={sort}
         setSort={setSort}
+        size={size}
+        setSize={setSize}
       />
       <div className="flex flex-wrap px-2 sm:px-10 my-10">
         {isLoading ? (
@@ -159,28 +178,51 @@ const MediaLayout = ({ categoryId, from }) => {
               {group?.map((media) => (
                 <div
                   key={media.id}
-                  className="flex w-full sm:w-1/2 md:w-1/3 lg:w-1/4 p-2"
+                  className={clsx("flex p-1", imageDisplaySizeClasses[size])}
                 >
                   <button
                     key={media.id}
-                    className="break-words w-full rounded-lg p-2 hover:bg-white hover:shadow-lg transition-shadow"
+                    className="break-words relative w-full rounded-lg p-2 hover:bg-white hover:shadow-lg transition-shadow"
                     onClick={() => {
                       setMediaDialog(media);
                       setTitle(media.title);
                       setAlt(media.alt);
+                      setIsBanner(media.isBanner);
+                      setBannerUrl(media.bannerUrl);
                     }}
                   >
-                    <Image
-                      src={media.src}
-                      alt={media.alt || media.title || "Medij"}
-                      width={media.width || 50}
-                      height={media.height || 50}
-                      loading="lazy"
-                      className="rounded-lg object-cover mx-auto w-full auto"
-                    />
-                    <h3 className="mt-3 font-semibold text-left">
+                    {media?.mimeType?.includes("image") ? (
+                      <Image
+                        src={media.src}
+                        alt={media.alt || media.title || "Medij"}
+                        width={media.width || 50}
+                        height={media.height || 50}
+                        loading="lazy"
+                        className="rounded-lg object-cover mx-auto w-full aspect-square auto"
+                      />
+                    ) : (
+                      <div className="flex flex-col overflow-hidden gap-2 p-2 items-center justify-center w-full h-full rounded-lg bg-gray-100">
+                        <FontAwesomeIcon
+                          icon={
+                            media?.mimeType === "application/pdf"
+                              ? faFilePdf
+                              : faFile
+                          }
+                          className="w-10 h-10 text-gray-500"
+                        />
+                        <span className="text-xs text-gray-900 line-clamp-2">
+                          {media.title}
+                        </span>
+                      </div>
+                    )}
+                    {media.isBanner && (
+                      <div className="absolute py-px px-1.5 rounded-full text-xs text-white bg-error top-0 right-0">
+                        Banner
+                      </div>
+                    )}
+                    {/* <h3 className="mt-3 font-medium text-sm text-left">
                       {media.title}
-                    </h3>
+                    </h3> */}
                   </button>
                 </div>
               ))}
@@ -215,7 +257,7 @@ const MediaLayout = ({ categoryId, from }) => {
       >
         <div className="flex flex-col md:flex-row">
           <div className="w-full md:w-1/2 rounded-lg shadow-md h-fit">
-            {mediaDialog?.src ? (
+            {mediaDialog?.mimeType?.includes("image") ? (
               <Image
                 src={mediaDialog?.src}
                 alt={mediaDialog?.alt || "Medij"}
@@ -223,10 +265,45 @@ const MediaLayout = ({ categoryId, from }) => {
                 height={mediaDialog?.height}
                 className="rounded-lg w-full h-auto"
               />
-            ) : null}
+            ) : (
+              <div className="flex flex-col aspect-square gap-2 items-center justify-center w-full h-full rounded-lg bg-gray-100">
+                <FontAwesomeIcon
+                  icon={
+                    mediaDialog?.mimeType === "application/pdf"
+                      ? faFilePdf
+                      : faFile
+                  }
+                  size="8x"
+                  className="text-gray-500"
+                />
+              </div>
+            )}
           </div>
 
           <div className="w-full md:w-1/2 pl-0 md:pl-10 pr-0 mt-6 md:mt-0">
+            {includeBanners && mediaDialog?.mediaType === "image" && (
+              <>
+                <h3>Banner:</h3>
+                <FormControlLabel
+                  label="Prikazuj ovaj medij kao banner"
+                  control={
+                    <Checkbox
+                      checked={isBanner}
+                      onChange={(e) => setIsBanner(e.target.checked)}
+                    />
+                  }
+                />
+                <div className="mt-2 mb-4">
+                  <TextField
+                    value={bannerUrl}
+                    onChange={(e) => setBannerUrl(e.target.value)}
+                    size="small"
+                    label="Url bannera"
+                    fullWidth
+                  />
+                </div>
+              </>
+            )}
             <h3>Naziv:</h3>
             <TextField
               value={title}

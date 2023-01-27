@@ -61,7 +61,7 @@ const Login = ({ from, title }) => {
       setUsername("kultura");
       setPassword("kulturalozinka");
     }
-    if (from.toLowerCase() === "poslovi") {
+    if (from.toLowerCase() === "student-servis") {
       setUsername("poslovi");
       setPassword("poslovilozinka");
     }

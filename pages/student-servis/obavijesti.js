@@ -3,7 +3,10 @@ import { studentskiServisCategoryId } from "../../lib/constants";
 
 const Obavijesti = () => {
   return (
-    <ObavijestiLayout categoryId={studentskiServisCategoryId} from="poslovi" />
+    <ObavijestiLayout
+      categoryId={studentskiServisCategoryId}
+      from="student-servis"
+    />
   );
 };
 

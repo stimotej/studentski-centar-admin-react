@@ -399,6 +399,7 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
         value={image}
         onSelect={handleSelectMedia}
         categoryId={categoryId || obavijestiCategoryId}
+        mediaType="image"
       />
       <MyDialog
         opened={ytModal}

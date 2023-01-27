@@ -39,6 +39,7 @@ export const useMedia = (filters, options) => {
             orderby: filters?.orderby,
             order: filters?.order,
             search: filters?.search,
+            media_type: filters?.mediaType,
             per_page: mediaPerPage,
             page: pageParam,
             timestamp: new Date().getTime(),
@@ -120,12 +121,13 @@ export const useUpdateMedia = () => {
   const queryClient = useQueryClient();
 
   return useMutation(
-    async ({ id, title, alt }) => {
+    async ({ id, title, alt, isBanner, bannerUrl }) => {
       const response = await axios.post(
         "http://161.53.174.14/wp-json/wp/v2/media/" + id,
         {
           title: title,
           alt_text: alt,
+          meta: { is_banner: isBanner, banner_url: bannerUrl },
         }
       );
       return response.data;

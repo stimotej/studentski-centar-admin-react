@@ -5,7 +5,7 @@ const EditorPage = () => {
   return (
     <ObavijestEditorLayout
       categoryId={studentskiServisCategoryId}
-      from="poslovi"
+      from="student-servis"
     />
   );
 };

@@ -1,3 +1,5 @@
+import { faFile, faFilePdf } from "@fortawesome/pro-regular-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { LoadingButton } from "@mui/lab";
 import { MenuItem, TextField } from "@mui/material";
 import Image from "next/image";
@@ -33,6 +35,7 @@ const MediaSelectDialog = ({
   value,
   onSelect,
   categoryId,
+  mediaType,
 }) => {
   const [sort, setSort] = useState("date_desc");
   const [search, setSearch] = useState("");
@@ -51,6 +54,7 @@ const MediaSelectDialog = ({
     orderby: sort?.split("_")?.[0],
     order: sort?.split("_")?.[1],
     search: debouncedSearch,
+    mediaType,
   });
 
   const [selectedTab, setSelectedTab] = useState(0);
@@ -172,18 +176,34 @@ const MediaSelectDialog = ({
                             : "hover:ring-2 ring-primary"
                         }`}
                       >
-                        <Image
-                          src={media.src}
-                          alt={media.alt || "Medij"}
-                          width={media.width || 200}
-                          height={media.height || 200}
-                          loading="lazy"
-                          className={`relative w-full object-cover h-full rounded-lg ${
-                            media.id === selectedImage?.id
-                              ? "ring-2 ring-offset-2 ring-primary"
-                              : "hover:ring-2 ring-primary"
-                          }`}
-                        />
+                        {media?.mimeType?.includes("image") ? (
+                          <Image
+                            src={media.src}
+                            alt={media.alt || "Medij"}
+                            width={media.width || 200}
+                            height={media.height || 200}
+                            loading="lazy"
+                            className={`relative w-full object-cover h-full rounded-lg ${
+                              media.id === selectedImage?.id
+                                ? "ring-2 ring-offset-2 ring-primary"
+                                : "hover:ring-2 ring-primary"
+                            }`}
+                          />
+                        ) : (
+                          <div className="flex flex-col overflow-hidden gap-2 p-2 items-center justify-center w-full h-full rounded-lg bg-gray-100">
+                            <FontAwesomeIcon
+                              icon={
+                                media?.mimeType === "application/pdf"
+                                  ? faFilePdf
+                                  : faFile
+                              }
+                              className="w-10 h-10 text-gray-500"
+                            />
+                            <span className="text-xs text-gray-900 line-clamp-2">
+                              {media.title}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </button>
                   ))}

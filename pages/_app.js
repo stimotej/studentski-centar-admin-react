@@ -25,19 +25,6 @@ function MyApp({ Component, pageProps }) {
   useEffect(() => {
     const token = window.localStorage.getItem("access_token");
     axios.defaults.headers.common.Authorization = `Bearer ${token}`;
-    axios.interceptors.response.use(
-      (response) => {
-        console.log("Axios", response.config.url, response); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        return response;
-      },
-      (error) => {
-        if (error.response.status === 401) {
-          logout();
-        }
-        console.warn("Axios Error", error.response.config.url, error.response); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        return Promise.reject(error);
-      }
-    );
   }, []);
 
   return (

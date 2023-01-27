@@ -502,6 +502,7 @@ const Editor = () => {
         value={image}
         onSelect={handleSelectMedia}
         categoryId={eventsCategoryId}
+        mediaType="image"
       />
       <MyDialog
         opened={ytModal}

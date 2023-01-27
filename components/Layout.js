@@ -101,7 +101,7 @@ const Layout = ({ children }) => {
           ? themePrehrana
           : category === "kultura"
           ? themeKultura
-          : category === "poslovi"
+          : category === "student-servis"
           ? themePoslovi
           : category === "smjestaj"
           ? themeSmjestaj

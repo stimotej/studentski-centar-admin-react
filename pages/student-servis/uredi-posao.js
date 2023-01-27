@@ -4,13 +4,15 @@ import { LocalizationProvider, MobileDatePicker } from "@mui/x-date-pickers";
 import {
   Autocomplete,
   Checkbox,
+  createFilterOptions,
   FormControlLabel,
   InputAdornment,
+  MenuItem,
   TextField,
 } from "@mui/material";
 import clsx from "clsx";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MdArrowBack } from "react-icons/md";
 import Layout from "../../components/Layout";
 import { Controller, useForm } from "react-hook-form";
@@ -19,13 +21,14 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import dayjs from "dayjs";
 import { useSkills } from "../../lib/api/skills";
 import { useCompanies } from "../../lib/api/companies";
-import { useCreateJob } from "../../features/jobs";
+import { useCreateJob, useJob, useUpdateJob } from "../../features/jobs";
 
 const schema = yup.object().shape({
   company_name: yup.string().required("Ovo polje je obavezno"),
+  company_oib: yup.string().required("Ovo polje je obavezno"),
   title: yup.string().required("Ovo polje je obavezno"),
-  description: yup.string().required("Ovo polje je obavezno"),
   type: yup.number("Mora biti broj").required("Ovo polje je obavezno"),
+  description: yup.string().required("Ovo polje je obavezno"),
   positions: yup
     .number()
     .typeError("Mora biti broj")
@@ -59,14 +62,26 @@ const schema = yup.object().shape({
     .typeError("Mora biti datum")
     .required("Ovo polje je obavezno"),
 });
+
+const jobTypeList = [
+  { value: "1", label: "Administrativni poslovi" },
+  { value: "2", label: "Fizički poslovi" },
+  { value: "3", label: "Poslovi čišćenja" },
+  { value: "4", label: "Promidžba; Marketing" },
+  { value: "5", label: "Rad u proizvodnji" },
+  { value: "6", label: "Razni poslovi" },
+  { value: "7", label: "Skladišni poslovi" },
+  { value: "8", label: "Trgovina; Ugostiteljstvo" },
+];
+
 const UrediPosao = () => {
   const router = useRouter();
-  const job = router.query?.job;
+  const jobId = router.query?.id;
 
   const { skills, loading: loadingSkills } = useSkills();
   const { companies, loading: loadingCompanies } = useCompanies();
 
-  const [type, setType] = useState(0);
+  const [jobType, setJobType] = useState(1);
   const [fromHome, setFromHome] = useState(false);
   const [rate, setRate] = useState(0);
 
@@ -74,21 +89,25 @@ const UrediPosao = () => {
     mode: "onChange",
     resolver: yupResolver(schema),
     defaultValues: {
-      company_name: (job?.company?.short_name || job?.company_name) ?? "",
-      title: job?.title ?? "",
-      description: job?.description ?? "",
-      whyme: job?.whyme ?? "",
-      type: job?.type ?? 1,
-      skills: job?.skills ?? [],
-      labels: job?.labels ?? [],
-      city: job?.city ?? "",
-      positions: job?.positions ?? 1,
-      work_start: job?.work_start ?? null,
-      work_end: job?.work_end ?? null,
-      work_hours: job?.work_hours ?? "",
-      payment_rate: job?.payment_rate ?? "",
-      payment_rate_max: job?.payment_rate_max ?? "",
-      active_until: job?.active_until ?? null,
+      company_name: "",
+      company_oib: "",
+      title: "",
+      description: "",
+      whyme: "",
+      other_description: "",
+      type: 1,
+      skills: [],
+      labels: [],
+      city: "",
+      positions: 1,
+      work_start: null,
+      work_end: null,
+      work_hours: "",
+      payment_rate: "",
+      payment_rate_max: "",
+      active_until: null,
+      contact_student: "",
+      contact_sc: "",
     },
   };
 
@@ -96,23 +115,60 @@ const UrediPosao = () => {
     handleSubmit,
     watch,
     setValue,
+    reset,
     control,
     formState: { isValid, errors },
   } = useForm(formOptions);
 
   const values = watch();
 
+  const { data: job, isInitialLoading: isLoadingJob } = useJob(jobId, {
+    enabled: !!jobId,
+  });
+
+  useEffect(() => {
+    if (job) {
+      reset({ ...job, city: job.city === "FROM_HOME" ? "" : job.city });
+      setJobType(job.job_type);
+      setFromHome(job.city === "FROM_HOME");
+      setRate(job.payment_rate !== job.payment_rate_max ? 1 : 0);
+    }
+  }, [job]);
+
   const { mutate: createJob, isLoading: isCreating } = useCreateJob();
+  const { mutate: updateJob, isLoading: isUpdating } = useUpdateJob();
 
   const onSubmit = async (data) => {
-    createJob(
-      { ...data, city: data.city || "FROM_HOME" },
-      {
-        onSuccess: () => {
-          router.back();
+    if (jobId) {
+      updateJob(
+        {
+          id: jobId,
+          job: {
+            ...data,
+            city: fromHome ? "FROM_HOME" : data.city,
+            job_type: jobType,
+          },
         },
-      }
-    );
+        {
+          onSuccess: () => {
+            router.back();
+          },
+        }
+      );
+    } else {
+      createJob(
+        {
+          ...data,
+          city: fromHome ? "FROM_HOME" : data.city,
+          job_type: jobType,
+        },
+        {
+          onSuccess: () => {
+            router.back();
+          },
+        }
+      );
+    }
   };
 
   return (
@@ -141,6 +197,9 @@ const UrediPosao = () => {
                 onChange={undefined}
                 onInputChange={(_, value) => field.onChange(value)}
                 getOptionLabel={(option) => option || ""}
+                filterOptions={createFilterOptions({
+                  limit: 20,
+                })}
                 freeSolo
                 options={companies?.map((company) => company.short_name) ?? []}
                 loading={loadingCompanies}
@@ -152,13 +211,26 @@ const UrediPosao = () => {
                 renderInput={(params) => (
                   <TextField
                     {...params}
-                    label="Poslodavac"
+                    label="Naručitelj (poslodavac)"
                     error={!!errors.company_name}
                     helperText={
                       errors.company_name && errors.company_name.message
                     }
                   />
                 )}
+              />
+            )}
+          />
+
+          <Controller
+            control={control}
+            name="company_oib"
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Šifra ili OIB naručitelja"
+                error={!!errors.company_oib}
+                helperText={errors.company_oib && errors.company_oib.message}
               />
             )}
           />
@@ -170,7 +242,7 @@ const UrediPosao = () => {
             render={({ field }) => (
               <TextField
                 {...field}
-                label="Naziv"
+                label="Naziv posla"
                 error={!!errors.title}
                 helperText={errors.title && errors.title.message}
               />
@@ -180,7 +252,7 @@ const UrediPosao = () => {
           {/* KATEGORIJA */}
           {/* <Controller
             control={control}
-            name="type"
+            name="jobType"
             render={({ field }) => (
               <TextField select label="Kategorija">
                 {types.map((option) => (
@@ -192,42 +264,43 @@ const UrediPosao = () => {
             )}
           /> */}
 
+          <Controller
+            control={control}
+            name="type"
+            render={({ field }) => (
+              <TextField
+                {...field}
+                select
+                label="Vrsta posla"
+                error={!!errors.type}
+                helperText={errors.type && errors.type.message}
+              >
+                {jobTypeList.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+            )}
+          />
+
           {/* VRSTA POSLA */}
           <div>
-            <span className="ml-1 mt-3">Vrsta posla</span>
             <div className="flex mt-1 gap-2 flex-wrap">
               <button
-                onClick={() => setType(0)}
+                onClick={() => setJobType(1)}
                 className={clsx(
                   "border-[#ebebeb] border-[1px] py-2 px-4 rounded-[24px] transition",
-                  type === 0 && "bg-primary text-white"
+                  jobType === 1 && "bg-primary text-white"
                 )}
               >
                 <span className="body">Privremeni posao</span>
               </button>
               <button
-                onClick={() => setType(1)}
+                onClick={() => setJobType(2)}
                 className={clsx(
                   "border-[#ebebeb] border-[1px] py-2 px-4 rounded-[24px] transition",
-                  type === 1 && "bg-primary text-white"
-                )}
-              >
-                <span className="body">Stalni posao</span>
-              </button>
-              <button
-                onClick={() => setType(2)}
-                className={clsx(
-                  "border-[#ebebeb] border-[1px] py-2 px-4 rounded-[24px] transition",
-                  type === 2 && "bg-primary text-white"
-                )}
-              >
-                <span className="body">Praksa</span>
-              </button>
-              <button
-                onClick={() => setType(3)}
-                className={clsx(
-                  "border-[#ebebeb] border-[1px] py-2 px-4 rounded-[24px] transition",
-                  type === 3 && "bg-primary text-white"
+                  jobType === 2 && "bg-primary text-white"
                 )}
               >
                 <span className="body">Projekt</span>
@@ -243,7 +316,7 @@ const UrediPosao = () => {
               render={({ field }) => (
                 <TextField
                   {...field}
-                  label="Mjesto"
+                  label="Adresa obavljanja posla"
                   disabled={fromHome}
                   error={!!errors.city}
                   helperText={errors.city && errors.city.message}
@@ -343,7 +416,7 @@ const UrediPosao = () => {
                 <span className="body">Raspon satnice</span>
               </button>
             </div>
-            <div className="flex mt-3 gap-4 flex-wrap">
+            <div className="flex mt-4 gap-4 flex-wrap">
               <div className="flex-1 flex flex-col">
                 <Controller
                   control={control}
@@ -362,7 +435,11 @@ const UrediPosao = () => {
                           <InputAdornment position="end">€</InputAdornment>
                         ),
                       }}
-                      label={rate === 0 ? "Satnica" : "Minimalna satnica"}
+                      label={
+                        rate === 0
+                          ? "Neto cijena sata ili količina posla (za redoviti rad)"
+                          : "Minimalna satnica"
+                      }
                       error={!!errors.payment_rate}
                       helperText={
                         errors.payment_rate && errors.payment_rate.message
@@ -395,43 +472,43 @@ const UrediPosao = () => {
                   />
                 </div>
               )}
-              <div
-                className={clsx(
-                  "flex flex-col",
-                  rate === 1 ? "!w-full" : "flex-1"
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-4">
+            <div className="flex flex-col flex-1">
+              <Controller
+                control={control}
+                name="work_hours"
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label="Broj sati"
+                    error={!!errors.work_hours}
+                    helperText={errors.work_hours && errors.work_hours.message}
+                  />
                 )}
-              >
+              />
+            </div>
+
+            {/* BROJ OTVORENIH POZICIJA */}
+            <div className="flex-1">
+              <div className="flex flex-col flex-1">
                 <Controller
                   control={control}
-                  name="work_hours"
+                  name="positions"
                   render={({ field }) => (
                     <TextField
                       {...field}
-                      label="Broj sati"
-                      error={!!errors.work_hours}
-                      helperText={
-                        errors.work_hours && errors.work_hours.message
-                      }
+                      label="Potreban broj izvođača (studenata/ica)"
+                      error={!!errors.positions}
+                      helperText={errors.positions && errors.positions.message}
                     />
                   )}
                 />
               </div>
             </div>
           </div>
-
-          {/* BROJ OTVORENIH POZICIJA */}
-          <Controller
-            control={control}
-            name="positions"
-            render={({ field }) => (
-              <TextField
-                {...field}
-                label="Broj otvorenih pozicija"
-                error={!!errors.positions}
-                helperText={errors.positions && errors.positions.message}
-              />
-            )}
-          />
 
           {/* TRAJANJE PRIJAVA */}
           <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -484,6 +561,23 @@ const UrediPosao = () => {
                 label="Zašto tražimo tebe?"
                 error={!!errors.whyme}
                 helperText={errors.whyme && errors.whyme.message}
+              />
+            )}
+          />
+
+          <Controller
+            control={control}
+            name="other_description"
+            render={({ field }) => (
+              <TextField
+                {...field}
+                multiline
+                minRows={5}
+                label="Ostale napomene i uvjeti"
+                error={!!errors.other_description}
+                helperText={
+                  errors.other_description && errors.other_description.message
+                }
               />
             )}
           />
@@ -546,15 +640,43 @@ const UrediPosao = () => {
             )}
           />
 
+          <Controller
+            control={control}
+            name="contact_student"
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Način i kontakt za prijavu studenata"
+                error={!!errors.contact_student}
+                helperText={
+                  errors.contact_student && errors.contact_student.message
+                }
+              />
+            )}
+          />
+
+          <Controller
+            control={control}
+            name="contact_sc"
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Kontakt za Student servis (osoba, tel./e-mail)"
+                error={!!errors.contact_sc}
+                helperText={errors.contact_sc && errors.contact_sc.message}
+              />
+            )}
+          />
+
           <LoadingButton
             variant="contained"
             size="large"
             className={clsx(
-              "self-end"
+              "self-end bg-primary"
               // !loading &&
               //   "!border-primary/50 hover:!border-primary hover:!bg-primary/5 !text-primary"
             )}
-            loading={isCreating}
+            loading={isCreating || isUpdating}
             disabled={!isValid}
             onClick={handleSubmit(onSubmit)}
           >

@@ -5,9 +5,9 @@ const login = () => {
   return (
     <>
       <Head>
-        <title>Login | Poslovi</title>
+        <title>Login | Student servis</title>
       </Head>
-      <Login from="poslovi" />
+      <Login from="student-servis" />
     </>
   );
 };

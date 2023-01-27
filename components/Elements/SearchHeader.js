@@ -1,4 +1,15 @@
-import { MenuItem, TextField } from "@mui/material";
+import {
+  faRectangle,
+  faTableCells,
+  faTableCellsLarge,
+} from "@fortawesome/pro-regular-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  MenuItem,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+} from "@mui/material";
 import clsx from "clsx";
 import {
   HiOutlineArrowNarrowDown,
@@ -22,6 +33,8 @@ const SearchHeader = ({
   setSearch,
   sort,
   setSort,
+  size,
+  setSize,
   searchPlaceholder,
   className,
 }) => {
@@ -49,7 +62,7 @@ const SearchHeader = ({
           value={sort}
           onChange={(e) => setSort(e.target.value)}
           select
-          className="lg:mr-2"
+          className="mr-4"
           size="small"
           InputProps={{
             className: "flex flex-row",
@@ -64,6 +77,24 @@ const SearchHeader = ({
             </MenuItem>
           ))}
         </TextField>
+        {size ? (
+          <ToggleButtonGroup
+            value={size}
+            exclusive
+            className="h-full"
+            onChange={(e, val) => val !== null && setSize(val)}
+          >
+            <ToggleButton value="small">
+              <FontAwesomeIcon icon={faTableCells} />
+            </ToggleButton>
+            <ToggleButton value="medium">
+              <FontAwesomeIcon icon={faTableCellsLarge} />
+            </ToggleButton>
+            <ToggleButton value="large">
+              <FontAwesomeIcon icon={faRectangle} />
+            </ToggleButton>
+          </ToggleButtonGroup>
+        ) : null}
       </div>
     </div>
   );
