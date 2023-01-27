@@ -18,6 +18,7 @@ const formatObavijest = (obavijest) => ({
   end_showing: obavijest?.meta?.end_showing,
   show_always: obavijest?.meta?.show_always,
   event_date: obavijest?.meta?.event_date,
+  documents: obavijest?.meta?.documents,
 });
 
 export default formatObavijest;

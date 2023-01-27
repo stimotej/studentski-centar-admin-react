@@ -17,6 +17,7 @@ import {
   Checkbox,
   FormControl,
   FormControlLabel,
+  IconButton,
   InputLabel,
   MenuItem,
   Radio,
@@ -32,9 +33,12 @@ import MediaSelectDialog from "./MediaSelectDialog";
 import {
   useCategories,
   useCreateObavijest,
+  useObavijest,
   useUpdateObavijest,
 } from "../features/obavijesti";
 import MyDialog from "./Elements/MyDialog";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFilePdf, faXmark } from "@fortawesome/pro-regular-svg-icons";
 
 const ObavijestEditorLayout = ({ categoryId, from }) => {
   const [storedPostNote, setStoredPostNote] = useState(false);
@@ -54,6 +58,7 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
       `${from}_editor_end_showing`,
       `${from}_editor_show_always`,
       `${from}_editor_event_date`,
+      `${from}_editor_files`,
     ],
     [from]
   );
@@ -95,19 +100,28 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
 
   const [image, setImage] = useState(null);
 
+  const [files, setFiles] = useState([]);
+
+  const obavijestId = router.query.id;
+
+  const { data: obavijest } = useObavijest(obavijestId);
+
   useEffect(() => {
-    if (Object.keys(router.query).length) {
-      setImage({ src: router.query.image } || null);
-      setTitle(router.query.title || "");
-      setContent(router.query.content || "");
-      setDescription(router.query.description || "");
-      setCategory(parseInt(router.query.categories) || null);
-      setStatus(router.query.status || "publish");
-      setImageId(router.query.imageId || "");
-      setStartShowing(router.query.start_showing || null);
-      setEndShowing(router.query.end_showing || null);
-      setShowAlways(router.query.show_always === "true");
-      setEventDate(router.query.event_date || null);
+    if (obavijest) {
+      setImage(
+        { src: obavijest.image !== "false" ? obavijest.image : null } || null
+      );
+      setTitle(obavijest.title || "");
+      setContent(obavijest.content || "");
+      setDescription(obavijest.description || "");
+      setCategory(parseInt(obavijest.categories) || null);
+      setStatus(obavijest.status || "publish");
+      setImageId(obavijest.imageId || "");
+      setStartShowing(obavijest.start_showing || null);
+      setEndShowing(obavijest.end_showing || null);
+      setShowAlways(obavijest.show_always === "true");
+      setEventDate(obavijest.event_date || null);
+      setFiles(obavijest.documents || []);
     } else {
       setImage(
         { src: window.localStorage.getItem(`${from}_editor_image_src`) } || null
@@ -136,8 +150,11 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
       setEventDate(
         window.localStorage.getItem(`${from}_editor_event_date`) || null
       );
+      setFiles(
+        JSON.parse(window.localStorage.getItem(`${from}_editor_files`)) || []
+      );
     }
-  }, [router.query, categoryId, from]);
+  }, [obavijest, from]);
 
   const [mediaDialog, setMediaDialog] = useState(null);
 
@@ -156,6 +173,7 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
     setEndShowing(null);
     setShowAlways(false);
     setEventDate(null);
+    setFiles([]);
   };
 
   // Update and create handlers
@@ -166,6 +184,7 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
     useUpdateObavijest();
 
   const handlePost = async () => {
+    console.log("files", files.length > 0 && files);
     const newPost = {
       title: title,
       content: content,
@@ -177,6 +196,14 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
       endShowing: endShowing,
       showAlways: showAlways,
       eventDate: eventDate,
+      documents:
+        files.length > 0 &&
+        files.map((file) => ({
+          id: file.id,
+          title: file.title,
+          mime_type: file.mimeType,
+          source_url: file.src,
+        })),
     };
     if (Object.keys(router.query).length)
       updateObavijest({ id: router.query.id, obavijest: newPost });
@@ -194,20 +221,27 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
   const [src, setSrc] = useState(null);
 
   const addImageToolbar = () => {
-    setMediaDialog("contentImage");
+    setMediaDialog({ type: "image", action: "contentImage" });
   };
 
   const handleSelectMedia = (value) => {
-    if (mediaDialog === "featuredImage") {
+    if (mediaDialog.action === "featuredImage") {
       setImage(value);
       setImageId(value?.id);
       if (!router.query?.content) {
         window.localStorage.setItem(`${from}_editor_image_id`, value?.id);
         window.localStorage.setItem(`${from}_editor_image_src`, value?.src);
       }
-    } else if (mediaDialog === "contentImage")
+    } else if (mediaDialog.action === "contentImage") {
       // addImageToEditor(value.src);
       setSrc(value.src);
+    } else if (mediaDialog.action === "document") {
+      setFiles([...files, value]);
+      window.localStorage.setItem(
+        `${from}_editor_files`,
+        JSON.stringify([...files, value])
+      );
+    }
   };
 
   const [ytModal, setYtModal] = useState(false);
@@ -224,6 +258,10 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
     setYtModal(false);
   };
 
+  const addDocumentToolbar = () => {
+    setMediaDialog({ type: "application", action: "document" });
+  };
+
   return (
     <Layout>
       <Header />
@@ -237,7 +275,9 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
         <div className="mt-4">Slika obavijesti:</div>
         <button
           className="mt-2 w-full bg-secondary rounded-lg border border-black/20 hover:border-black text-black/60"
-          onClick={() => setMediaDialog("featuredImage")}
+          onClick={() =>
+            setMediaDialog({ type: "image", action: "featuredImage" })
+          }
         >
           {image?.src ? (
             <Image
@@ -394,12 +434,12 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
         </RadioGroup>
       </Sidebar>
       <MediaSelectDialog
-        opened={mediaDialog}
+        opened={!!mediaDialog}
         onClose={() => setMediaDialog(false)}
         value={image}
         onSelect={handleSelectMedia}
         categoryId={categoryId || obavijestiCategoryId}
-        mediaType="image"
+        mediaType={mediaDialog?.type}
       />
       <MyDialog
         opened={ytModal}
@@ -452,11 +492,46 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
             }}
             addImageToolbar={addImageToolbar}
             addYoutubeVideo={addYoutubeVideo}
+            addDocumentToolbar={addDocumentToolbar}
             videoId={videoId}
             setVideoId={setVideoId}
             src={src}
             setSrc={setSrc}
           />
+
+          {files?.length > 0 && (
+            <>
+              <div className="mt-8 mb-2 font-semibold">Dokumenti</div>
+              <div className="flex flex-col gap-2">
+                {files.map((file, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between gap-2 border border-gray-400 p-1 rounded-lg"
+                  >
+                    <div className="flex items-center gap-2">
+                      <FontAwesomeIcon
+                        icon={faFilePdf}
+                        className="text-lg text-gray-800 ml-2"
+                      />
+                      <div className="flex-1 line-clamp-1">
+                        {file.title}.pdf
+                      </div>
+                    </div>
+                    <IconButton
+                      className="!aspect-square"
+                      onClick={() => {
+                        const newFiles = [...files];
+                        newFiles.splice(index, 1);
+                        setFiles(newFiles);
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faXmark} />
+                    </IconButton>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
       {storedPostNote && (

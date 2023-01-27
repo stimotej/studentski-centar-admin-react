@@ -51,6 +51,22 @@ export const useObavijesti = (filters, options) => {
   );
 };
 
+export const useObavijest = (id, options) => {
+  return useQuery(
+    obavijestiKeys.obavijest(id),
+    async () => {
+      const response = await axios.get(
+        "http://161.53.174.14/wp-json/wp/v2/obavijesti/" + id
+      );
+      return response.data;
+    },
+    {
+      select: (data) => formatObavijest(data),
+      ...options,
+    }
+  );
+};
+
 export const useCategories = (options) => {
   return useQuery(
     obavijestiKeys.categories,
@@ -128,6 +144,7 @@ export const useUpdateObavijest = () => {
             end_showing: obavijest?.endShowing,
             show_always: obavijest?.showAlways,
             event_date: obavijest?.eventDate,
+            documents: obavijest?.documents,
           },
         }
       );

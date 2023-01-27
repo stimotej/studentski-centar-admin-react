@@ -51,7 +51,7 @@ const Preview = ({ obavijest, className, title, isEvent = false, from }) => {
           variant="outlined"
           icon={<MdOutlineEdit />}
           to={isEvent ? "/kultura/uredi-event" : `/${from}/uredi-obavijest`}
-          state={obavijest}
+          state={{ id: obavijest.id }}
         />
         <Button
           text="Otvori"

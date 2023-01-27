@@ -1,6 +1,8 @@
 import React from "react";
 import { MdOutlineImage } from "react-icons/md";
-import { FaYoutube } from "react-icons/fa";
+import { FaFile, FaYoutube } from "react-icons/fa";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFile, faFilePdf } from "@fortawesome/pro-regular-svg-icons";
 
 const Header = () => {
   return (
@@ -32,6 +34,12 @@ const Header = () => {
       </button>
       <button className="ql-addYoutubeVideo my-1 sm:my-2">
         <FaYoutube className="text-black hover:text-primary" />
+      </button>
+      <button className="ql-addDocumentToolbar my-1 sm:my-2">
+        <FontAwesomeIcon
+          icon={faFilePdf}
+          className="text-black hover:text-primary ml-2"
+        />
       </button>
     </header>
   );

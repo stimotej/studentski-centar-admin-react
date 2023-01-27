@@ -9,6 +9,7 @@ const Editor = ({
   onChange,
   addImageToolbar,
   addYoutubeVideo,
+  addDocumentToolbar,
   videoId,
   setVideoId,
   className,
@@ -61,6 +62,7 @@ const Editor = ({
         handlers: {
           addImageToolbar: addImageToolbar,
           addYoutubeVideo: addYoutubeVideo,
+          addDocumentToolbar: addDocumentToolbar,
         },
       },
       imageResize: {
