@@ -313,14 +313,18 @@ const MediaLayout = ({ categoryId, from, includeBanners }) => {
               fullWidth
               required
             />
-            <h3 className="mt-4">Alternativni tekst:</h3>
-            <TextField
-              value={alt}
-              onChange={(e) => setAlt(e.target.value)}
-              className="mt-1"
-              size="small"
-              fullWidth
-            />
+            {mediaDialog?.mediaType === "image" && (
+              <>
+                <h3 className="mt-4">Alternativni tekst:</h3>
+                <TextField
+                  value={alt}
+                  onChange={(e) => setAlt(e.target.value)}
+                  className="mt-1"
+                  size="small"
+                  fullWidth
+                />
+              </>
+            )}
             <h3 className="mt-4">Objavio:</h3>
             <TextField
               value={mediaDialog?.author}
