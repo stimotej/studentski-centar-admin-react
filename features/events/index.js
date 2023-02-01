@@ -5,9 +5,6 @@ import {
   useInfiniteQuery,
 } from "@tanstack/react-query";
 import axios from "axios";
-import { mainEventCategoryId, obavijestiCategoryId } from "../../lib/constants";
-import formatObavijest from "./format";
-import obavijestiKeys from "./queries";
 import { toast } from "react-toastify";
 import { useRef } from "react";
 import eventKeys from "./queries";
@@ -31,7 +28,6 @@ export const useEvents = (filters, options) => {
             page: pageParam,
             timestamp: new Date().getTime(),
             status: ["publish", "draft"],
-            categories: mainEventCategoryId,
           },
         }
       );
@@ -53,24 +49,17 @@ export const useEvents = (filters, options) => {
   );
 };
 
-export const useEventsByTags = (filters, options) => {
+export const useEvent = (id, options) => {
   return useQuery(
-    eventKeys.eventsFiltered(filters),
+    eventKeys.event(id),
     async () => {
       const response = await axios.get(
-        "http://161.53.174.14/wp-json/wp/v2/event",
-        {
-          params: {
-            per_page: 100,
-            timestamp: new Date().getTime(),
-            tags: filters.tags,
-          },
-        }
+        "http://161.53.174.14/wp-json/wp/v2/event/" + id
       );
       return response.data;
     },
     {
-      select: (data) => data.map((product) => formatEvent(product)),
+      select: (data) => formatEvent(data),
       ...options,
     }
   );
@@ -88,14 +77,11 @@ export const useCreateEvent = (displayToasts = true) => {
           content: event?.content,
           featured_media: event?.imageId,
           status: event?.status,
-          categories: event?.categories,
-          tags: event?.tags,
           meta: {
-            event_date: event?.event_date,
-            event_dates: event?.event_dates,
-            event_id: event?.event_id,
-            event_location: event?.event_location,
-            event_type: event?.event_type,
+            dates: event?.dates,
+            location: event?.location,
+            type: event?.type,
+            documents: event?.documents,
           },
         }
       );
@@ -141,11 +127,10 @@ export const useUpdateEvent = () => {
           featured_media: event?.imageId,
           status: event?.status,
           meta: {
-            event_date: event?.event_date,
-            event_dates: event?.event_dates,
-            event_id: event?.event_id,
-            event_location: event?.event_location,
-            event_type: event?.event_type,
+            dates: event?.dates,
+            location: event?.location,
+            type: event?.type,
+            documents: event?.documents,
           },
         }
       );
@@ -191,6 +176,66 @@ export const useDeleteEvent = (displayToasts = true) => {
             toast.error("Nemate dopuštenje za brisanje ovog eventa");
           else toast.error("Greška kod brisanja eventa");
         }
+      },
+    }
+  );
+};
+
+export const useCreateEventDate = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    async ({ id, date }) => {
+      const response = await axios.post(
+        `http://161.53.174.14/wp-json/wp/v2/event/${id}/dates`,
+        {
+          date,
+        }
+      );
+      return response.data;
+    },
+    {
+      onSuccess: (data) => {
+        queryClient.invalidateQueries(pageKeys.page(parseInt(data)));
+      },
+    }
+  );
+};
+
+export const useUpdatePageFAQ = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    async ({ id, dateId, date }) => {
+      const response = await axios.put(
+        `http://161.53.174.14/wp-json/wp/v2/event/${id}/dates/${dateId}`,
+        {
+          date,
+        }
+      );
+      return response.data;
+    },
+    {
+      onSuccess: (data) => {
+        queryClient.invalidateQueries(pageKeys.page(parseInt(data)));
+      },
+    }
+  );
+};
+
+export const useDeletePageFAQ = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    async ({ id, dateId }) => {
+      const response = await axios.delete(
+        `http://161.53.174.14/wp-json/wp/v2/event/${id}/dates/${dateId}`
+      );
+      return response.data;
+    },
+    {
+      onSuccess: (data) => {
+        queryClient.invalidateQueries(pageKeys.page(parseInt(data)));
       },
     }
   );

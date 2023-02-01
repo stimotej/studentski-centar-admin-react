@@ -10,11 +10,10 @@ const formatEvent = (event) => ({
   date: event.date,
   status: event.status,
   author: event.author_meta.display_name,
-  event_date: event.meta.event_date,
-  event_dates: event.meta.event_dates,
-  event_id: event.meta.event_id,
-  event_location: event.meta.event_location,
-  event_type: event.meta.event_type,
+  dates: event.meta.dates,
+  location: event.meta.location,
+  type: event.meta.type,
+  documents: event.meta.documents,
 });
 
 export default formatEvent;

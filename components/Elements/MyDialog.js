@@ -38,7 +38,7 @@ const MyDialog = ({
     <Dialog
       fullWidth
       maxWidth={maxWidth ?? "sm"}
-      open={opened}
+      open={!!opened}
       onClose={handleClose}
       scroll="body"
     >

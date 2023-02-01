@@ -42,3 +42,83 @@ export const useUpdatePage = () => {
     }
   );
 };
+
+export const useCreatePageFAQ = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    async ({ id, question, answer }) => {
+      const response = await axios.post(
+        `http://161.53.174.14/wp-json/wp/v2/pages/${id}/faq`,
+        {
+          question,
+          answer,
+        }
+      );
+      return response.data;
+    },
+    {
+      onSuccess: (data) => {
+        toast.success("Pitanje je uspješno dodano.");
+        queryClient.invalidateQueries(pageKeys.page(parseInt(data)));
+      },
+      onError: (error) => {
+        if (error.response.data.data.status === 403)
+          toast.error("Nemate dopuštenje za dodavanje pitanja.");
+        else toast.error("Greška kod spremanja.");
+      },
+    }
+  );
+};
+
+export const useUpdatePageFAQ = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    async ({ id, faqId, question, answer }) => {
+      const response = await axios.put(
+        `http://161.53.174.14/wp-json/wp/v2/pages/${id}/faq/${faqId}`,
+        {
+          question,
+          answer,
+        }
+      );
+      return response.data;
+    },
+    {
+      onSuccess: (data) => {
+        toast.success("Pitanje je uspješno uređeno.");
+        return queryClient.invalidateQueries(pageKeys.page(parseInt(data)));
+      },
+      onError: (error) => {
+        if (error.response.data.data.status === 403)
+          toast.error("Nemate dopuštenje za uređivanje pitanja.");
+        else toast.error("Greška kod spremanja.");
+      },
+    }
+  );
+};
+
+export const useDeletePageFAQ = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    async ({ id, faqId }) => {
+      const response = await axios.delete(
+        `http://161.53.174.14/wp-json/wp/v2/pages/${id}/faq/${faqId}`
+      );
+      return response.data;
+    },
+    {
+      onSuccess: (data) => {
+        toast.success("Pitanje je uspješno obrisano.");
+        return queryClient.invalidateQueries(pageKeys.page(parseInt(data)));
+      },
+      onError: (error) => {
+        if (error.response.data.data.status === 403)
+          toast.error("Nemate dopuštenje za brisanje pitanja.");
+        else toast.error("Greška kod spremanja.");
+      },
+    }
+  );
+};

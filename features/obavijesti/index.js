@@ -106,6 +106,7 @@ export const useCreateObavijest = () => {
             end_showing: obavijest?.endShowing,
             show_always: obavijest?.showAlways,
             event_date: obavijest?.eventDate,
+            documents: obavijest?.documents,
           },
         }
       );

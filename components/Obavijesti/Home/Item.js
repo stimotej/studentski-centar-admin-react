@@ -50,22 +50,20 @@ const Item = ({
             <p className="text-sm">
               Datumi:{" "}
               <strong>
-                {obavijest.event_dates
-                  .split(",")
+                {obavijest.dates
                   .map((date) => dayjs(date).format("DD.MM.YYYY [u] HH:mm[h]"))
                   .join(", ")}
               </strong>
             </p>
-            {!!obavijest.event_location && (
+            {!!obavijest.location && (
               <p className="text-sm">
                 Lokacija:{" "}
-                <span className="text-primary">{obavijest.event_location}</span>
+                <span className="text-primary">{obavijest.location}</span>
               </p>
             )}
-            {!!obavijest.event_type && (
+            {!!obavijest.type && (
               <p className="text-sm">
-                Program:{" "}
-                <span className="text-primary">{obavijest.event_type}</span>
+                Program: <span className="text-primary">{obavijest.type}</span>
               </p>
             )}
           </div>

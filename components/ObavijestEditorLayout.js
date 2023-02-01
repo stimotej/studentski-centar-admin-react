@@ -76,6 +76,8 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
       if (storedPost?.length) storedPostExists = true;
       if (key === `${from}_editor_content` && storedPost === "<p><br></p>")
         storedPostExists = false;
+      if (key === `${from}_editor_title` && storedPost === "<p><br></p>")
+        storedPostExists = false;
       if (key === `${from}_editor_status` && storedPost === "publish")
         storedPostExists = false;
     });
@@ -104,7 +106,9 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
 
   const obavijestId = router.query.id;
 
-  const { data: obavijest } = useObavijest(obavijestId);
+  const { data: obavijest } = useObavijest(obavijestId, {
+    enabled: !!obavijestId,
+  });
 
   useEffect(() => {
     if (obavijest) {
@@ -184,7 +188,6 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
     useUpdateObavijest();
 
   const handlePost = async () => {
-    console.log("files", files.length > 0 && files);
     const newPost = {
       title: title,
       content: content,
@@ -205,8 +208,7 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
           source_url: file.src,
         })),
     };
-    if (Object.keys(router.query).length)
-      updateObavijest({ id: router.query.id, obavijest: newPost });
+    if (obavijestId) updateObavijest({ id: obavijestId, obavijest: newPost });
     else
       createObavijest(newPost, {
         onSuccess: () => {
@@ -228,7 +230,7 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
     if (mediaDialog.action === "featuredImage") {
       setImage(value);
       setImageId(value?.id);
-      if (!router.query?.content) {
+      if (!obavijestId) {
         window.localStorage.setItem(`${from}_editor_image_id`, value?.id);
         window.localStorage.setItem(`${from}_editor_image_src`, value?.src);
       }
@@ -237,10 +239,12 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
       setSrc(value.src);
     } else if (mediaDialog.action === "document") {
       setFiles([...files, value]);
-      window.localStorage.setItem(
-        `${from}_editor_files`,
-        JSON.stringify([...files, value])
-      );
+      if (!obavijestId) {
+        window.localStorage.setItem(
+          `${from}_editor_files`,
+          JSON.stringify([...files, value])
+        );
+      }
     }
   };
 
@@ -267,7 +271,7 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
       <Header />
       {/* <Actions /> */}
       <Sidebar
-        saveObavijest={router.query ? true : false}
+        saveObavijest={obavijestId ? true : false}
         handlePost={handlePost}
         loading={isCreating || isUpdating}
         handlePreview={handlePreview}
@@ -282,7 +286,7 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
           {image?.src ? (
             <Image
               src={image?.src}
-              alt={image?.alt}
+              alt={image?.alt || "Slika obavijesti"}
               width={image?.width || 50}
               height={image?.height || 50}
               layout="responsive"
@@ -301,7 +305,7 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
           value={description}
           onChange={(e) => {
             setDescription(e.target.value);
-            !router.query?.content &&
+            !obavijestId &&
               window.localStorage.setItem(
                 `${from}_editor_description`,
                 e.target.value
@@ -317,7 +321,7 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
               value={category}
               onChange={(e) => {
                 setCategory(e.target.value);
-                !router.query?.content &&
+                !obavijestId &&
                   window.localStorage.setItem(
                     `${from}_editor_category`,
                     e.target.value
@@ -344,7 +348,7 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
               disabled={showAlways}
               onChange={(value) => {
                 setStartShowing(value);
-                !router.query?.content &&
+                !obavijestId &&
                   window.localStorage.setItem(
                     `${from}_editor_start_showing`,
                     value
@@ -362,7 +366,7 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
               disabled={showAlways}
               onChange={(value) => {
                 setEndShowing(value);
-                !router.query?.content &&
+                !obavijestId &&
                   window.localStorage.setItem(
                     `${from}_editor_end_showing`,
                     value
@@ -377,7 +381,7 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
                   checked={showAlways}
                   onChange={(e) => {
                     setShowAlways(e.target.checked);
-                    !router.query?.content &&
+                    !obavijestId &&
                       window.localStorage.setItem(
                         `${from}_editor_show_always`,
                         e.target.checked
@@ -399,7 +403,7 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
               label="Odaberite datum"
               onChange={(value) => {
                 setEventDate(value);
-                !router.query?.content &&
+                !obavijestId &&
                   window.localStorage.setItem(
                     `${from}_editor_event_date`,
                     value
@@ -414,7 +418,7 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
           value={status}
           onChange={(e) => {
             setStatus(e.target.value);
-            !router.query?.content &&
+            !obavijestId &&
               window.localStorage.setItem(
                 `${from}_editor_status`,
                 e.target.value
@@ -468,7 +472,7 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
             value={title}
             onChange={(value) => {
               setTitle(value);
-              !router.query?.content &&
+              !obavijestId &&
                 window.localStorage.setItem(`${from}_editor_title`, value);
             }}
           />
@@ -477,7 +481,7 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
             placeholder="Naslov..."
             onChange={(value) => {
               setTitle(value);
-              !router.query?.content &&
+              !obavijestId &&
                 window.localStorage.setItem(`${from}_editor_title`, value);
             }}
             className="w-full mt-14 sm:mt-12 text-2xl bg-transparent font-semibold border-transparent focus:border-transparent focus:ring-0"
@@ -486,8 +490,7 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
             value={content}
             onChange={(value) => {
               setContent(value);
-              console.log("ql val: ", value);
-              !router.query?.content &&
+              !obavijestId &&
                 window.localStorage.setItem(`${from}_editor_content`, value);
             }}
             addImageToolbar={addImageToolbar}

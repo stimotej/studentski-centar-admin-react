@@ -2,6 +2,7 @@ import dynamic from "next/dynamic";
 import { useState } from "react";
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 import { MdOutlineEdit, MdOutlineDelete, MdOpenInNew } from "react-icons/md";
+import { useDeleteEvent } from "../../../features/events";
 import { useDeleteObavijest } from "../../../features/obavijesti";
 import Button from "../../Elements/Button";
 import MyDialog from "../../Elements/MyDialog";
@@ -11,13 +12,22 @@ const Preview = ({ obavijest, className, title, isEvent = false, from }) => {
 
   const { mutate: deleteObavijest, isLoading: isDeleting } =
     useDeleteObavijest();
+  const { mutate: deleteEvent, isLoading: isDeletingEvent } = useDeleteEvent();
 
   const handleDelete = async () => {
-    deleteObavijest(obavijest.id, {
-      onSuccess: () => {
-        setDeleteDialog(false);
-      },
-    });
+    if (isEvent) {
+      deleteEvent(obavijest.id, {
+        onSuccess: () => {
+          setDeleteDialog(false);
+        },
+      });
+    } else {
+      deleteObavijest(obavijest.id, {
+        onSuccess: () => {
+          setDeleteDialog(false);
+        },
+      });
+    }
   };
 
   return (
@@ -41,7 +51,7 @@ const Preview = ({ obavijest, className, title, isEvent = false, from }) => {
           content="Jeste li sigurni da  želite obrisati odabranu obavijest?"
           actionTitle="Obriši"
           actionColor="error"
-          loading={isDeleting}
+          loading={isDeleting || isDeletingEvent}
           onClick={handleDelete}
         />
 

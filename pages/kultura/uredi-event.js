@@ -4,8 +4,6 @@ import Image from "next/image";
 import Header from "../../components/Obavijesti/Editor/Header";
 import Sidebar from "../../components/Obavijesti/Editor/Sidebar";
 import dynamic from "next/dynamic";
-import { toast } from "react-toastify";
-import Dialog from "../../components/Elements/Dialog";
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 const QuillEditor = dynamic(
   () => import("../../components/Obavijesti/Editor/QuillEditor"),
@@ -16,11 +14,7 @@ const QuillEditor = dynamic(
 );
 import StoredPostNote from "../../components/Obavijesti/Editor/StoredPostNote";
 import Layout from "../../components/Layout";
-import {
-  eventsCategoryId,
-  mainEventCategoryId,
-  userGroups,
-} from "../../lib/constants";
+import { eventsCategoryId, userGroups } from "../../lib/constants";
 import Loader from "../../components/Elements/Loader";
 import {
   FormControlLabel,
@@ -29,29 +23,50 @@ import {
   RadioGroup,
   TextField,
 } from "@mui/material";
-import { useCategories } from "../../lib/api/categories";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
-import {
-  createEvent,
-  deleteEvent,
-  updateEvent,
-  useEvents,
-} from "../../lib/api/events";
 import Autocomplete from "@mui/material/Autocomplete";
 import dayjs from "dayjs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faXmark } from "@fortawesome/pro-regular-svg-icons";
+import { faFilePdf, faXmark } from "@fortawesome/pro-regular-svg-icons";
 import MediaSelectDialog from "../../components/MediaSelectDialog";
-import { useMedia, useMediaById } from "../../features/media";
 import {
   useCreateEvent,
-  useCreateTag,
-  useDeleteEvent,
-  useEventsByTags,
+  useEvent,
+  useUpdateEvent,
 } from "../../features/events";
 import MyDialog from "../../components/Elements/MyDialog";
+
+const storedPostKeys = [
+  "event_title",
+  "event_content",
+  "event_image_id",
+  "event_image_src",
+  "event_status",
+  "event_location",
+  "event_dates",
+  "event_type",
+  "event_files",
+];
+
+const eventLocations = [
+  "Teatar &TD",
+  "Galerija SC",
+  "Kiosk",
+  "Francuski paviljon",
+  "MM centar",
+  "Kino SC",
+  "SKUC",
+];
+const eventTypes = [
+  "Predstava",
+  "Izložba",
+  "Film",
+  "Koncert",
+  "Tečaj",
+  "Radionica",
+];
 
 const Editor = () => {
   const [storedPostNote, setStoredPostNote] = useState(false);
@@ -71,32 +86,13 @@ const Editor = () => {
       if (storedPost?.length) storedPostExists = true;
       if (key === "event_content" && storedPost === "<p><br></p>")
         storedPostExists = false;
+      if (key === "event_title" && storedPost === "<p><br></p>")
+        storedPostExists = false;
       if (key === "event_status" && storedPost === "publish")
         storedPostExists = false;
     });
-    if (storedPostExists && !Object.keys(router.query).length)
-      setStoredPostNote(true);
+    if (storedPostExists && !eventId) setStoredPostNote(true);
   }, []);
-
-  const { data: events } = useEventsByTags(
-    {
-      tags: router.query?.tags,
-    },
-    {
-      enabled: !!router.query?.tags,
-    }
-  );
-  const { data: mediaLoaded, isInitialLoading: isLoadingMedia } = useMediaById(
-    router.query?.imageId,
-    {
-      onSettled: (media) => {},
-      enabled: !!router.query?.imageId,
-    }
-  );
-
-  useEffect(() => {
-    if (mediaLoaded) setImage(mediaLoaded);
-  }, [mediaLoaded]);
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -111,15 +107,25 @@ const Editor = () => {
 
   const [image, setImage] = useState(null);
 
+  const [files, setFiles] = useState([]);
+
+  const eventId = router.query.id;
+
+  const { data: event } = useEvent(eventId, {
+    enabled: !!eventId,
+  });
+
   useEffect(() => {
-    if (Object.keys(router.query).length) {
-      setTitle(router.query.title || "");
-      setContent(router.query.content || "");
-      setImageId(router.query.imageId || "");
-      setStatus(router.query.status || "publish");
-      setEventLocation(router.query.event_location || "");
-      setEventDates(router.query.event_dates.split(",") || []);
-      setEventType(router.query.event_type || "");
+    if (event) {
+      setImage({ src: event.image !== "false" ? event.image : null } || null);
+      setTitle(event.title || "");
+      setContent(event.content || "");
+      setImageId(event.imageId || "");
+      setStatus(event.status || "publish");
+      setEventDates(event.dates || []);
+      setEventLocation(event.location || "");
+      setEventType(event.type || "");
+      setFiles(event.documents || []);
     } else {
       setTitle(window.localStorage.getItem("event_title") || "");
       setContent(window.localStorage.getItem("event_content") || "");
@@ -131,41 +137,11 @@ const Editor = () => {
         window.localStorage.getItem("event_dates")?.split(",") || []
       );
       setEventType(window.localStorage.getItem("event_type") || "");
+      setFiles(JSON.parse(window.localStorage.getItem("event_files")) || []);
     }
-  }, [router.query]);
-
-  const [loading, setLoading] = useState(false);
+  }, [event]);
 
   const [mediaDialog, setMediaDialog] = useState(null);
-
-  const storedPostKeys = [
-    "event_title",
-    "event_content",
-    "event_image_id",
-    "event_image_src",
-    "event_status",
-    "event_location",
-    "event_dates",
-    "event_type",
-  ];
-
-  const eventLocations = [
-    "Teatar &TD",
-    "Galerija SC",
-    "Kiosk",
-    "Francuski paviljon",
-    "MM centar",
-    "Kino SC",
-    "SKUC",
-  ];
-  const eventTypes = [
-    "Predstava",
-    "Izložba",
-    "Film",
-    "Koncert",
-    "Tečaj",
-    "Radionica",
-  ];
 
   const resetStoredPostAndState = () => {
     storedPostKeys.forEach((key) => {
@@ -179,98 +155,37 @@ const Editor = () => {
     setEventLocation("");
     setEventDates([]);
     setEventType("");
+    setFiles([]);
   };
 
-  const { mutate: createTag } = useCreateTag();
-  const { mutateAsync: createEvent } = useCreateEvent(false);
-  const { mutateAsync: deleteEvent } = useDeleteEvent(false);
+  const { mutate: createEvent, isLoading: isCreating } = useCreateEvent();
+  const { mutate: updateEvent, isLoading: isUpdating } = useUpdateEvent();
 
   const handlePost = async () => {
-    setLoading(true);
-    if (Object.keys(router.query).length) {
-      try {
-        const changedEvent = {
-          title: title,
-          content: content,
-          imageId: imageId,
-          status: status,
-          event_dates: eventDates
-            .map((date) => dayjs(date).toISOString())
-            .toString(),
-          event_location: eventLocation,
-          event_type: eventType,
-        };
+    const newEvent = {
+      title: title,
+      content: content,
+      imageId: imageId || 0,
+      status: status,
+      dates: eventDates.map((date) => dayjs(date).toISOString()),
+      location: eventLocation,
+      type: eventType,
+      documents:
+        files.length > 0 &&
+        files.map((file) => ({
+          id: file.id,
+          title: file.title,
+          mime_type: file.mimeType,
+          source_url: file.src,
+        })),
+    };
 
-        const requestsDelete = events.filter((event) => deleteEvent(event.id));
-
-        await Promise.all(requestsDelete);
-
-        let requestsCreate = eventDates.map((date) =>
-          createEvent({
-            ...changedEvent,
-            event_date: dayjs(date).toISOString(),
-            tags: router.query.tags,
-          })
-        );
-        requestsCreate.push(
-          createEvent({
-            ...changedEvent,
-            categories: [mainEventCategoryId],
-            tags: router.query.tags,
-          })
-        );
-
-        await Promise.all(requestsCreate);
-
-        toast.success("Uspješno spremljene promjene.");
-      } catch (error) {
-        if (error?.response?.data?.data?.status === 403)
-          toast.error("Nemate dopuštenje za uređivanje ovog eventa");
-        else toast.error("Greška kod spremanja eventa");
-      } finally {
-        setLoading(false);
-      }
+    if (eventId) {
+      updateEvent({ id: eventId, event: newEvent });
     } else {
-      const newEvent = {
-        title: title,
-        content: content,
-        imageId: imageId || 0,
-        status: status,
-        event_dates: eventDates
-          .map((date) => dayjs(date).toISOString())
-          .toString(),
-        event_location: eventLocation,
-        event_type: eventType,
-      };
-
-      createTag(`event-${Math.random()}`, {
-        onSuccess: (tag) => {
-          let requests = eventDates.map((date) =>
-            createEvent({
-              ...newEvent,
-              event_date: dayjs(date).toISOString(),
-              tags: [tag.id],
-            })
-          );
-          requests.push(
-            createEvent({
-              ...newEvent,
-              categories: [mainEventCategoryId],
-              tags: [tag.id],
-            })
-          );
-
-          Promise.all(requests)
-            .then(() => {
-              resetStoredPostAndState();
-              toast.success("Event je uspješno izrađen.");
-            })
-            .catch((error) => {
-              if (error.response.data.data.status === 403)
-                toast.error("Nemate dopuštenje za izradu evenata.");
-              else toast.error("Greška kod izrade eventa.");
-            })
-            .finally(() => setLoading(false));
+      createEvent(newEvent, {
+        onSuccess: () => {
+          resetStoredPostAndState();
         },
       });
     }
@@ -282,20 +197,29 @@ const Editor = () => {
   const [src, setSrc] = useState(null);
 
   const addImageToolbar = () => {
-    setMediaDialog("contentImage");
+    setMediaDialog({ type: "image", action: "contentImage" });
   };
 
   const handleSelectMedia = (value) => {
-    if (mediaDialog === "featuredImage") {
+    if (mediaDialog.action === "featuredImage") {
       setImage(value);
       setImageId(value?.id);
-      if (!router.query?.content) {
+      if (!eventId) {
         window.localStorage.setItem("event_image_id", value?.id);
         window.localStorage.setItem("event_image_src", value?.src);
       }
-    } else if (mediaDialog === "contentImage")
+    } else if (mediaDialog.action === "contentImage") {
       // addImageToEditor(selectedImage.src);
       setSrc(value.src);
+    } else if (mediaDialog.action === "document") {
+      setFiles([...files, value]);
+      if (!eventId) {
+        window.localStorage.setItem(
+          "event_files",
+          JSON.stringify([...files, value])
+        );
+      }
+    }
   };
 
   const [ytModal, setYtModal] = useState(false);
@@ -303,7 +227,6 @@ const Editor = () => {
   const [videoId, setVideoId] = useState("");
 
   const addYoutubeVideo = () => {
-    console.log("yt");
     setYtModal(true);
   };
 
@@ -313,32 +236,34 @@ const Editor = () => {
     setYtModal(false);
   };
 
+  const addDocumentToolbar = () => {
+    setMediaDialog({ type: "application", action: "document" });
+  };
+
   return (
     <Layout>
       <Header />
       {/* <Actions /> */}
       <Sidebar
-        saveObavijest={router.query ? true : false}
+        saveObavijest={eventId ? true : false}
         handlePost={handlePost}
-        loading={loading}
+        loading={isCreating || isUpdating}
         handlePreview={handlePreview}
       >
         <div className="mt-4">Slika eventa:</div>
         <button
           className="mt-2 w-full bg-secondary rounded-lg border border-black/20 hover:border-black text-black/60"
-          onClick={() => setMediaDialog("featuredImage")}
+          onClick={() =>
+            setMediaDialog({ type: "image", action: "featuredImage" })
+          }
         >
-          {isLoadingMedia ? (
-            <div className="py-4">Učitavanje...</div>
-          ) : image?.src ? (
+          {image?.src ? (
             <Image
               src={image?.src}
-              alt={image?.alt}
+              alt={image?.alt || "Slika eventa"}
               width={image?.width || 50}
               height={image?.height || 50}
-              objectFit="cover"
-              layout="responsive"
-              className="rounded-lg"
+              className="rounded-lg object-cover w-full h-auto"
             />
           ) : (
             <div className="py-4">Odaberi sliku</div>
@@ -351,7 +276,7 @@ const Editor = () => {
           value={eventLocation}
           onChange={(e) => {
             setEventLocation(e.target.value);
-            !router.query?.content &&
+            !eventId &&
               window.localStorage.setItem("event_location", e.target.value);
           }}
         /> */}
@@ -363,7 +288,7 @@ const Editor = () => {
           value={eventLocation}
           onChange={(e, val) => {
             setEventLocation(val !== null ? val : "");
-            !router.query?.content &&
+            !eventId &&
               window.localStorage.setItem(
                 "event_location",
                 val !== null ? val : ""
@@ -377,7 +302,7 @@ const Editor = () => {
           value={eventType}
           onChange={(e) => {
             setEventType(e.target.value);
-            !router.query?.content &&
+            !eventId &&
               window.localStorage.setItem("event_type", e.target.value);
           }}
         /> */}
@@ -389,7 +314,7 @@ const Editor = () => {
           value={eventType}
           onChange={(e, val) => {
             setEventType(val !== null ? val : "");
-            !router.query?.content &&
+            !eventId &&
               window.localStorage.setItem(
                 "event_type",
                 val !== null ? val : ""
@@ -406,7 +331,7 @@ const Editor = () => {
               label="Odaberite datum"
               onChange={(value) => {
                 setEventDate(value);
-                !router.query?.content &&
+                !eventId &&
                   window.localStorage.setItem("event_date", value);
               }}
               renderInput={(params) => <TextField {...params} />}
@@ -423,7 +348,7 @@ const Editor = () => {
               label="Dodaj datum"
               onAccept={(value) => {
                 setEventDates([...eventDates, value]);
-                !router.query?.content &&
+                !eventId &&
                   window.localStorage.setItem("event_dates", [
                     ...eventDates,
                     value,
@@ -459,7 +384,7 @@ const Editor = () => {
                     className="px-2"
                     onClick={() => {
                       setEventDates(eventDates.filter((item) => item !== date));
-                      if (!router.query?.content) {
+                      if (!eventId) {
                         eventDates.length - 1 > 0
                           ? window.localStorage.setItem(
                               "event_dates",
@@ -480,7 +405,7 @@ const Editor = () => {
           value={status}
           onChange={(e) => {
             setStatus(e.target.value);
-            !router.query?.content &&
+            !eventId &&
               window.localStorage.setItem("event_status", e.target.value);
           }}
         >
@@ -497,12 +422,12 @@ const Editor = () => {
         </RadioGroup>
       </Sidebar>
       <MediaSelectDialog
-        opened={mediaDialog}
+        opened={!!mediaDialog}
         onClose={() => setMediaDialog(false)}
         value={image}
         onSelect={handleSelectMedia}
         categoryId={eventsCategoryId}
-        mediaType="image"
+        mediaType={mediaDialog?.type}
       />
       <MyDialog
         opened={ytModal}
@@ -532,8 +457,7 @@ const Editor = () => {
             value={title}
             onChange={(value) => {
               setTitle(value);
-              !router.query?.content &&
-                window.localStorage.setItem("event_title", value);
+              !eventId && window.localStorage.setItem("event_title", value);
             }}
           />
           {/* <QuillEditor
@@ -541,7 +465,7 @@ const Editor = () => {
             placeholder="Naslov..."
             onChange={(value) => {
               setTitle(value);
-              !router.query?.content &&
+              !eventId &&
                 window.localStorage.setItem("event_title", value);
             }}
             className="w-full mt-14 sm:mt-12 text-2xl bg-transparent font-semibold border-transparent focus:border-transparent focus:ring-0"
@@ -550,17 +474,50 @@ const Editor = () => {
             value={content}
             onChange={(value) => {
               setContent(value);
-              console.log("ql val: ", value);
-              !router.query?.content &&
-                window.localStorage.setItem("event_content", value);
+              !eventId && window.localStorage.setItem("event_content", value);
             }}
             addImageToolbar={addImageToolbar}
             addYoutubeVideo={addYoutubeVideo}
+            addDocumentToolbar={addDocumentToolbar}
             videoId={videoId}
             setVideoId={setVideoId}
             src={src}
             setSrc={setSrc}
           />
+
+          {files?.length > 0 && (
+            <>
+              <div className="mt-8 mb-2 font-semibold">Dokumenti</div>
+              <div className="flex flex-col gap-2">
+                {files.map((file, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between gap-2 border border-gray-400 p-1 rounded-lg"
+                  >
+                    <div className="flex items-center gap-2">
+                      <FontAwesomeIcon
+                        icon={faFilePdf}
+                        className="text-lg text-gray-800 ml-2"
+                      />
+                      <div className="flex-1 line-clamp-1">
+                        {file.title}.pdf
+                      </div>
+                    </div>
+                    <IconButton
+                      className="!aspect-square"
+                      onClick={() => {
+                        const newFiles = [...files];
+                        newFiles.splice(index, 1);
+                        setFiles(newFiles);
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faXmark} />
+                    </IconButton>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
       {storedPostNote && (

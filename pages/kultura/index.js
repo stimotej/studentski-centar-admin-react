@@ -2,20 +2,12 @@ import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { useRouter } from "next/router";
 import { MdAdd } from "react-icons/md";
-import {
-  HiOutlineArrowNarrowUp,
-  HiOutlineArrowNarrowDown,
-} from "react-icons/hi";
 import Header from "../../components/Header";
 import ObavijestPreview from "../../components/Obavijesti/Home/Preview";
-import SearchBar from "../../components/Elements/SearchBar";
 import ObavijestSelect from "../../components/Obavijesti/Home/Select";
-import Select from "../../components/Elements/Select";
 import Loader from "../../components/Elements/Loader";
-import Dialog from "../../components/Elements/Dialog";
 import Layout from "../../components/Layout";
 import { userGroups } from "../../lib/constants";
-import { deleteEvent } from "../../lib/api/events";
 import SearchHeader from "../../components/Elements/SearchHeader";
 import { useDeleteEvent, useEvents } from "../../features/events";
 import useDebounce from "../../lib/useDebounce";

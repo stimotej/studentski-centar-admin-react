@@ -24,7 +24,13 @@ import Loader from "../../components/Elements/Loader";
 import Header from "../../components/Header";
 import Layout from "../../components/Layout";
 import MediaSelectDialog from "../../components/MediaSelectDialog";
-import { usePage, useUpdatePage } from "../../features/page";
+import {
+  useCreatePageFAQ,
+  useDeletePageFAQ,
+  usePage,
+  useUpdatePage,
+  useUpdatePageFAQ,
+} from "../../features/page";
 import {
   scPageId,
   studentskiServisCategoryId,
@@ -34,24 +40,23 @@ import {
 const Poslovi = () => {
   const router = useRouter();
 
-  const {
-    data: pageSC,
-    isLoading: isLoadingPage,
-    isError: isPageError,
-  } = usePage(scPageId);
+  // const {
+  //   data: pageSC,
+  //   isLoading: isLoadingPage,
+  //   isError: isPageError,
+  // } = usePage(scPageId);
 
-  console.log("pageSC", pageSC);
+  // const [page, setPage] = useState("faq");
 
-  const [page, setPage] = useState("faq");
+  // const [mediaDialogOpened, setMediaDialogOpened] = useState(false);
 
-  const [mediaDialogOpened, setMediaDialogOpened] = useState(false);
+  // const [image, setImage] = useState(null);
+  // const [banners, setBanners] = useState([]);
 
-  const [image, setImage] = useState(null);
-  const [banners, setBanners] = useState([]);
-
-  const [question, setQuestion] = useState("");
-  const [answer, setAnswer] = useState("");
-  const [addFAQModal, setAddFAQModal] = useState(false);
+  // const [faqId, setFaqId] = useState("");
+  // const [question, setQuestion] = useState("");
+  // const [answer, setAnswer] = useState("");
+  // const [addFAQModal, setAddFAQModal] = useState(false);
 
   useEffect(() => {
     const token = window.localStorage.getItem("access_token");
@@ -61,54 +66,98 @@ const Poslovi = () => {
       router.push("/student-servis/login");
   }, [router]);
 
-  const { mutate: updatePageSC } = useUpdatePage();
+  // const { mutate: createPageFAQ } = useCreatePageFAQ();
+  // const { mutate: updatePageFAQ } = useUpdatePageFAQ();
+  // const { mutate: deletePageFAQ } = useDeletePageFAQ();
 
-  const handleAddFAQ = () => {
-    if (!pageSC) return;
+  // const handleAddFAQ = () => {
+  //   if (!pageSC) return;
 
-    updatePageSC(
-      {
-        id: scPageId,
-        data: {
-          meta: { faq: [...(pageSC.meta.faq || []), { question, answer }] },
-        },
-      },
-      {
-        onSuccess: () => {
-          setAddFAQModal(false);
-          setQuestion("");
-          setAnswer("");
-        },
-      }
-    );
-  };
+  //   if (faqId)
+  //     updatePageFAQ(
+  //       {
+  //         id: scPageId,
+  //         faqId: faqId,
+  //         question,
+  //         answer,
+  //       },
+  //       {
+  //         onSuccess: () => {
+  //           setAddFAQModal(false);
+  //           setFaqId("");
+  //           setQuestion("");
+  //           setAnswer("");
+  //         },
+  //       }
+  //     );
+  //   else
+  //     createPageFAQ(
+  //       {
+  //         id: scPageId,
+  //         question,
+  //         answer,
+  //       },
+  //       {
+  //         onSuccess: () => {
+  //           setAddFAQModal(false);
+  //           setFaqId("");
+  //           setQuestion("");
+  //           setAnswer("");
+  //         },
+  //       }
+  //     );
+  // };
 
-  if (isPageError)
-    return (
-      <Layout>
-        <Header title="Početna" />
-        <div className="px-5 md:px-10 pb-6">
-          <div className="text-error py-10">Greška kod dohvaćanja podataka</div>
-        </div>
-      </Layout>
-    );
+  // const handleOpenEditFAQDialog = (faq) => {
+  //   setAddFAQModal(true);
+  //   setFaqId(faq.id);
+  //   setQuestion(faq.question);
+  //   setAnswer(faq.answer);
+  // };
 
-  if (isLoadingPage)
-    return (
-      <Layout>
-        <Header title="Početna" />
-        <div className="flex items-center justify-center py-10">
-          <Loader className="w-10 h-10 border-primary" />
-        </div>
-      </Layout>
-    );
+  // const handleDeleteFAQ = (faqId) => {
+  //   if (!confirm("Jeste li sigurni da želite obrisati ovo pitanje?")) return;
+
+  //   deletePageFAQ(
+  //     { id: scPageId, faqId },
+  //     {
+  //       onSuccess: () => {
+  //         setAddFAQModal(false);
+  //         setQuestion("");
+  //         setAnswer("");
+  //       },
+  //     }
+  //   );
+  // };
+
+  // if (isPageError)
+  //   return (
+  //     <Layout>
+  //       <Header title="Početna" />
+  //       <div className="px-5 md:px-10 pb-6">
+  //         <div className="text-error py-10">Greška kod dohvaćanja podataka</div>
+  //       </div>
+  //     </Layout>
+  //   );
+
+  // if (isLoadingPage)
+  //   return (
+  //     <Layout>
+  //       <Header title="Početna" />
+  //       <div className="flex items-center justify-center py-10">
+  //         <Loader className="w-10 h-10 border-primary" />
+  //       </div>
+  //     </Layout>
+  //   );
 
   return (
     <Layout>
       <Header title="Početna" />
       <div className="px-5 md:px-10 pb-6">
-        {/* <Alert severity="info" className="mb-5">Početna stranica u izradi</Alert> */}
-        <div className="flex gap-10 flex-wrap md:flex-nowrap">
+        <Alert severity="info" className="mb-5">
+          Početna stranica u izradi
+        </Alert>
+        {/* <div className="flex gap-10 flex-wrap md:flex-nowrap">
           <div>
             <Paper sx={{ minWidth: 260 }}>
               <MenuList>
@@ -122,7 +171,7 @@ const Poslovi = () => {
             </Paper>
           </div>
           {page === "faq" && (
-            <div>
+            <div className="flex flex-col gap-5 items-start">
               <div>
                 {pageSC?.meta?.faq?.map((faq, index) => (
                   <Fragment key={index}>
@@ -134,32 +183,49 @@ const Poslovi = () => {
                       </AccordionSummary>
                       <AccordionDetails>
                         <Typography>{faq.answer}</Typography>
-                        {/* <div className="flex gap-2 mt-2">
-                          <Button>Uredi</Button>
-                          <Button color="error">Obriši</Button>
-                        </div> */}
+                        <div className="flex gap-2 mt-2">
+                          <Button onClick={() => handleOpenEditFAQDialog(faq)}>
+                            Uredi
+                          </Button>
+                          <Button
+                            color="error"
+                            onClick={() => handleDeleteFAQ(faq.id)}
+                          >
+                            Obriši
+                          </Button>
+                        </div>
                       </AccordionDetails>
                     </Accordion>
                   </Fragment>
                 ))}
               </div>
-              {/* <Button
+              <Button
                 onClick={() => setAddFAQModal(true)}
-                className="!mt-5"
                 startIcon={<FontAwesomeIcon icon={faAdd} />}
               >
                 Dodaj pitanje
-              </Button> */}
+              </Button>
             </div>
           )}
-        </div>
+        </div> */}
       </div>
-      <Dialog open={addFAQModal} onClose={() => setAddFAQModal(false)}>
-        <DialogTitle>Dodaj često postavljeno pitanje</DialogTitle>
+      {/* <Dialog
+        open={!!addFAQModal}
+        onClose={() => {
+          setAddFAQModal(false);
+          setFaqId("");
+          setQuestion("");
+          setAnswer("");
+        }}
+      >
+        <DialogTitle>
+          {faqId ? "Uredi" : "Dodaj"} često postavljeno pitanje
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Dodavanjem često postavljenog pitanja, pitanje će biti vidljivo na
-            web stranici.
+            {faqId
+              ? "Uređivanjem često postavljenog pitanja, promjene će biti vidljive na web stranici."
+              : "Dodavanjem često postavljenog pitanja, pitanje će biti vidljivo na web stranici."}
           </DialogContentText>
           <TextField
             value={question}
@@ -179,14 +245,14 @@ const Poslovi = () => {
             fullWidth
             variant="outlined"
             multiline
-            rows={3}
+            rows={8}
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setAddFAQModal(false)} className="!text-black">
             Odustani
           </Button>
-          <Button onClick={handleAddFAQ}>Dodaj</Button>
+          <Button onClick={handleAddFAQ}>{faqId ? "Spremi" : "Dodaj"}</Button>
         </DialogActions>
       </Dialog>
 
@@ -200,7 +266,7 @@ const Poslovi = () => {
           handlePublishBanners([...banners, val.src]);
         }}
         categoryId={studentskiServisCategoryId}
-      />
+      /> */}
     </Layout>
   );
 };
