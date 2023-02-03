@@ -1,3 +1,8 @@
+import {
+  faArrowDownToBracket,
+  faFileText,
+} from "@fortawesome/pro-light-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import dynamic from "next/dynamic";
 import { useState } from "react";
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
@@ -89,6 +94,35 @@ const Preview = ({ obavijest, className, title, isEvent = false, from }) => {
         }}
         readOnly={true}
       />
+      {obavijest.documents?.length > 0 && (
+        <div className="px-3 pb-10">
+          <div className="flex flex-col gap-2">
+            {obavijest.documents.map((file, index) => (
+              <a
+                key={index}
+                className="flex items-center justify-between gap-2 border border-gray-200 hover:border-[#1CA4FF40] hover:bg-[#1CA4FF10] p-4 rounded-lg"
+                target="_blank"
+                rel="noreferrer"
+                href={file.src}
+              >
+                <div className="flex items-center gap-2">
+                  <FontAwesomeIcon
+                    icon={faFileText}
+                    className="text-lg text-gray-800 ml-2"
+                  />
+                  <div className="flex-1 line-clamp-1 break-all">
+                    {file.src?.split("/").pop()}
+                  </div>
+                  <FontAwesomeIcon
+                    icon={faArrowDownToBracket}
+                    className="text-lg text-gray-800 ml-2"
+                  />
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

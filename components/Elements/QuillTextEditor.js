@@ -9,6 +9,7 @@ import { IconButton, TextField } from "@mui/material";
 import { studentskiServisCategoryId } from "../../lib/constants";
 import ReactQuill, { Quill } from "react-quill";
 import ImageResize from "quill-image-resize-module-react";
+import getIconByMimeType from "../../lib/getIconbyMimeType";
 
 Quill.register("modules/imageResize", ImageResize, true);
 
@@ -63,6 +64,7 @@ const QuillTextEditor = ({
     } else if (mediaDialog.action === "document") {
       setFiles([...files, value]);
     }
+    console.log(value);
   };
 
   const modules = useMemo(
@@ -133,11 +135,11 @@ const QuillTextEditor = ({
                 >
                   <div className="flex items-center gap-2">
                     <FontAwesomeIcon
-                      icon={faFilePdf}
+                      icon={getIconByMimeType(file.mimeType)}
                       className="text-lg text-gray-800 ml-2"
                     />
                     <div className="flex-1 line-clamp-1 break-all">
-                      {file.title}.pdf
+                      {file.src?.split("/").pop()}
                     </div>
                   </div>
                   <IconButton
@@ -187,8 +189,12 @@ const Header = ({ useFiles = true }) => {
     <header id="toolbar" className="w-full p-4 flex flex-wrap">
       <select className="ql-header">
         <option value="">Tekst</option>
-        <option value="3">Podnaslov</option>
-        <option value="1">Naslov</option>
+        <option value="6">Naslov 6</option>
+        <option value="5">Naslov 5</option>
+        <option value="4">Naslov 4</option>
+        <option value="3">Naslov 3</option>
+        <option value="2">Naslov 2</option>
+        <option value="1">Naslov 1</option>
       </select>
       <div className="h-6 border-l border-black/50 mx-4 my-1 sm:my-2" />
       <button className="ql-bold my-1 sm:my-2"></button>

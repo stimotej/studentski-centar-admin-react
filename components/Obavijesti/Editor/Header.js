@@ -12,8 +12,12 @@ const Header = () => {
     >
       <select className="ql-header">
         <option value="">Tekst</option>
-        <option value="3">Podnaslov</option>
-        <option value="1">Naslov</option>
+        <option value="6">Naslov 6</option>
+        <option value="5">Naslov 5</option>
+        <option value="4">Naslov 4</option>
+        <option value="3">Naslov 3</option>
+        <option value="2">Naslov 2</option>
+        <option value="1">Naslov 1</option>
       </select>
       <div className="h-6 border-l border-black/50 mx-4 my-1 sm:my-2" />
       <button className="ql-bold my-1 sm:my-2"></button>

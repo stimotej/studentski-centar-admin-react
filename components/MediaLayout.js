@@ -2,14 +2,7 @@ import { useState, useEffect, Fragment } from "react";
 import { useRouter } from "next/router";
 import { MdAdd } from "react-icons/md";
 import Image from "next/image";
-import {
-  Checkbox,
-  FormControlLabel,
-  ImageList,
-  ImageListItem,
-  ImageListItemBar,
-  TextField,
-} from "@mui/material";
+import { Checkbox, FormControlLabel, TextField } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
 import MediaFileInput from "./Elements/MediaFileInput";
 import Loader from "./Elements/Loader";
@@ -28,6 +21,7 @@ import SearchHeader from "./Elements/SearchHeader";
 import clsx from "clsx";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFile, faFilePdf } from "@fortawesome/pro-regular-svg-icons";
+import getIconByMimeType from "../lib/getIconbyMimeType";
 
 const imageDisplaySizeClasses = {
   small: "w-1/3 sm:w-1/4 md:w-1/5 lg:w-1/6",
@@ -201,16 +195,12 @@ const MediaLayout = ({ categoryId, from, includeBanners }) => {
                         className="rounded-lg object-cover mx-auto w-full aspect-square auto"
                       />
                     ) : (
-                      <div className="flex flex-col overflow-hidden gap-2 p-2 items-center justify-center w-full h-full rounded-lg bg-gray-100">
+                      <div className="flex flex-col overflow-hidden gap-2 p-3 items-center justify-center w-full h-full rounded-lg bg-gray-100">
                         <FontAwesomeIcon
-                          icon={
-                            media?.mimeType === "application/pdf"
-                              ? faFilePdf
-                              : faFile
-                          }
+                          icon={getIconByMimeType(media.mimeType)}
                           className="w-10 h-10 text-gray-500"
                         />
-                        <span className="text-xs text-gray-900 line-clamp-2">
+                        <span className="text-xs text-gray-900 line-clamp-2 break-all">
                           {media.title}
                         </span>
                       </div>
@@ -257,7 +247,7 @@ const MediaLayout = ({ categoryId, from, includeBanners }) => {
       >
         <div className="flex flex-col md:flex-row">
           <div className="w-full md:w-1/2 rounded-lg shadow-md h-fit">
-            {mediaDialog?.mimeType?.includes("image") ? (
+            {mediaDialog?.mediaType === "image" ? (
               <Image
                 src={mediaDialog?.src}
                 alt={mediaDialog?.alt || "Medij"}
@@ -268,11 +258,7 @@ const MediaLayout = ({ categoryId, from, includeBanners }) => {
             ) : (
               <div className="flex flex-col aspect-square gap-2 items-center justify-center w-full h-full rounded-lg bg-gray-100">
                 <FontAwesomeIcon
-                  icon={
-                    mediaDialog?.mimeType === "application/pdf"
-                      ? faFilePdf
-                      : faFile
-                  }
+                  icon={getIconByMimeType(mediaDialog?.mimeType)}
                   size="8x"
                   className="text-gray-500"
                 />

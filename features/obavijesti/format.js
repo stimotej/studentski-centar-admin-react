@@ -18,7 +18,15 @@ const formatObavijest = (obavijest) => ({
   end_showing: obavijest?.meta?.end_showing,
   show_always: obavijest?.meta?.show_always,
   event_date: obavijest?.meta?.event_date,
-  documents: obavijest?.meta?.documents,
+  documents: obavijest?.meta?.documents
+    ? obavijest?.meta?.documents?.map((document) => ({
+        id: document.id,
+        title: document.title,
+        mediaType: document.media_type,
+        mimeType: document.mime_type,
+        src: document.source_url,
+      }))
+    : [],
 });
 
 export default formatObavijest;

@@ -14,9 +14,9 @@ export const usePosts = (filters, options) => {
         {
           params: {
             order: "asc",
-            categories: `${adminPostsCategory},${filters?.category}`,
             timestamp: new Date().getTime(),
             status: ["publish", "draft"],
+            ...filters,
           },
         }
       );
@@ -50,7 +50,7 @@ export const useCreatePost = () => {
   const queryClient = useQueryClient();
 
   return useMutation(
-    async ({ title, excerpt, content, status, category, documents }) => {
+    async ({ title, excerpt, content, status, categories, documents }) => {
       const response = await axios.post(
         `http://161.53.174.14/wp-json/wp/v2/posts`,
         {
@@ -58,7 +58,7 @@ export const useCreatePost = () => {
           excerpt,
           content,
           status,
-          categories: [adminPostsCategory, category],
+          categories: [adminPostsCategory, ...categories],
           meta: {
             documents,
           },
@@ -102,7 +102,7 @@ export const useUpdatePost = () => {
     {
       onSuccess: (data) => {
         toast.success("Uspješno uređeno.");
-        queryClient.invalidateQueries(postsKeys.posts);
+        return queryClient.invalidateQueries(postsKeys.posts);
       },
       onError: (error) => {
         if (error.response.data.data.status === 403)

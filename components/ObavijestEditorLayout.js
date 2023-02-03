@@ -38,7 +38,8 @@ import {
 } from "../features/obavijesti";
 import MyDialog from "./Elements/MyDialog";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFilePdf, faXmark } from "@fortawesome/pro-regular-svg-icons";
+import { faXmark } from "@fortawesome/pro-regular-svg-icons";
+import getIconByMimeType from "../lib/getIconbyMimeType";
 
 const ObavijestEditorLayout = ({ categoryId, from }) => {
   const [storedPostNote, setStoredPostNote] = useState(false);
@@ -123,7 +124,7 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
       setImageId(obavijest.imageId || "");
       setStartShowing(obavijest.start_showing || null);
       setEndShowing(obavijest.end_showing || null);
-      setShowAlways(obavijest.show_always === "true");
+      setShowAlways(!!obavijest.show_always);
       setEventDate(obavijest.event_date || null);
       setFiles(obavijest.documents || []);
     } else {
@@ -204,6 +205,7 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
         files.map((file) => ({
           id: file.id,
           title: file.title,
+          media_type: file.mediaType,
           mime_type: file.mimeType,
           source_url: file.src,
         })),
@@ -513,11 +515,11 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
                   >
                     <div className="flex items-center gap-2">
                       <FontAwesomeIcon
-                        icon={faFilePdf}
+                        icon={getIconByMimeType(file.mimeType)}
                         className="text-lg text-gray-800 ml-2"
                       />
-                      <div className="flex-1 line-clamp-1">
-                        {file.title}.pdf
+                      <div className="flex-1 line-clamp-1 break-all">
+                        {file.src?.split("/").pop()}
                       </div>
                     </div>
                     <IconButton

@@ -76,7 +76,7 @@ const Item = ({
               {dayjs(obavijest.date).format("DD.MM.YYYY HH:mm[h]")}
             </p>
             <div className="text-sm">
-              {obavijest.show_always ? (
+              {obavijest.show_always || !obavijest.end_showing ? (
                 <span className="text-orange-500">
                   Obavijest se uvijek prikazuje
                 </span>
@@ -91,12 +91,13 @@ const Item = ({
                   obavijest.end_showing
                 ).format("DD.MM.YYYY")}`}</span>
               )}
-              <p className="text-sm">
-                {!!obavijest.event_date &&
-                  `Datum na kalendaru: ${dayjs(obavijest.event_date).format(
+              {!!obavijest.event_date && (
+                <p className="text-sm">
+                  {`Datum na kalendaru: ${dayjs(obavijest.event_date).format(
                     "DD.MM.YYYY HH:mm[h]"
                   )}`}
-              </p>
+                </p>
+              )}
             </div>
           </>
         )}

@@ -12,6 +12,7 @@ import {
 } from "react-icons/hi";
 import { MdSearch } from "react-icons/md";
 import { useCreateMedia, useMedia } from "../features/media";
+import getIconByMimeType from "../lib/getIconbyMimeType";
 import useDebounce from "../lib/useDebounce";
 import Loader from "./Elements/Loader";
 import MediaFileInput from "./Elements/MediaFileInput";
@@ -190,16 +191,12 @@ const MediaSelectDialog = ({
                             }`}
                           />
                         ) : (
-                          <div className="flex flex-col overflow-hidden gap-2 p-2 items-center justify-center w-full h-full rounded-lg bg-gray-100">
+                          <div className="flex flex-col overflow-hidden gap-2 p-3 items-center justify-center w-full h-full rounded-lg bg-gray-100">
                             <FontAwesomeIcon
-                              icon={
-                                media?.mimeType === "application/pdf"
-                                  ? faFilePdf
-                                  : faFile
-                              }
+                              icon={getIconByMimeType(media?.mimeType)}
                               className="w-10 h-10 text-gray-500"
                             />
-                            <span className="text-xs text-gray-900 line-clamp-2">
+                            <span className="text-xs text-gray-900 line-clamp-2 break-all">
                               {media.title}
                             </span>
                           </div>
