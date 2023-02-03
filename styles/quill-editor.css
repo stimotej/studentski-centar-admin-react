@@ -1,0 +1,5 @@
+.my-ql {}
+.my-ql .ql-toolbar {}
+.my-ql .ql-editor {
+    min-height: 200px;
+}

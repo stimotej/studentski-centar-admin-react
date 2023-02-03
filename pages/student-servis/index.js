@@ -1,62 +1,64 @@
-import { faAdd, faChevronDown } from "@fortawesome/pro-regular-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
-  Alert,
+  faPlus,
+  faTriangleExclamation,
+} from "@fortawesome/pro-regular-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { LoadingButton } from "@mui/lab";
+import {
   Button,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
+  ListItemIcon,
   ListItemText,
   MenuItem,
   MenuList,
   Paper,
   TextField,
-  Typography,
+  Tooltip,
 } from "@mui/material";
 import { useRouter } from "next/router";
-import { Fragment, useEffect, useState } from "react";
-import Loader from "../../components/Elements/Loader";
+import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
+const QuillTextEditor = dynamic(
+  () => import("../../components/Elements/QuillTextEditor"),
+  { ssr: false }
+);
 import Header from "../../components/Header";
 import Layout from "../../components/Layout";
-import MediaSelectDialog from "../../components/MediaSelectDialog";
 import {
-  useCreatePageFAQ,
-  useDeletePageFAQ,
-  usePage,
-  useUpdatePage,
-  useUpdatePageFAQ,
-} from "../../features/page";
-import {
-  scPageId,
-  studentskiServisCategoryId,
-  userGroups,
-} from "../../lib/constants";
+  useCreatePost,
+  useDeletePost,
+  usePosts,
+  useUpdatePost,
+} from "../../features/posts";
+import { adminStudentServisCategory, userGroups } from "../../lib/constants";
 
 const Poslovi = () => {
   const router = useRouter();
 
-  // const {
-  //   data: pageSC,
-  //   isLoading: isLoadingPage,
-  //   isError: isPageError,
-  // } = usePage(scPageId);
+  const {
+    data: posts,
+    isLoading: isLoadingPosts,
+    isError: isPostsError,
+    isRefetching: isRefetchingPosts,
+    refetch: refetchPosts,
+  } = usePosts({ category: adminStudentServisCategory });
 
-  // const [page, setPage] = useState("faq");
+  const [page, setPage] = useState(null);
 
-  // const [mediaDialogOpened, setMediaDialogOpened] = useState(false);
+  const [addPostDialog, setAddPostDialog] = useState(false);
+  const [deletePostDialog, setDeletePostDialog] = useState(false);
 
-  // const [image, setImage] = useState(null);
-  // const [banners, setBanners] = useState([]);
+  const [dialogTitle, setDialogTitle] = useState("");
 
-  // const [faqId, setFaqId] = useState("");
-  // const [question, setQuestion] = useState("");
-  // const [answer, setAnswer] = useState("");
-  // const [addFAQModal, setAddFAQModal] = useState(false);
+  const [title, setTitle] = useState("");
+  const [excerpt, setExcerpt] = useState("");
+  const [content, setContent] = useState("");
+  const [files, setFiles] = useState([]);
 
   useEffect(() => {
     const token = window.localStorage.getItem("access_token");
@@ -66,69 +68,78 @@ const Poslovi = () => {
       router.push("/student-servis/login");
   }, [router]);
 
-  // const { mutate: createPageFAQ } = useCreatePageFAQ();
-  // const { mutate: updatePageFAQ } = useUpdatePageFAQ();
-  // const { mutate: deletePageFAQ } = useDeletePageFAQ();
+  useEffect(() => {
+    if (posts) {
+      const post = posts.find((post) => post.id === page) || posts[0];
+      setPage(post.id);
+      setTitle(post.title);
+      setExcerpt(post.excerpt);
+      setContent(post.content);
+      setFiles(post.documents || []);
+    }
+  }, [posts]);
 
-  // const handleAddFAQ = () => {
-  //   if (!pageSC) return;
+  const handleSelectPage = (id) => {
+    setPage(id);
+    setTitle(posts.find((post) => post.id === id).title);
+    setExcerpt(posts.find((post) => post.id === id).excerpt);
+    setContent(posts.find((post) => post.id === id).content);
+    setFiles(posts.find((post) => post.id === id).documents || []);
+    console.log(
+      "post: ",
+      posts.find((post) => post.id === id)
+    );
+  };
 
-  //   if (faqId)
-  //     updatePageFAQ(
-  //       {
-  //         id: scPageId,
-  //         faqId: faqId,
-  //         question,
-  //         answer,
-  //       },
-  //       {
-  //         onSuccess: () => {
-  //           setAddFAQModal(false);
-  //           setFaqId("");
-  //           setQuestion("");
-  //           setAnswer("");
-  //         },
-  //       }
-  //     );
-  //   else
-  //     createPageFAQ(
-  //       {
-  //         id: scPageId,
-  //         question,
-  //         answer,
-  //       },
-  //       {
-  //         onSuccess: () => {
-  //           setAddFAQModal(false);
-  //           setFaqId("");
-  //           setQuestion("");
-  //           setAnswer("");
-  //         },
-  //       }
-  //     );
-  // };
+  const { mutate: createPost, isLoading: isCreating } = useCreatePost();
+  const { mutate: updatePost, isLoading: isUpdating } = useUpdatePost();
+  const { mutate: deletePost, isLoading: isDeleting } = useDeletePost();
 
-  // const handleOpenEditFAQDialog = (faq) => {
-  //   setAddFAQModal(true);
-  //   setFaqId(faq.id);
-  //   setQuestion(faq.question);
-  //   setAnswer(faq.answer);
-  // };
+  const handleCreatePost = () => {
+    createPost(
+      {
+        title: dialogTitle,
+        category: adminStudentServisCategory,
+        status: "draft",
+      },
+      {
+        onSuccess: (data) => {
+          setAddPostDialog(false);
+          setDialogTitle("");
+          setPage(data.id);
+        },
+      }
+    );
+  };
 
-  // const handleDeleteFAQ = (faqId) => {
-  //   if (!confirm("Jeste li sigurni da želite obrisati ovo pitanje?")) return;
+  const handleSavePost = () => {
+    updatePost({
+      id: page,
+      title,
+      excerpt,
+      content,
+      status: "publish",
+      documents:
+        files.length > 0 &&
+        files.map((file) => ({
+          id: file.id,
+          title: file.title,
+          mime_type: file.mimeType,
+          source_url: file.src,
+        })),
+    });
+  };
 
-  //   deletePageFAQ(
-  //     { id: scPageId, faqId },
-  //     {
-  //       onSuccess: () => {
-  //         setAddFAQModal(false);
-  //         setQuestion("");
-  //         setAnswer("");
-  //       },
-  //     }
-  //   );
-  // };
+  const handleDeletePost = () => {
+    deletePost(
+      { id: page },
+      {
+        onSuccess: () => {
+          setDeletePostDialog(false);
+        },
+      }
+    );
+  };
 
   // if (isPageError)
   //   return (
@@ -154,119 +165,165 @@ const Poslovi = () => {
     <Layout>
       <Header title="Početna" />
       <div className="px-5 md:px-10 pb-6">
-        <Alert severity="info" className="mb-5">
-          Početna stranica u izradi
-        </Alert>
-        {/* <div className="flex gap-10 flex-wrap md:flex-nowrap">
+        <div className="flex gap-10 flex-wrap md:flex-nowrap">
           <div>
-            <Paper sx={{ minWidth: 260 }}>
+            <Paper className="md:!min-w-[260px] md:!max-w-[400px]">
               <MenuList>
-                <MenuItem
-                  selected={page === "faq"}
-                  onClick={() => setPage("faq")}
-                >
-                  <ListItemText>Često postavljena pitanja</ListItemText>
-                </MenuItem>
+                {isLoadingPosts ? (
+                  <div className="flex items-center justify-center py-2">
+                    <CircularProgress size={24} />
+                  </div>
+                ) : isPostsError ? (
+                  <div className="text-error my-2 px-4">
+                    Greška kod učitavanja
+                    <LoadingButton
+                      variant="outlined"
+                      className="mt-4"
+                      onClick={() => refetchPosts()}
+                      loading={isRefetchingPosts}
+                    >
+                      Pokušaj ponovno
+                    </LoadingButton>
+                  </div>
+                ) : (
+                  posts?.map((post) => (
+                    <MenuItem
+                      key={post.id}
+                      selected={page === post.id}
+                      onClick={() => handleSelectPage(post.id)}
+                    >
+                      {post.status === "draft" && (
+                        <Tooltip title="Još nije vidljivo na stranici." arrow>
+                          <ListItemIcon>
+                            <FontAwesomeIcon
+                              icon={faTriangleExclamation}
+                              className="text-error"
+                            />
+                          </ListItemIcon>
+                        </Tooltip>
+                      )}
+                      <ListItemText className="line-clamp-1">
+                        {post.title}
+                      </ListItemText>
+                    </MenuItem>
+                  ))
+                )}
               </MenuList>
             </Paper>
+            <LoadingButton
+              className="mt-6"
+              startIcon={<FontAwesomeIcon icon={faPlus} />}
+              onClick={() => setAddPostDialog(true)}
+            >
+              Dodaj novo
+            </LoadingButton>
           </div>
-          {page === "faq" && (
-            <div className="flex flex-col gap-5 items-start">
-              <div>
-                {pageSC?.meta?.faq?.map((faq, index) => (
-                  <Fragment key={index}>
-                    <Accordion>
-                      <AccordionSummary
-                        expandIcon={<FontAwesomeIcon icon={faChevronDown} />}
-                      >
-                        <Typography>{faq.question}</Typography>
-                      </AccordionSummary>
-                      <AccordionDetails>
-                        <Typography>{faq.answer}</Typography>
-                        <div className="flex gap-2 mt-2">
-                          <Button onClick={() => handleOpenEditFAQDialog(faq)}>
-                            Uredi
-                          </Button>
-                          <Button
-                            color="error"
-                            onClick={() => handleDeleteFAQ(faq.id)}
-                          >
-                            Obriši
-                          </Button>
-                        </div>
-                      </AccordionDetails>
-                    </Accordion>
-                  </Fragment>
-                ))}
-              </div>
-              <Button
-                onClick={() => setAddFAQModal(true)}
-                startIcon={<FontAwesomeIcon icon={faAdd} />}
+          <div className="flex flex-col items-start gap-6 w-full">
+            <TextField
+              className="w-full"
+              label="Naslov"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+            <TextField
+              className="w-full"
+              label="Kratki opis"
+              multiline
+              rows={3}
+              value={excerpt}
+              onChange={(e) => setExcerpt(e.target.value)}
+            />
+            <QuillTextEditor
+              value={content}
+              onChange={setContent}
+              files={files}
+              setFiles={setFiles}
+              placeholder="Sadržaj"
+            />
+            <div className="flex !gap-4">
+              <LoadingButton
+                variant="contained"
+                className="!bg-primary"
+                onClick={handleSavePost}
+                loading={isUpdating}
               >
-                Dodaj pitanje
-              </Button>
+                Spremi
+              </LoadingButton>
+              <LoadingButton
+                variant="outlined"
+                color="error"
+                onClick={() => setDeletePostDialog(true)}
+              >
+                Obriši
+              </LoadingButton>
             </div>
-          )}
-        </div> */}
+          </div>
+        </div>
       </div>
-      {/* <Dialog
-        open={!!addFAQModal}
+
+      <Dialog
+        open={addPostDialog}
         onClose={() => {
-          setAddFAQModal(false);
-          setFaqId("");
-          setQuestion("");
-          setAnswer("");
+          setAddPostDialog(false);
+          setDialogTitle("");
         }}
       >
-        <DialogTitle>
-          {faqId ? "Uredi" : "Dodaj"} često postavljeno pitanje
-        </DialogTitle>
+        <DialogTitle>Dodaj sadržaj</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            {faqId
-              ? "Uređivanjem često postavljenog pitanja, promjene će biti vidljive na web stranici."
-              : "Dodavanjem često postavljenog pitanja, pitanje će biti vidljivo na web stranici."}
+            Bit će vidljivo na stranici tek nakon što uredite sadržaj i spremite
+            promjene.
           </DialogContentText>
           <TextField
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
+            value={dialogTitle}
+            onChange={(e) => setDialogTitle(e.target.value)}
             margin="dense"
-            label="Pitanje"
+            label="Naslov"
             type="text"
             fullWidth
             variant="outlined"
-          />
-          <TextField
-            value={answer}
-            onChange={(e) => setAnswer(e.target.value)}
-            margin="dense"
-            label="Odgovor"
-            type="text"
-            fullWidth
-            variant="outlined"
-            multiline
-            rows={8}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setAddFAQModal(false)} className="!text-black">
+          <Button
+            onClick={() => setAddPostDialog(false)}
+            className="!text-black"
+          >
             Odustani
           </Button>
-          <Button onClick={handleAddFAQ}>{faqId ? "Spremi" : "Dodaj"}</Button>
+          <LoadingButton onClick={handleCreatePost} loading={isCreating}>
+            Dodaj
+          </LoadingButton>
         </DialogActions>
       </Dialog>
 
-      <MediaSelectDialog
-        opened={mediaDialogOpened}
-        onClose={() => setMediaDialogOpened(false)}
-        value={image}
-        onSelect={(val) => {
-          setImage(val);
-          setBanners([...banners, val.src]);
-          handlePublishBanners([...banners, val.src]);
-        }}
-        categoryId={studentskiServisCategoryId}
-      /> */}
+      <Dialog
+        open={deletePostDialog}
+        onClose={() => setDeletePostDialog(false)}
+      >
+        <DialogTitle>Brisanje sadržaja</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Ovime se briše stranica i link na strnicu sadržaja. Radnja se ne
+            može poništiti.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setDeletePostDialog(false)}
+            className="!text-black"
+          >
+            Odustani
+          </Button>
+          <LoadingButton
+            color="error"
+            onClick={handleDeletePost}
+            loading={isDeleting}
+          >
+            Obriši
+          </LoadingButton>
+        </DialogActions>
+      </Dialog>
     </Layout>
   );
 };

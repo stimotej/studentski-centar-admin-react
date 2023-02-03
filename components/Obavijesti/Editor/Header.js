@@ -1,8 +1,8 @@
 import React from "react";
 import { MdOutlineImage } from "react-icons/md";
-import { FaFile, FaYoutube } from "react-icons/fa";
+import { FaYoutube } from "react-icons/fa";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFile, faFilePdf } from "@fortawesome/pro-regular-svg-icons";
+import { faFilePdf } from "@fortawesome/pro-regular-svg-icons";
 
 const Header = () => {
   return (
