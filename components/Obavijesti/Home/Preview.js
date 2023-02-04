@@ -53,7 +53,7 @@ const Preview = ({ obavijest, className, title, isEvent = false, from }) => {
           opened={deleteDialog}
           setOpened={setDeleteDialog}
           title="Brisanje obavijesti"
-          content="Jeste li sigurni da  želite obrisati odabranu obavijest?"
+          content="Jeste li sigurni da želite obrisati odabranu obavijest?"
           actionTitle="Obriši"
           actionColor="error"
           loading={isDeleting || isDeletingEvent}
@@ -105,7 +105,7 @@ const Preview = ({ obavijest, className, title, isEvent = false, from }) => {
                 rel="noreferrer"
                 href={file.src}
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 w-full">
                   <FontAwesomeIcon
                     icon={faFileText}
                     className="text-lg text-gray-800 ml-2"
@@ -115,7 +115,7 @@ const Preview = ({ obavijest, className, title, isEvent = false, from }) => {
                   </div>
                   <FontAwesomeIcon
                     icon={faArrowDownToBracket}
-                    className="text-lg text-gray-800 ml-2"
+                    className="text-lg text-gray-800 ml-auto"
                   />
                 </div>
               </a>

@@ -255,7 +255,7 @@ const SviPoslovi = () => {
                 </Tooltip>
               </TableCell>
               <TableCell>
-                {dayjs(row.created_at).format("DD.MM.YYYY [u] HH:mm[h]")}
+                {dayjs(row.date).format("DD.MM.YYYY [u] HH:mm[h]")}
               </TableCell>
               <TableCell>
                 {dayjs(row.active_until).format("DD.MM.YYYY [u] HH:mm[h]")}
