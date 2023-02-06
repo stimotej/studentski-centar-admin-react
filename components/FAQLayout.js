@@ -18,7 +18,7 @@ import { Fragment, useState } from "react";
 import Header from "./Header";
 import Layout from "./Layout";
 import MediaSelectDialog from "./MediaSelectDialog";
-import { faqStudentServisCategoryId } from "../lib/constants";
+import { faqStudentServisCategoryId, userGroups } from "../lib/constants";
 import dynamic from "next/dynamic";
 import {
   useCreatePost,
@@ -27,11 +27,20 @@ import {
   useUpdatePost,
 } from "../features/posts";
 import { LoadingButton } from "@mui/lab";
+import { useEffect } from "react";
+import { useRouter } from "next/router";
 const QuillTextEditor = dynamic(() => import("./Elements/QuillTextEditor"), {
   ssr: false,
 });
 
-const FAQLayout = ({ adminCategoryId, mediaCategoryId }) => {
+const FAQLayout = ({
+  adminCategoryId,
+  faqCategoryId,
+  mediaCategoryId,
+  from,
+}) => {
+  const router = useRouter();
+
   const {
     data: faqList,
     isLoading: isLoadingFaq,
@@ -39,8 +48,16 @@ const FAQLayout = ({ adminCategoryId, mediaCategoryId }) => {
     refetch: refetchFaq,
     isRefetching: isRefetchingFaq,
   } = usePosts({
-    categories: faqStudentServisCategoryId,
+    categories: faqCategoryId,
   });
+
+  useEffect(() => {
+    const token = window.localStorage.getItem("access_token");
+    const username = window.localStorage.getItem("username");
+
+    if (!token || !userGroups[from].includes(username))
+      router.push(`/${from}/login`);
+  }, [router, from]);
 
   const [mediaDialogOpened, setMediaDialogOpened] = useState(false);
 
@@ -64,7 +81,7 @@ const FAQLayout = ({ adminCategoryId, mediaCategoryId }) => {
       title: question,
       content: answer,
       status: "publish",
-      categories: [adminCategoryId, faqStudentServisCategoryId],
+      categories: [adminCategoryId, faqCategoryId],
     };
 
     if (faqId)
@@ -208,7 +225,15 @@ const FAQLayout = ({ adminCategoryId, mediaCategoryId }) => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setAddFAQModal(false)} className="!text-black">
+          <Button
+            onClick={() => {
+              setAddFAQModal(false);
+              setFaqId("");
+              setQuestion("");
+              setAnswer("");
+            }}
+            className="!text-black"
+          >
             Odustani
           </Button>
           <LoadingButton

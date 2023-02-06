@@ -2,11 +2,11 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { MdArrowBack } from "react-icons/md";
-import { login } from "../lib/api/auth";
 import { userGroups } from "../lib/constants";
 import { TextField } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
 import clsx from "clsx";
+import { login } from "../features/auth";
 
 const Login = ({ from, title }) => {
   const [username, setUsername] = useState("");

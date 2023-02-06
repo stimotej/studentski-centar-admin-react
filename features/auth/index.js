@@ -1,6 +1,6 @@
 import axios from "axios";
 import jwt from "jsonwebtoken";
-import { userGroups } from "../constants";
+import { userGroups } from "../../lib/constants";
 
 // const url = "https://unaprijedi.com/?rest_route=/simple-jwt-login/v1/auth";
 const url = "http://161.53.174.14/?rest_route=/simple-jwt-login/v1/auth";

@@ -38,6 +38,7 @@ import {
 import {
   aboutUsPostId,
   adminStudentServisCategory,
+  faqStudentServisCategoryId,
   poslovniceCategoryId,
   studentskiServisCategoryId,
   userGroups,
@@ -66,7 +67,7 @@ const Poslovi = () => {
     refetch: refetchPosts,
   } = usePosts({
     categories: adminStudentServisCategory,
-    categories_exclude: poslovniceCategoryId,
+    categories_exclude: [poslovniceCategoryId, faqStudentServisCategoryId],
     exclude: aboutUsPostId,
   });
 

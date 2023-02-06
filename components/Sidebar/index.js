@@ -5,7 +5,7 @@ import Image from "next/image";
 import { MdOutlineLogout } from "react-icons/md";
 import Toggle from "./Toggle";
 import Link from "./Link";
-import { logout } from "../../lib/api/auth";
+import { logout } from "../../features/auth";
 
 const Sidebar = ({ category }) => {
   const router = useRouter();

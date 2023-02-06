@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import jwt from "jsonwebtoken";
 import restaurantKeys from "./queries";
 import formatRestaurant from "./format";
-import { usersRestaurantIds } from "../../lib/constants";
+import { restaurantCategoryId, usersRestaurantIds } from "../../lib/constants";
 
 export const useRestaurant = (options) => {
   return useQuery(
@@ -18,6 +18,7 @@ export const useRestaurant = (options) => {
         {
           params: {
             author: currentUserId,
+            categories: restaurantCategoryId,
             timestamp: new Date().getTime(),
           },
         }

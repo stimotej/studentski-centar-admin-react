@@ -37,6 +37,7 @@ import {
   useUpdateEvent,
 } from "../../features/events";
 import MyDialog from "../../components/Elements/MyDialog";
+import getIconByMimeType from "../../lib/getIconbyMimeType";
 
 const storedPostKeys = [
   "event_title",
@@ -496,11 +497,11 @@ const Editor = () => {
                   >
                     <div className="flex items-center gap-2">
                       <FontAwesomeIcon
-                        icon={faFilePdf}
+                        icon={getIconByMimeType(file.mimeType)}
                         className="text-lg text-gray-800 ml-2"
                       />
                       <div className="flex-1 line-clamp-1">
-                        {file.title}.pdf
+                        {file.src?.split("/").pop()}
                       </div>
                     </div>
                     <IconButton
