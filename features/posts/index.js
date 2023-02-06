@@ -16,6 +16,7 @@ export const usePosts = (filters, options) => {
             order: "asc",
             timestamp: new Date().getTime(),
             status: ["publish", "draft"],
+            per_page: 100,
             ...filters,
           },
         }
@@ -84,7 +85,15 @@ export const useUpdatePost = () => {
   const queryClient = useQueryClient();
 
   return useMutation(
-    async ({ id, title, excerpt, content, status, documents }) => {
+    async ({
+      id,
+      title,
+      excerpt,
+      content,
+      status,
+      featuredMedia,
+      documents,
+    }) => {
       const response = await axios.post(
         `http://161.53.174.14/wp-json/wp/v2/posts/${id}`,
         {
@@ -92,6 +101,7 @@ export const useUpdatePost = () => {
           excerpt,
           content,
           status,
+          featured_media: featuredMedia,
           meta: {
             documents,
           },

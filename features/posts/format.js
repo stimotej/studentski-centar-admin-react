@@ -15,6 +15,8 @@ const formatPost = (post) => ({
         src: document.source_url,
       }))
     : [],
+  imageId: post.featured_media,
+  image: post.image_url,
   categories: post.categories,
   status: post.status,
   image: post.image_url,

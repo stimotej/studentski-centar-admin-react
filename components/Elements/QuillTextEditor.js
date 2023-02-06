@@ -10,6 +10,7 @@ import { studentskiServisCategoryId } from "../../lib/constants";
 import ReactQuill, { Quill } from "react-quill";
 import ImageResize from "quill-image-resize-module-react";
 import getIconByMimeType from "../../lib/getIconbyMimeType";
+import clsx from "clsx";
 
 Quill.register("modules/imageResize", ImageResize, true);
 
@@ -30,7 +31,10 @@ const QuillTextEditor = ({
   value,
   onChange,
   placeholder,
-  files = [],
+  readOnly,
+  className,
+  containerClassName,
+  files,
   setFiles = () => {},
 }) => {
   const [mediaDialog, setMediaDialog] = useState(null);
@@ -69,14 +73,16 @@ const QuillTextEditor = ({
 
   const modules = useMemo(
     () => ({
-      toolbar: {
-        container: "#toolbar",
-        handlers: {
-          addImageToolbar: addImageToolbar,
-          addYoutubeVideo: addYoutubeVideo,
-          addDocumentToolbar: addDocumentToolbar,
-        },
-      },
+      toolbar: readOnly
+        ? false
+        : {
+            container: "#toolbar",
+            handlers: {
+              addImageToolbar: addImageToolbar,
+              addYoutubeVideo: addYoutubeVideo,
+              addDocumentToolbar: addDocumentToolbar,
+            },
+          },
       imageResize: {
         parchment: Quill.import("parchment"),
         modules: ["Resize", "DisplaySize"],
@@ -113,14 +119,24 @@ const QuillTextEditor = ({
 
   return (
     <>
-      <div className="bg-secondary border border-gray-400 rounded-lg w-full">
-        <Header useFiles={!!files} />
+      <div
+        className={clsx(
+          "bg-secondary border border-gray-400 rounded-lg w-full",
+          containerClassName
+        )}
+      >
+        {!readOnly && <Header useFiles={!!files} />}
         <ReactQuill
           ref={(el) => (reactQuillRef.current = el)}
-          className="my-ql border-t border-gray-400"
+          className={clsx(
+            "my-ql",
+            !readOnly && "border-t border-gray-400",
+            className
+          )}
           placeholder={placeholder}
           value={value}
           onChange={onChange}
+          readOnly={readOnly}
           modules={modules}
           formats={formats}
         />

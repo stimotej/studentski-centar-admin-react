@@ -39,8 +39,10 @@ import {
   aboutUsPostId,
   adminStudentServisCategory,
   poslovniceCategoryId,
+  studentskiServisCategoryId,
   userGroups,
 } from "../../lib/constants";
+import SelectMediaInput from "../../components/Elements/SelectMediaInput";
 
 const Poslovi = () => {
   const router = useRouter();
@@ -85,6 +87,7 @@ const Poslovi = () => {
 
   const [dialogTitle, setDialogTitle] = useState("");
 
+  const [mediaId, setMediaId] = useState("");
   const [title, setTitle] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [content, setContent] = useState("");
@@ -109,6 +112,7 @@ const Poslovi = () => {
         poslovnice?.[0];
       if (!post) return;
       setPage(post.id);
+      setMediaId(post.imageId);
       setTitle(post.title);
       setExcerpt(post.excerpt);
       setContent(post.content);
@@ -123,13 +127,10 @@ const Poslovi = () => {
     if (!post) return;
     setPage(id);
     setTitle(post.title);
+    setMediaId(post.imageId);
     setExcerpt(post.excerpt);
     setContent(post.content);
     setFiles(post.documents || []);
-    console.log(
-      "post: ",
-      posts.find((post) => post.id === id)
-    );
   };
 
   const { mutate: createPost, isLoading: isCreating } = useCreatePost();
@@ -164,6 +165,7 @@ const Poslovi = () => {
       excerpt,
       content,
       status: "publish",
+      featuredMedia: mediaId,
       documents:
         files.length > 0 &&
         files.map((file) => ({
@@ -361,6 +363,14 @@ const Poslovi = () => {
             </LoadingButton>
           </div>
           <div className="flex flex-col items-start gap-6 w-full">
+            {page === aboutUsPostId && (
+              <SelectMediaInput
+                defaultValue={aboutUs?.[0]?.image}
+                onChange={setMediaId}
+                className="w-1/2"
+                mediaCategoryId={studentskiServisCategoryId}
+              />
+            )}
             <TextField
               className="w-full"
               label="Naslov"
