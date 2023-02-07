@@ -31,7 +31,8 @@ const QuillTextEditor = ({
   value,
   onChange,
   placeholder,
-  readOnly,
+  useToolbar = true,
+  readOnly = false,
   className,
   containerClassName,
   files,
@@ -73,16 +74,17 @@ const QuillTextEditor = ({
 
   const modules = useMemo(
     () => ({
-      toolbar: readOnly
-        ? false
-        : {
-            container: "#toolbar",
-            handlers: {
-              addImageToolbar: addImageToolbar,
-              addYoutubeVideo: addYoutubeVideo,
-              addDocumentToolbar: addDocumentToolbar,
+      toolbar:
+        readOnly || !useToolbar
+          ? false
+          : {
+              container: "#toolbar",
+              handlers: {
+                addImageToolbar: addImageToolbar,
+                addYoutubeVideo: addYoutubeVideo,
+                addDocumentToolbar: addDocumentToolbar,
+              },
             },
-          },
       imageResize: {
         parchment: Quill.import("parchment"),
         modules: ["Resize", "DisplaySize"],
@@ -125,12 +127,12 @@ const QuillTextEditor = ({
           containerClassName
         )}
       >
-        {!readOnly && <Header useFiles={!!files} />}
+        {!readOnly && useToolbar ? <Header useFiles={!!files} /> : null}
         <ReactQuill
           ref={(el) => (reactQuillRef.current = el)}
           className={clsx(
             "my-ql",
-            !readOnly && "border-t border-gray-400",
+            !readOnly && useToolbar && "border-t border-gray-400",
             className
           )}
           placeholder={placeholder}

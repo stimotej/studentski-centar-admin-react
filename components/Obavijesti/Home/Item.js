@@ -1,6 +1,13 @@
 import dayjs from "dayjs";
 import Image from "next/image";
 import { MdOutlineImage } from "react-icons/md";
+import dynamic from "next/dynamic";
+const QuillTextEditor = dynamic(
+  () => import("../../Elements/QuillTextEditor"),
+  {
+    ssr: false,
+  }
+);
 
 const Item = ({
   obavijest,
@@ -37,10 +44,12 @@ const Item = ({
           </p>
         )}
         <div className="flex items-center gap-3">
-          <h3
-            className="text-lg font-semibold"
-            dangerouslySetInnerHTML={{ __html: obavijest.title }}
-          ></h3>
+          <QuillTextEditor
+            value={obavijest.title}
+            containerClassName="!bg-transparent border-none"
+            className="[&>div>div]:p-0 [&>div>div]:!min-h-fit [&>div>div]:line-clamp-2 [&>div>div>p]:text-lg [&>div>div>p]:font-semibold [&>div>div>p]:hover:cursor-pointer"
+            readOnly
+          />
           {obavijest.status === "draft" && (
             <span className="text-sm font-normal text-error">Skica</span>
           )}
@@ -68,7 +77,14 @@ const Item = ({
             )}
           </div>
         )}
-        <p className="text-sm font-light my-2">{obavijest.description}</p>
+        <p className="text-sm font-light my-2">
+          <QuillTextEditor
+            value={obavijest.description}
+            containerClassName="!bg-transparent border-none"
+            className="[&>div>div]:p-0 [&>div>div]:!min-h-fit [&>div>div]:line-clamp-4 [&>div>div>p]:font-light [&>div>div>p]:text-sm [&>div>div>p]:hover:cursor-pointer"
+            readOnly
+          />
+        </p>
         {!isEvent && (
           <>
             <p className="text-sm">

@@ -9,6 +9,9 @@ const QuillEditor = dynamic(() => import("./Obavijesti/Editor/QuillEditor"), {
   ssr: false,
   loading: () => <Loader className="w-10 h-10 mt-5 mx-auto border-primary" />,
 });
+const QuillTextEditor = dynamic(() => import("./Elements/QuillTextEditor"), {
+  ssr: false,
+});
 import StoredPostNote from "./Obavijesti/Editor/StoredPostNote";
 import Layout from "./Layout";
 import { obavijestiCategoryId, userGroups } from "../lib/constants";
@@ -299,20 +302,17 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
             <div className="py-4">Odaberi sliku</div>
           )}
         </button>
-        <TextField
-          className="w-full !mt-4"
-          label="Kratki opis obavijesti"
-          multiline
-          rows={4}
+        <div className="mt-4 mb-2">Kratki opis obavijesti:</div>
+        <QuillTextEditor
           value={description}
-          onChange={(e) => {
-            setDescription(e.target.value);
+          onChange={(value) => {
+            setDescription(value);
             !obavijestId &&
-              window.localStorage.setItem(
-                `${from}_editor_description`,
-                e.target.value
-              );
+              window.localStorage.setItem(`${from}_editor_description`, value);
           }}
+          placeholder="Unesi opis..."
+          className="[&>div>div]:!min-h-[100px]"
+          useToolbar={false}
         />
         {!categoryId ? (
           <FormControl fullWidth className="!mt-4">
@@ -464,30 +464,18 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
       </MyDialog>
       <div className="pr-0 lg:pr-72">
         <div className="px-5 py-10 md:p-12">
-          <ReactQuill
-            className="w-full mt-14 sm:mt-12 text-2xl obavijest-title bg-transparent font-semibold border-transparent focus:border-transparent focus:ring-0"
-            placeholder="Naslov..."
-            modules={{
-              toolbar: false,
-            }}
-            formats={["header"]}
+          <QuillTextEditor
             value={title}
             onChange={(value) => {
               setTitle(value);
               !obavijestId &&
                 window.localStorage.setItem(`${from}_editor_title`, value);
             }}
+            placeholder="Naslov..."
+            containerClassName="!bg-transparent border-none px-3 mt-14 sm:mt-12 "
+            className="[&>div>div]:p-0 [&>div>div]:!min-h-fit [&>div>div:before]:!left-0 [&>div>div:before]:text-2xl [&>div>div:before]:font-semibold [&>div>div>p]:text-2xl [&>div>div>p]:font-semibold"
+            useToolbar={false}
           />
-          {/* <QuillEditor
-            value={title}
-            placeholder="Naslov..."
-            onChange={(value) => {
-              setTitle(value);
-              !obavijestId &&
-                window.localStorage.setItem(`${from}_editor_title`, value);
-            }}
-            className="w-full mt-14 sm:mt-12 text-2xl bg-transparent font-semibold border-transparent focus:border-transparent focus:ring-0"
-          /> */}
           <QuillEditor
             value={content}
             onChange={(value) => {

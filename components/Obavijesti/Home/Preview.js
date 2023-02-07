@@ -5,7 +5,12 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import dynamic from "next/dynamic";
 import { useState } from "react";
-const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
+const QuillTextEditor = dynamic(
+  () => import("../../Elements/QuillTextEditor"),
+  {
+    ssr: false,
+  }
+);
 import { MdOutlineEdit, MdOutlineDelete, MdOpenInNew } from "react-icons/md";
 import { useDeleteEvent } from "../../../features/events";
 import { useDeleteObavijest } from "../../../features/obavijesti";
@@ -39,10 +44,12 @@ const Preview = ({ obavijest, className, title, isEvent = false, from }) => {
     <div className={className + " break-all"}>
       {title !== false && (
         <div className="flex items-center gap-3">
-          <h1
-            className="text-2xl font-semibold px-3"
-            dangerouslySetInnerHTML={{ __html: obavijest?.title }}
-          ></h1>
+          <QuillTextEditor
+            value={obavijest?.title}
+            containerClassName="!bg-transparent border-none px-3"
+            className="[&>div>div]:p-0 [&>div>div]:!min-h-fit [&>div>div>p]:text-2xl [&>div>div>p]:font-semibold"
+            readOnly
+          />
           {obavijest?.status === "draft" && (
             <span className="text-sm font-normal text-error">Skica</span>
           )}
@@ -86,13 +93,19 @@ const Preview = ({ obavijest, className, title, isEvent = false, from }) => {
           className="!ml-4"
         />
       </div>
-      <ReactQuill
+      {/* <ReactQuill
         value={obavijest?.content || ""}
         className="mt-4"
         modules={{
           toolbar: false,
         }}
         readOnly={true}
+      /> */}
+      <QuillTextEditor
+        value={obavijest?.content || ""}
+        containerClassName="!bg-transparent border-none my-4"
+        className="[&>div>div]:p-0 [&>div>div]:!min-h-fit"
+        readOnly
       />
       {obavijest.documents?.length > 0 && (
         <div className="px-3 pb-10">

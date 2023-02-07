@@ -18,7 +18,7 @@ import { Fragment, useState } from "react";
 import Header from "./Header";
 import Layout from "./Layout";
 import MediaSelectDialog from "./MediaSelectDialog";
-import { faqStudentServisCategoryId, userGroups } from "../lib/constants";
+import { userGroups } from "../lib/constants";
 import dynamic from "next/dynamic";
 import {
   useCreatePost,
@@ -160,7 +160,12 @@ const FAQLayout = ({
                 <AccordionSummary
                   expandIcon={<FontAwesomeIcon icon={faChevronDown} />}
                 >
-                  <Typography>{faq.title}</Typography>
+                  <QuillTextEditor
+                    value={faq.title}
+                    containerClassName="bg-white border-none"
+                    className="[&>div>div]:p-0 [&>div>div]:!min-h-fit [&>div>div>p]:hover:cursor-pointer"
+                    readOnly
+                  />
                 </AccordionSummary>
                 <AccordionDetails>
                   <QuillTextEditor
@@ -206,7 +211,7 @@ const FAQLayout = ({
               ? "Uređivanjem često postavljenog pitanja, promjene će biti vidljive na web stranici."
               : "Dodavanjem često postavljenog pitanja, pitanje će biti vidljivo na web stranici."}
           </DialogContentText>
-          <TextField
+          {/* <TextField
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             margin="dense"
@@ -214,6 +219,12 @@ const FAQLayout = ({
             type="text"
             fullWidth
             variant="outlined"
+          /> */}
+          <QuillTextEditor
+            value={question}
+            onChange={setQuestion}
+            className="[&>div>div]:!min-h-fit"
+            useToolbar={false}
           />
           <QuillTextEditor
             containerClassName="mt-2"

@@ -17,7 +17,6 @@ import {
   MenuItem,
   MenuList,
   Paper,
-  TextField,
   Tooltip,
 } from "@mui/material";
 import { useRouter } from "next/router";
@@ -245,7 +244,14 @@ const Poslovi = () => {
                     selected={page === aboutUsPostId}
                     onClick={() => handleSelectPage(aboutUsPostId)}
                   >
-                    <ListItemText className="line-clamp-1">O nama</ListItemText>
+                    <ListItemText className="line-clamp-1">
+                      <QuillTextEditor
+                        value={aboutUs[0].title}
+                        containerClassName="!bg-transparent border-none"
+                        className="[&>div>div]:p-0 [&>div>div]:!min-h-fit [&>div>div]:line-clamp-1 [&>div>div>p]:hover:cursor-pointer"
+                        readOnly
+                      />
+                    </ListItemText>
                   </MenuItem>
                 )}
               </MenuList>
@@ -292,7 +298,12 @@ const Poslovi = () => {
                         </Tooltip>
                       )}
                       <ListItemText className="line-clamp-1">
-                        {post.title}
+                        <QuillTextEditor
+                          value={post.title}
+                          containerClassName="!bg-transparent border-none"
+                          className="[&>div>div]:p-0 [&>div>div]:!min-h-fit [&>div>div]:line-clamp-1 [&>div>div>p]:hover:cursor-pointer"
+                          readOnly
+                        />
                       </ListItemText>
                     </MenuItem>
                   ))
@@ -348,7 +359,12 @@ const Poslovi = () => {
                         </Tooltip>
                       )}
                       <ListItemText className="line-clamp-1">
-                        {post.title}
+                        <QuillTextEditor
+                          value={post.title}
+                          containerClassName="!bg-transparent border-none"
+                          className="[&>div>div]:p-0 [&>div>div]:!min-h-fit [&>div>div]:line-clamp-1 [&>div>div>p]:hover:cursor-pointer"
+                          readOnly
+                        />
                       </ListItemText>
                     </MenuItem>
                   ))
@@ -363,41 +379,61 @@ const Poslovi = () => {
               Dodaj novu
             </LoadingButton>
           </div>
-          <div className="flex flex-col items-start gap-6 w-full">
+          <div className="flex flex-col items-start gap-4 w-full">
             {page === aboutUsPostId && (
-              <SelectMediaInput
-                defaultValue={aboutUs?.[0]?.image}
-                onChange={setMediaId}
-                className="w-1/2"
-                mediaCategoryId={studentskiServisCategoryId}
-              />
+              <div className="w-full">
+                <h4 className="uppercase text-sm font-semibold tracking-wide">
+                  Slika
+                </h4>
+                <SelectMediaInput
+                  defaultValue={aboutUs?.[0]?.image}
+                  onChange={setMediaId}
+                  className="w-1/2"
+                  mediaCategoryId={studentskiServisCategoryId}
+                />
+              </div>
             )}
-            <TextField
-              className="w-full"
-              label="Naslov"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
+            <div className="w-full">
+              <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
+                Naslov
+              </h4>
+              <QuillTextEditor
+                value={title}
+                onChange={setTitle}
+                useToolbar={false}
+                className="[&>div>div]:!min-h-fit"
+                placeholder="Unesi naslov..."
+              />
+            </div>
             {page !== aboutUsPostId &&
               ![...(posts || []), ...(poslovnice || [])]
                 .find((post) => post.id === page)
                 ?.categories?.includes(poslovniceCategoryId) && (
-                <TextField
-                  className="w-full"
-                  label="Kratki opis"
-                  multiline
-                  rows={3}
-                  value={excerpt}
-                  onChange={(e) => setExcerpt(e.target.value)}
-                />
+                <div className="w-full">
+                  <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
+                    Kratki opis
+                  </h4>
+                  <QuillTextEditor
+                    value={excerpt}
+                    onChange={setExcerpt}
+                    useToolbar={false}
+                    className="[&>div>div]:!min-h-[100px]"
+                    placeholder="Unesi kratki opis..."
+                  />
+                </div>
               )}
-            <QuillTextEditor
-              value={content}
-              onChange={setContent}
-              files={files}
-              setFiles={setFiles}
-              placeholder="Sadržaj"
-            />
+            <div className="w-full">
+              <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
+                Sadržaj
+              </h4>
+              <QuillTextEditor
+                value={content}
+                onChange={setContent}
+                files={files}
+                setFiles={setFiles}
+                placeholder="Unesi sadržaj..."
+              />
+            </div>
             <div className="flex !gap-4">
               <LoadingButton
                 variant="contained"
@@ -438,14 +474,13 @@ const Poslovi = () => {
             Bit će vidljivo na stranici tek nakon što uredite sadržaj i spremite
             promjene.
           </DialogContentText>
-          <TextField
+          <QuillTextEditor
             value={dialogTitle}
-            onChange={(e) => setDialogTitle(e.target.value)}
-            margin="dense"
-            label="Naslov"
-            type="text"
-            fullWidth
-            variant="outlined"
+            onChange={setDialogTitle}
+            useToolbar={false}
+            containerClassName="mt-2"
+            className="[&>div>div]:!min-h-fit"
+            placeholder="Naslov"
           />
         </DialogContent>
         <DialogActions>
