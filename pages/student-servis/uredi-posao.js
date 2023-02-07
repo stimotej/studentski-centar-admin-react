@@ -19,9 +19,13 @@ import { Controller, useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import dayjs from "dayjs";
-import { useSkills } from "../../lib/api/skills";
-import { useCompanies } from "../../lib/api/companies";
-import { useCreateJob, useJob, useUpdateJob } from "../../features/jobs";
+import {
+  useCompanies,
+  useCreateJob,
+  useJob,
+  useSkills,
+  useUpdateJob,
+} from "../../features/jobs";
 
 const schema = yup.object().shape({
   company_name: yup.string().required("Ovo polje je obavezno"),
@@ -78,8 +82,8 @@ const UrediPosao = () => {
   const router = useRouter();
   const jobId = router.query?.id;
 
-  const { skills, loading: loadingSkills } = useSkills();
-  const { companies, loading: loadingCompanies } = useCompanies();
+  const { data: skills, isLoading: loadingSkills } = useSkills();
+  const { data: companies, isLoading: loadingCompanies } = useCompanies();
 
   const [jobType, setJobType] = useState(1);
   const [fromHome, setFromHome] = useState(false);

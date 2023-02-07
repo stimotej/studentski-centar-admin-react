@@ -1,11 +1,11 @@
 import React, { useEffect } from "react";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
-import Navbar from "../../components/Prehrana/MenuPrikaz/Navbar";
-import Menu from "../../components/Prehrana/MenuPrikaz/Menu";
+import Navbar from "./Prehrana/MenuPrikaz/Navbar";
+import Menu from "./Prehrana/MenuPrikaz/Menu";
 import Pusher from "pusher-js";
 import { useProducts } from "../../lib/api/products";
 import { useMenuToday } from "../../lib/api/menus";
-import Loader from "../../components/Elements/Loader";
+import Loader from "./Elements/Loader";
 
 const MenuPrikaz = () => {
   const { products, error: productsError, setProducts } = useProducts();

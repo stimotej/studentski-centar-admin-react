@@ -90,6 +90,19 @@ export const useSkills = (options) => {
   );
 };
 
+export const useCompanies = (options) => {
+  return useQuery(
+    jobKeys.skills,
+    async () => {
+      const response = await axios.get("https://api.spajalica.hr/v2/companies");
+      return response.data?.companies;
+    },
+    {
+      ...options,
+    }
+  );
+};
+
 export const useCreateJob = () => {
   const queryClient = useQueryClient();
 

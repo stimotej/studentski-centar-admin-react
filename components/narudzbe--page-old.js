@@ -4,9 +4,9 @@ import { IconButton, TableCell, Tooltip } from "@mui/material";
 import clsx from "clsx";
 import dayjs from "dayjs";
 import { useEffect } from "react";
-import MyTable from "../../components/Elements/Table";
-import Header from "../../components/Header";
-import Layout from "../../components/Layout";
+import MyTable from "./Elements/Table";
+import Header from "./Header";
+import Layout from "./Layout";
 import { useOrders } from "../../lib/api/orders";
 
 const Orders = () => {
