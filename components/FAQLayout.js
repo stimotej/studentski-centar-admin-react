@@ -18,7 +18,7 @@ import { Fragment, useState } from "react";
 import Header from "./Header";
 import Layout from "./Layout";
 import MediaSelectDialog from "./MediaSelectDialog";
-import { userGroups } from "../lib/constants";
+import { faqCategoryId, userGroups } from "../lib/constants";
 import dynamic from "next/dynamic";
 import {
   useCreatePost,
@@ -33,12 +33,7 @@ const QuillTextEditor = dynamic(() => import("./Elements/QuillTextEditor"), {
   ssr: false,
 });
 
-const FAQLayout = ({
-  adminCategoryId,
-  faqCategoryId,
-  mediaCategoryId,
-  from,
-}) => {
+const FAQLayout = ({ faqPageCategoryId, mediaCategoryId, from }) => {
   const router = useRouter();
 
   const {
@@ -48,7 +43,7 @@ const FAQLayout = ({
     refetch: refetchFaq,
     isRefetching: isRefetchingFaq,
   } = usePosts({
-    categories: faqCategoryId,
+    categories: faqPageCategoryId,
   });
 
   useEffect(() => {
@@ -81,7 +76,7 @@ const FAQLayout = ({
       title: question,
       content: answer,
       status: "publish",
-      categories: [adminCategoryId, faqCategoryId],
+      categories: [faqCategoryId, faqPageCategoryId],
     };
 
     if (faqId)

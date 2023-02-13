@@ -4,7 +4,6 @@ import Image from "next/image";
 import Header from "./Obavijesti/Editor/Header";
 import Sidebar from "./Obavijesti/Editor/Sidebar";
 import dynamic from "next/dynamic";
-const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 const QuillEditor = dynamic(() => import("./Obavijesti/Editor/QuillEditor"), {
   ssr: false,
   loading: () => <Loader className="w-10 h-10 mt-5 mx-auto border-primary" />,
@@ -43,6 +42,7 @@ import MyDialog from "./Elements/MyDialog";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/pro-regular-svg-icons";
 import getIconByMimeType from "../lib/getIconbyMimeType";
+import axios from "axios";
 
 const ObavijestEditorLayout = ({ categoryId, from }) => {
   const [storedPostNote, setStoredPostNote] = useState(false);
@@ -274,6 +274,7 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
   return (
     <Layout>
       <Header />
+
       {/* <Actions /> */}
       <Sidebar
         saveObavijest={obavijestId ? true : false}
@@ -507,7 +508,7 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
                         className="text-lg text-gray-800 ml-2"
                       />
                       <div className="flex-1 line-clamp-1 break-all">
-                        {file.src?.split("/").pop()}
+                        {file.title}
                       </div>
                     </div>
                     <IconButton

@@ -1,7 +1,9 @@
 import { useState } from "react";
-import Button from "../Elements/Button";
 import Image from "next/image";
-import { useUpdateRestaurant } from "../../features/restaurant";
+import {
+  useDeleteRestaurant,
+  useUpdateRestaurant,
+} from "../../features/restaurant";
 import dynamic from "next/dynamic";
 import MediaSelectDialog from "../MediaSelectDialog";
 import { prehranaCategoryId } from "../../lib/constants";
@@ -17,8 +19,20 @@ import {
   MdCoffee,
   MdLocalBar,
 } from "react-icons/md";
-import { IconButton, Tooltip } from "@mui/material";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  IconButton,
+  Tooltip,
+} from "@mui/material";
 import MyDialog from "../Elements/MyDialog";
+import { useEffect } from "react";
+import { LoadingButton } from "@mui/lab";
+import SelectMediaInput from "../Elements/SelectMediaInput";
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
 const iconList = [
@@ -32,40 +46,73 @@ const iconList = [
   { name: "local_bar", Icon: MdLocalBar },
 ];
 
-const PrikazRestorana = ({ id, slika, naslov, ponuda, info, radnoVrijeme }) => {
-  const [image, setImage] = useState(slika);
+const PrikazRestorana = ({ restaurant, page, setPage }) => {
+  const [image, setImage] = useState(null);
 
-  const [title, setTitle] = useState(naslov);
-  const [description, setDescription] = useState(ponuda);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [workingHours, setWorkingHours] = useState("");
 
-  const [infoList, setInfoList] = useState(
-    info.length > 0
-      ? info.map((item) => ({
-          ...item,
-          icon: iconList.find((i) => i.name === item.icon),
-        }))
-      : [{ icon: iconList[0], title: "", order: 1 }]
-  );
+  const [infoList, setInfoList] = useState([]);
+
+  useEffect(() => {
+    if (restaurant) {
+      setImage(restaurant.imageId);
+      setTitle(restaurant.title);
+      setDescription(restaurant.ponuda);
+      setWorkingHours(restaurant.radnoVrijeme);
+      setInfoList(
+        restaurant.info.length > 0
+          ? restaurant.info.map((item) => ({
+              ...item,
+              icon: iconList.find((i) => i.name === item.icon),
+            }))
+          : [{ icon: iconList[0], title: "", order: 1 }]
+      );
+    }
+  }, [restaurant]);
+
   const [infoHovered, setInfoHovered] = useState(null);
 
   const [mediaDialog, setMediaDialog] = useState(false);
 
   const [iconDialog, setIconDialog] = useState(false);
 
+  const [deleteRestaurantDialog, setDeleteRestaurantDialog] = useState(false);
+
   const { mutate: updateRestaurant, isLoading: isUpdating } =
     useUpdateRestaurant();
 
-  const handleUpdatePost = async () => {
+  const handleUpdateRestaurant = () => {
     updateRestaurant({
-      imageId: image.id,
+      id: page,
+      imageId: image,
       title: title,
       ponuda: description,
+      radnoVrijeme: workingHours,
       info: infoList.map((item) => ({ ...item, icon: item.icon.name })),
     });
   };
 
+  const { mutate: deleteRestaurant, isLoading: isDeleting } =
+    useDeleteRestaurant();
+
+  const handleDeleteRestaurant = () => {
+    deleteRestaurant(
+      {
+        id: page,
+      },
+      {
+        onSuccess: () => {
+          setDeleteRestaurantDialog(false);
+          setPage(0);
+        },
+      }
+    );
+  };
+
   return (
-    <div className="flex flex-col mt-6">
+    <div className="flex flex-col">
       <MediaSelectDialog
         opened={mediaDialog}
         onClose={() => setMediaDialog(false)}
@@ -74,33 +121,35 @@ const PrikazRestorana = ({ id, slika, naslov, ponuda, info, radnoVrijeme }) => {
         categoryId={prehranaCategoryId}
       />
 
-      <button
-        onClick={() => setMediaDialog(true)}
-        className="relative w-full h-80 cursor-pointer rounded-xl shadow-md hover:shadow-lg transition-shadow"
-      >
-        {!!image && (
-          <Image
-            src={image}
-            alt="Slika restorana"
-            className="rounded-xl object-cover h-full w-auto"
-            width={image?.width || 600}
-            height={image?.height || 600}
-          />
-        )}
-      </button>
+      <h3 className="uppercase text-primary text-sm tracking-wider mb-6">
+        Prikaz restorana
+      </h3>
+
+      <h3 className="font-semibold">Slika</h3>
+      <SelectMediaInput
+        defaultValue={restaurant?.image}
+        onChange={setImage}
+        className="w-1/2 !bg-transparent border-gray-200"
+        mediaCategoryId={prehranaCategoryId}
+      />
+
+      <h3 className="font-semibold mt-4 mb-2">Naziv</h3>
       <ReactQuill
         value={title}
         onChange={setTitle}
-        className="mt-4 border rounded-lg obavijest-title font-semibold"
+        className="border rounded-lg obavijest-title font-semibold"
         formats={["header"]}
+        placeholder="Unesi naslov..."
         modules={{
           toolbar: false,
         }}
       />
+      <h3 className="font-semibold mt-4 mb-2">Ponuda</h3>
       <ReactQuill
         value={description}
         onChange={setDescription}
-        className="mt-4 border rounded-lg"
+        className="border rounded-lg [&>div>div]:border-t [&>div>div]:border-gray-200"
+        placeholder="Unesi ponudu..."
         modules={{
           toolbar: [
             ["bold", "italic", "underline"],
@@ -111,13 +160,14 @@ const PrikazRestorana = ({ id, slika, naslov, ponuda, info, radnoVrijeme }) => {
         }}
       />
 
-      <div className="flex flex-col gap-2 mt-4 border rounded-lg p-3">
+      <h3 className="font-semibold mb-2 mt-4">Informacije</h3>
+      <div className="flex flex-col gap-2 border rounded-lg p-3">
         {infoList
           ?.sort((a, b) => a.order - b.order)
           ?.map((infoItem, index) => (
             <div
               className="flex gap-4"
-              key={index}
+              key={infoItem.order}
               onMouseOver={() => setInfoHovered(infoItem.order)}
               onMouseOut={() => setInfoHovered(null)}
             >
@@ -206,13 +256,74 @@ const PrikazRestorana = ({ id, slika, naslov, ponuda, info, radnoVrijeme }) => {
         </span>
       </MyDialog>
 
-      <Button
-        text="Spremi"
-        loading={isUpdating}
-        onClick={handleUpdatePost}
-        className="w-fit mt-5"
-        primary
+      <h3 className="uppercase text-primary text-sm tracking-wider mt-6">
+        Radno vrijeme
+      </h3>
+      <ReactQuill
+        value={workingHours}
+        onChange={setWorkingHours}
+        className="mt-4 border rounded-lg [&>div>div]:border-t [&>div>div]:border-gray-200"
+        placeholder="Unesi radno vrijeme..."
+        modules={{
+          toolbar: [
+            ["bold", "italic", "underline"],
+            [{ list: "ordered" }, { list: "bullet" }],
+            [{ color: [] }, { background: [] }],
+            [
+              { align: "" },
+              { align: "center" },
+              { align: "right" },
+              { align: "justify" },
+            ],
+          ],
+        }}
       />
+
+      <div className="flex gap-2 items-center mt-6">
+        <LoadingButton
+          variant="contained"
+          loading={isUpdating}
+          onClick={handleUpdateRestaurant}
+          className="!bg-primary"
+        >
+          Spremi
+        </LoadingButton>
+        <LoadingButton
+          variant="outlined"
+          color="error"
+          onClick={() => setDeleteRestaurantDialog(true)}
+        >
+          Obriši
+        </LoadingButton>
+      </div>
+
+      <Dialog
+        open={deleteRestaurantDialog}
+        onClose={() => setDeleteRestaurantDialog(false)}
+      >
+        <DialogTitle>Brisanje restorana</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Ovime se briše stranica i link na strnicu sadržaja. Radnja se ne
+            može poništiti.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setDeleteRestaurantDialog(false)}
+            className="!text-black"
+          >
+            Odustani
+          </Button>
+          <LoadingButton
+            color="error"
+            onClick={handleDeleteRestaurant}
+            loading={isDeleting}
+          >
+            Obriši
+          </LoadingButton>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

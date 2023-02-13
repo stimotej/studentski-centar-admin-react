@@ -161,6 +161,7 @@ const Home = () => {
           {event ? (
             <ObavijestPreview
               obavijest={event}
+              setObavijest={setEvent}
               handleDelete={() => setDeleteDialog(true)}
               isEvent={true}
             />

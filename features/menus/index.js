@@ -16,9 +16,6 @@ export const useMenus = (filters, options) => {
   const totalPages = useRef(0);
 
   const fetchProducts = async (newFilters) => {
-    const token = window.localStorage.getItem("access_token");
-    const userId = jwt.decode(token).id;
-
     const response = await axios.get(
       "http://161.53.174.14/wp-json/wp/v2/menus",
       {
@@ -28,8 +25,7 @@ export const useMenus = (filters, options) => {
           search: newFilters?.search,
           per_page: menusPerPage,
           page: newFilters?.page,
-          timestamp: new Date().getTime(),
-          author: userId,
+          restaurant: newFilters?.restaurantId,
         },
       }
     );
@@ -64,19 +60,16 @@ export const useMenus = (filters, options) => {
   };
 };
 
-export const useMenuByDate = (date, options) => {
+export const useMenuByDate = ({ date, restaurantId }, options) => {
   return useQuery(
-    menuKeys.menuByDate(date),
+    menuKeys.menuByDate({ date, restaurantId }),
     async () => {
-      const token = window.localStorage.getItem("access_token");
-      const userId = jwt.decode(token).id;
-
       const response = await axios.get(
         "http://161.53.174.14/wp-json/wp/v2/menus",
         {
           params: {
             menu_date: date,
-            author: userId,
+            restaurant: restaurantId,
           },
         }
       );
@@ -95,10 +88,6 @@ export const useCreateMenu = () => {
 
   return useMutation(
     async (menu) => {
-      const token = window.localStorage.getItem("access_token");
-      const currentUserId = jwt.decode(token).id;
-      const restaurantId = usersRestaurantIds[currentUserId];
-
       const response = await axios.post(
         "http://161.53.174.14/wp-json/wp/v2/menus",
         {
@@ -107,7 +96,7 @@ export const useCreateMenu = () => {
           meta: {
             menu_date: dayjs(menu.menu_date).format("YYYY-MM-DD"),
             menu_products: menu.products,
-            menu_restaurant_id: restaurantId,
+            menu_restaurant_id: menu.restaurantId,
           },
         }
       );
@@ -132,10 +121,6 @@ export const useUpdateMenu = (displayToasts = true) => {
 
   return useMutation(
     async (menu) => {
-      const token = window.localStorage.getItem("access_token");
-      const currentUserId = jwt.decode(token).id;
-      const restaurantId = usersRestaurantIds[currentUserId];
-
       const response = await axios.post(
         "http://161.53.174.14/wp-json/wp/v2/menus/" + menu.id,
         {
@@ -143,7 +128,7 @@ export const useUpdateMenu = (displayToasts = true) => {
             menu_date:
               menu.menu_date && dayjs(menu.menu_date).format("YYYY-MM-DD"),
             menu_products: menu.products,
-            menu_restaurant_id: restaurantId,
+            menu_restaurant_id: menu.restaurantId,
           },
         }
       );

@@ -18,6 +18,8 @@ const formats = [
   "bold",
   "italic",
   "underline",
+  "color",
+  "background",
   "header",
   "list",
   "align",
@@ -157,7 +159,7 @@ const QuillTextEditor = ({
                       className="text-lg text-gray-800 ml-2"
                     />
                     <div className="flex-1 line-clamp-1 break-all">
-                      {file.src?.split("/").pop()}
+                      {file.title}
                     </div>
                   </div>
                   <IconButton
@@ -218,6 +220,8 @@ const Header = ({ useFiles = true }) => {
       <button className="ql-bold my-1 sm:my-2"></button>
       <button className="ql-italic my-1 sm:my-2"></button>
       <button className="ql-underline my-1 sm:my-2"></button>
+      <select className="ql-color my-1 sm:my-2"></select>
+      <select className="ql-background my-1 sm:my-2"></select>
       <div className="h-6 border-l border-black/50 mx-4 my-1 sm:my-2" />
       <button className="ql-align my-1 sm:my-2" value=""></button>
       <button className="ql-align my-1 sm:my-2" value="center"></button>

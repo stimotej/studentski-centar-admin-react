@@ -17,7 +17,14 @@ import { useDeleteObavijest } from "../../../features/obavijesti";
 import Button from "../../Elements/Button";
 import MyDialog from "../../Elements/MyDialog";
 
-const Preview = ({ obavijest, className, title, isEvent = false, from }) => {
+const Preview = ({
+  obavijest,
+  setObavijest,
+  className,
+  title,
+  isEvent = false,
+  from,
+}) => {
   const [deleteDialog, setDeleteDialog] = useState(false);
 
   const { mutate: deleteObavijest, isLoading: isDeleting } =
@@ -29,12 +36,14 @@ const Preview = ({ obavijest, className, title, isEvent = false, from }) => {
       deleteEvent(obavijest.id, {
         onSuccess: () => {
           setDeleteDialog(false);
+          setObavijest(null);
         },
       });
     } else {
       deleteObavijest(obavijest.id, {
         onSuccess: () => {
           setDeleteDialog(false);
+          setObavijest(null);
         },
       });
     }
@@ -104,7 +113,7 @@ const Preview = ({ obavijest, className, title, isEvent = false, from }) => {
       <QuillTextEditor
         value={obavijest?.content || ""}
         containerClassName="!bg-transparent border-none my-4"
-        className="[&>div>div]:p-0 [&>div>div]:!min-h-fit"
+        className="[&>div>div]:!min-h-fit"
         readOnly
       />
       {obavijest.documents?.length > 0 && (

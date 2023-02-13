@@ -18,7 +18,7 @@ const MediaFileInput = forwardRef(({ value, onChange, className }, ref) => {
         setDragOver(false);
         setDragRejected(false);
       }}
-      accept={["image/*", "application/*"]}
+      accept={["image/*", "application/*", "text/*"]}
       onDragEnter={() => setDragOver(true)}
       onDragLeave={() => setDragOver(false)}
       onDropAccepted={() => setDragRejected(false)}

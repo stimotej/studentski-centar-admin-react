@@ -1,5 +1,6 @@
 const restaurantKeys = {
-  restaurant: ["restaurant"],
+  restaurants: ["restaurants"],
+  restaurant: ["restaurants", "restaurant"],
 };
 
 export default restaurantKeys;

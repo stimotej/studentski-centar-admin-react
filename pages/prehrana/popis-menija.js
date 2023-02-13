@@ -7,10 +7,13 @@ import { userGroups } from "../../lib/constants";
 import MyTable from "../../components/Elements/Table";
 import {
   Button,
+  CircularProgress,
   IconButton,
   InputAdornment,
   InputBase,
+  MenuItem,
   TableCell,
+  TextField,
   Tooltip,
 } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -26,6 +29,7 @@ import DeleteDialog from "../../components/Prehrana/Menus/DeleteDialog";
 import PreviewDialog from "../../components/Prehrana/Menus/PreviewDialog";
 import { useMenus } from "../../features/menus";
 import useDebounce from "../../lib/useDebounce";
+import { useRestaurants } from "../../features/restaurant";
 
 const MenuList = () => {
   const [page, setPage] = useState(1);
@@ -34,18 +38,44 @@ const MenuList = () => {
 
   const debouncedSearch = useDebounce(search, 300);
 
+  const [selectedRestaurantId, setSelectedRestaurantId] = useState(0);
+
   const {
     data: menus,
-    isLoading,
+    isInitialLoading: isLoading,
     isError,
     totalNumberOfItems,
     itemsPerPage,
-  } = useMenus({
-    orderby: sort?.split("|")?.[0],
-    order: sort?.split("|")?.[1],
-    search: debouncedSearch,
-    page,
-  });
+    refetch: refetchMenus,
+    isRefetching: isRefetchingMenus,
+  } = useMenus(
+    {
+      restaurantId: selectedRestaurantId,
+      orderby: sort?.split("|")?.[0],
+      order: sort?.split("|")?.[1],
+      search: debouncedSearch,
+      page,
+    },
+    {
+      enabled: selectedRestaurantId !== 0,
+    }
+  );
+
+  useEffect(() => {
+    if (selectedRestaurantId !== 0) {
+      refetchMenus();
+    }
+  }, [selectedRestaurantId]);
+
+  const { data: restaurants, isLoading: isLoadingRestaurants } =
+    useRestaurants();
+
+  useEffect(() => {
+    if (restaurants) {
+      if (selectedRestaurantId !== 0) return;
+      setSelectedRestaurantId(restaurants[0].id);
+    }
+  }, [restaurants]);
 
   const [selectedMenus, setSelectedMenus] = useState([]);
 
@@ -109,6 +139,28 @@ const MenuList = () => {
         responsive
       />
       <div className="px-5 md:px-10 mx-aut">
+        <div className="mb-4">
+          {isLoadingRestaurants ? (
+            <CircularProgress size={24} />
+          ) : (
+            <TextField
+              select
+              label="Odaberi restoran"
+              className="min-w-[200px]"
+              value={selectedRestaurantId}
+              onChange={(e) => {
+                setSelectedRestaurantId(e.target.value);
+              }}
+              helperText="Odaberi restoran za koji želiš pregledati menije"
+            >
+              {restaurants?.map((restaurant) => (
+                <MenuItem key={restaurant.id} value={restaurant.id}>
+                  {restaurant.title}
+                </MenuItem>
+              ))}
+            </TextField>
+          )}
+        </div>
         <MyTable
           title=""
           headCells={headCells}
@@ -130,7 +182,7 @@ const MenuList = () => {
             setSort([field, order].join("|"));
           }}
           noDataText="Nema menija za prikaz"
-          loading={isLoading}
+          loading={isLoading || isRefetchingMenus}
           titleComponent={
             <InputBase
               type="text"
@@ -179,6 +231,7 @@ const MenuList = () => {
                       date: menus?.filter(
                         (menu) => menu.id === selectedMenus[0]
                       )[0]?.date,
+                      restaurantId: selectedRestaurantId,
                     },
                   }}
                 >

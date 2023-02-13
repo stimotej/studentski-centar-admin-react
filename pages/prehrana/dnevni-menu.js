@@ -17,6 +17,17 @@ import { useProducts } from "../../features/products";
 import StickyElement from "../../components/Elements/StickyElement";
 import Loader from "../../components/Elements/Loader";
 import useDebounce from "../../lib/useDebounce";
+import { useRestaurants } from "../../features/restaurant";
+import {
+  Alert,
+  CircularProgress,
+  Collapse,
+  IconButton,
+  MenuItem,
+  TextField,
+} from "@mui/material";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faClose } from "@fortawesome/pro-regular-svg-icons";
 
 const NewDnevniMenu = () => {
   const router = useRouter();
@@ -31,19 +42,54 @@ const NewDnevniMenu = () => {
 
   const debouncedSearch = useDebounce(search, 300);
 
+  const [selectedRestaurantId, setSelectedRestaurantId] = useState(
+    Object.keys(router.query).length ? router.query.restaurantId : 0
+  );
+
   const { data: products, isFetching: isLoadingProducts } = useProducts({
     productsPerPage: 8,
     search: debouncedSearch,
   });
-  const { data: menu, isLoading } = useMenuByDate(date, {
-    onSuccess: (menuRes) => {
-      setMenuProducts(menuRes.products);
-    },
-  });
+  const {
+    data: menu,
+    isLoading,
+    refetch: refetchMenu,
+  } = useMenuByDate(
+    { date, restaurantId: selectedRestaurantId },
+    {
+      onSuccess: (menuRes) => {
+        setMenuProducts(menuRes.products);
+      },
+    }
+  );
+  const { data: restaurants, isLoading: isLoadingRestaurants } =
+    useRestaurants();
 
   useEffect(() => {
     setMenuProducts(menu?.products);
   }, [date]);
+
+  useEffect(() => {
+    if (selectedRestaurantId !== 0) {
+      refetchMenu();
+    }
+  }, [selectedRestaurantId]);
+
+  useEffect(() => {
+    if (restaurants) {
+      if (selectedRestaurantId !== 0) return;
+      setSelectedRestaurantId(restaurants[0].id);
+    }
+  }, [restaurants]);
+
+  const [alertOpened, setAlertOpened] = useState(false);
+
+  useEffect(() => {
+    const dismissed = window.localStorage.getItem("alertDismissed");
+    if (dismissed !== "true") {
+      setAlertOpened(true);
+    }
+  }, []);
 
   const [menuProducts, setMenuProducts] = useState(null);
 
@@ -101,12 +147,22 @@ const NewDnevniMenu = () => {
       return;
     }
 
+    if (selectedRestaurantId === 0) {
+      toast.error("Odaberite restoran");
+      return;
+    }
+
     if (menu?.id) {
-      updateMenu({ id: menu.id, products: menuProducts });
+      updateMenu({
+        id: menu.id,
+        products: menuProducts,
+        restaurantId: selectedRestaurantId,
+      });
     } else {
       createMenu({
         menu_date: date,
         products: menuProducts,
+        restaurantId: selectedRestaurantId,
       });
     }
   };
@@ -124,6 +180,51 @@ const NewDnevniMenu = () => {
         responsive
       />
       <div className="px-5 md:px-10 py-6 mx-auto">
+        <div className="mb-4 flex flex-col items-start">
+          <Collapse in={alertOpened} className="w-full">
+            <Alert
+              severity="info"
+              className="mb-6"
+              action={
+                <IconButton
+                  aria-label="close"
+                  color="inherit"
+                  size="small"
+                  className="w-7"
+                  onClick={() => {
+                    setAlertOpened(false);
+                    window.localStorage.setItem("alertDismissed", "true");
+                  }}
+                >
+                  <FontAwesomeIcon icon={faClose} />
+                </IconButton>
+              }
+            >
+              Promjenom restorana, nakon uređivanja menija, sve promjene koje
+              nisu spremljene će biti izgubljene.
+            </Alert>
+          </Collapse>
+          {isLoadingRestaurants ? (
+            <CircularProgress size={24} />
+          ) : (
+            <TextField
+              select
+              label="Odaberi restoran"
+              className="min-w-[200px]"
+              value={selectedRestaurantId}
+              onChange={(e) => {
+                setSelectedRestaurantId(e.target.value);
+              }}
+              helperText="Odaberi restoran za koji slažeš menu"
+            >
+              {restaurants?.map((restaurant) => (
+                <MenuItem key={restaurant.id} value={restaurant.id}>
+                  {restaurant.title}
+                </MenuItem>
+              ))}
+            </TextField>
+          )}
+        </div>
         <StickyElement
           className="transition-shadow duration-500 rounded-lg bg-background"
           stickyClassName="shadow-lg"

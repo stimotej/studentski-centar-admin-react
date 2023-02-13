@@ -104,7 +104,11 @@ const ObavijestiLayout = ({ categoryId, from }) => {
         </div>
         <div className="flex-1 pl-5 hidden lg:block">
           {obavijest ? (
-            <ObavijestPreview obavijest={obavijest} from={from} />
+            <ObavijestPreview
+              obavijest={obavijest}
+              setObavijest={setObavijest}
+              from={from}
+            />
           ) : (
             <div className="text-gray-500 mt-10">
               Odaberi obavijest za prikaz detalja.

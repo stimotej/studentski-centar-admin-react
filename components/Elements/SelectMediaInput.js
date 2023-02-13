@@ -11,10 +11,9 @@ const SelectMediaInput = forwardRef(function SelectMediaInput(
   const [file, setFile] = useState(null);
 
   useEffect(() => {
-    if (defaultValue)
-      setFile(
-        typeof defaultValue === "string" ? { src: defaultValue } : defaultValue
-      );
+    setFile(
+      typeof defaultValue === "string" ? { src: defaultValue } : defaultValue
+    );
   }, [defaultValue]);
 
   const handleSelectMedia = (value) => {

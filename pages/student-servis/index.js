@@ -20,7 +20,7 @@ import {
   Tooltip,
 } from "@mui/material";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 const QuillTextEditor = dynamic(
   () => import("../../components/Elements/QuillTextEditor"),
@@ -29,6 +29,7 @@ const QuillTextEditor = dynamic(
 import Header from "../../components/Header";
 import Layout from "../../components/Layout";
 import {
+  useAdminCategories,
   useCreatePost,
   useDeletePost,
   usePosts,
@@ -36,8 +37,8 @@ import {
 } from "../../features/posts";
 import {
   aboutUsPostId,
+  adminInfoStudentServisCategory,
   adminStudentServisCategory,
-  faqStudentServisCategoryId,
   poslovniceCategoryId,
   studentskiServisCategoryId,
   userGroups,
@@ -48,39 +49,30 @@ const Poslovi = () => {
   const router = useRouter();
 
   const {
-    data: aboutUs,
-    isLoading: isLoadingAboutUs,
-    isError: isAboutUsError,
-    isRefetching: isRefetchingAboutUs,
-    refetch: refetchAboutUs,
-  } = usePosts({
-    categories: adminStudentServisCategory,
-    include: aboutUsPostId,
+    data: categories,
+    isLoading: isLoadingCategories,
+    isError: isCategoriesError,
+  } = useAdminCategories({
+    parent: adminStudentServisCategory,
   });
 
   const {
     data: posts,
-    isLoading: isLoadingPosts,
+    isInitialLoading: isLoadingPosts,
     isError: isPostsError,
     isRefetching: isRefetchingPosts,
     refetch: refetchPosts,
-  } = usePosts({
-    categories: adminStudentServisCategory,
-    categories_exclude: [poslovniceCategoryId, faqStudentServisCategoryId],
-    exclude: aboutUsPostId,
-  });
-
-  const {
-    data: poslovnice,
-    isLoading: isLoadingPoslovnice,
-    isError: isPoslovniceError,
-    isRefetching: isRefetchingPoslovnice,
-    refetch: refetchPoslovnice,
-  } = usePosts({
-    categories: poslovniceCategoryId,
-  });
+  } = usePosts(
+    {
+      categories: adminStudentServisCategory,
+    },
+    {
+      enabled: !!categories,
+    }
+  );
 
   const [page, setPage] = useState(aboutUsPostId);
+  const [category, setCategory] = useState(0);
 
   const [addPostDialog, setAddPostDialog] = useState(null);
   const [deletePostDialog, setDeletePostDialog] = useState(false);
@@ -102,14 +94,8 @@ const Poslovi = () => {
   }, [router]);
 
   useEffect(() => {
-    if (aboutUs && posts && poslovnice) {
-      const post =
-        [...(posts || []), ...(poslovnice || [])].find(
-          (post) => post.id === page
-        ) ||
-        aboutUs?.[0] ||
-        posts?.[0] ||
-        poslovnice?.[0];
+    if (posts) {
+      const post = posts.find((post) => post.id === page) || posts?.[0];
       if (!post) return;
       setPage(post.id);
       setMediaId(post.imageId);
@@ -118,14 +104,13 @@ const Poslovi = () => {
       setContent(post.content);
       setFiles(post.documents || []);
     }
-  }, [aboutUs, posts, poslovnice]);
+  }, [posts]);
 
-  const handleSelectPage = (id) => {
-    let post = null;
-    if (id === aboutUsPostId) post = aboutUs[0];
-    else post = [...posts, ...poslovnice].find((post) => post.id === id);
+  const handleSelectPage = (postId, categoryId) => {
+    const post = posts.find((post) => post.id === postId);
     if (!post) return;
-    setPage(id);
+    setPage(postId);
+    setCategory(categoryId);
     setTitle(post.title);
     setMediaId(post.imageId);
     setExcerpt(post.excerpt);
@@ -138,14 +123,13 @@ const Poslovi = () => {
   const { mutate: deletePost, isLoading: isDeleting } = useDeletePost();
 
   const handleCreatePost = () => {
-    const categories = [adminStudentServisCategory];
     createPost(
       {
         title: dialogTitle,
         categories:
           addPostDialog === "informacija"
-            ? categories
-            : [...categories, poslovniceCategoryId],
+            ? [adminStudentServisCategory, adminInfoStudentServisCategory]
+            : [adminStudentServisCategory, poslovniceCategoryId],
         status: "draft",
       },
       {
@@ -189,195 +173,87 @@ const Poslovi = () => {
     );
   };
 
-  // if (isPageError)
-  //   return (
-  //     <Layout>
-  //       <Header title="Početna" />
-  //       <div className="px-5 md:px-10 pb-6">
-  //         <div className="text-error py-10">Greška kod dohvaćanja podataka</div>
-  //       </div>
-  //     </Layout>
-  //   );
-
-  // if (isLoadingPage)
-  //   return (
-  //     <Layout>
-  //       <Header title="Početna" />
-  //       <div className="flex items-center justify-center py-10">
-  //         <Loader className="w-10 h-10 border-primary" />
-  //       </div>
-  //     </Layout>
-  //   );
-
   return (
     <Layout>
       <Header title="Početna" />
       <div className="px-5 md:px-10 pb-6">
         <div className="flex gap-10 flex-wrap md:flex-nowrap">
           <div>
-            {/* ************************ O NAMA ******************************* */}
-            <h3 className="font-semibold mb-2">O nama</h3>
-            <Paper className="md:!min-w-[260px] md:!max-w-[400px]">
-              <MenuList>
-                {isLoadingAboutUs ? (
-                  <div className="flex items-center justify-center py-2">
-                    <CircularProgress size={24} />
-                  </div>
-                ) : isAboutUsError ? (
-                  <div className="text-error my-2 px-4">
-                    Greška kod učitavanja
+            {isLoadingCategories || isLoadingPosts ? (
+              <div className="flex items-center justify-center py-2">
+                <CircularProgress size={24} />
+              </div>
+            ) : isCategoriesError || isPostsError ? (
+              <div className="text-error my-2 px-4">
+                Greška kod učitavanja
+                <LoadingButton
+                  variant="outlined"
+                  className="mt-4"
+                  onClick={() => refetchPosts()}
+                  loading={isRefetchingPosts}
+                >
+                  Pokušaj ponovno
+                </LoadingButton>
+              </div>
+            ) : [...posts, ...categories].length <= 0 ? (
+              <div className="text-gray-500 my-2 px-4">Nema informacija</div>
+            ) : (
+              categories?.map((category) => (
+                <React.Fragment key={category.id}>
+                  {category.slug !== "page-part" && (
+                    <h3 className="font-semibold mb-2 mt-6">{category.name}</h3>
+                  )}
+                  <Paper className="md:!min-w-[260px] md:!max-w-[400px]">
+                    <MenuList>
+                      {posts
+                        ?.filter((post) =>
+                          post.categories.includes(category.id)
+                        )
+                        ?.map((post) => (
+                          <MenuItem
+                            key={post.id}
+                            selected={page === post.id}
+                            onClick={() =>
+                              handleSelectPage(post.id, category.id)
+                            }
+                          >
+                            {post.status === "draft" && (
+                              <Tooltip
+                                title="Još nije vidljivo na stranici."
+                                arrow
+                              >
+                                <ListItemIcon>
+                                  <FontAwesomeIcon
+                                    icon={faTriangleExclamation}
+                                    className="text-error"
+                                  />
+                                </ListItemIcon>
+                              </Tooltip>
+                            )}
+                            <ListItemText className="line-clamp-1">
+                              <QuillTextEditor
+                                value={post.title}
+                                containerClassName="!bg-transparent border-none"
+                                className="[&>div>div]:p-0 [&>div>div]:!min-h-fit [&>div>div]:line-clamp-1 [&>div>div>p]:hover:cursor-pointer"
+                                readOnly
+                              />
+                            </ListItemText>
+                          </MenuItem>
+                        ))}
+                    </MenuList>
+                  </Paper>
+                  {category.slug !== "page-part" && (
                     <LoadingButton
-                      variant="outlined"
-                      className="mt-4"
-                      onClick={() => refetchAboutUs()}
-                      loading={isRefetchingAboutUs}
+                      className="mt-2"
+                      startIcon={<FontAwesomeIcon icon={faPlus} />}
+                      onClick={() => setAddPostDialog("informacija")}
                     >
-                      Pokušaj ponovno
+                      Dodaj novo
                     </LoadingButton>
-                  </div>
-                ) : aboutUs.length <= 0 ? (
-                  <div className="text-gray-500 my-2 px-4">
-                    Nije pronađen post &quot;O nama&quot;
-                  </div>
-                ) : (
-                  <MenuItem
-                    selected={page === aboutUsPostId}
-                    onClick={() => handleSelectPage(aboutUsPostId)}
-                  >
-                    <ListItemText className="line-clamp-1">
-                      <QuillTextEditor
-                        value={aboutUs[0].title}
-                        containerClassName="!bg-transparent border-none"
-                        className="[&>div>div]:p-0 [&>div>div]:!min-h-fit [&>div>div]:line-clamp-1 [&>div>div>p]:hover:cursor-pointer"
-                        readOnly
-                      />
-                    </ListItemText>
-                  </MenuItem>
-                )}
-              </MenuList>
-            </Paper>
-            {/* ************************ POSTOVI ******************************* */}
-            <h3 className="font-semibold mb-2 mt-6">Informacije</h3>
-            <Paper className="md:!min-w-[260px] md:!max-w-[400px]">
-              <MenuList>
-                {isLoadingPosts ? (
-                  <div className="flex items-center justify-center py-2">
-                    <CircularProgress size={24} />
-                  </div>
-                ) : isPostsError ? (
-                  <div className="text-error my-2 px-4">
-                    Greška kod učitavanja
-                    <LoadingButton
-                      variant="outlined"
-                      className="mt-4"
-                      onClick={() => refetchPosts()}
-                      loading={isRefetchingPosts}
-                    >
-                      Pokušaj ponovno
-                    </LoadingButton>
-                  </div>
-                ) : posts.length <= 0 ? (
-                  <div className="text-gray-500 my-2 px-4">
-                    Nema informacija za prikaz
-                  </div>
-                ) : (
-                  posts?.map((post) => (
-                    <MenuItem
-                      key={post.id}
-                      selected={page === post.id}
-                      onClick={() => handleSelectPage(post.id)}
-                    >
-                      {post.status === "draft" && (
-                        <Tooltip title="Još nije vidljivo na stranici." arrow>
-                          <ListItemIcon>
-                            <FontAwesomeIcon
-                              icon={faTriangleExclamation}
-                              className="text-error"
-                            />
-                          </ListItemIcon>
-                        </Tooltip>
-                      )}
-                      <ListItemText className="line-clamp-1">
-                        <QuillTextEditor
-                          value={post.title}
-                          containerClassName="!bg-transparent border-none"
-                          className="[&>div>div]:p-0 [&>div>div]:!min-h-fit [&>div>div]:line-clamp-1 [&>div>div>p]:hover:cursor-pointer"
-                          readOnly
-                        />
-                      </ListItemText>
-                    </MenuItem>
-                  ))
-                )}
-              </MenuList>
-            </Paper>
-            <LoadingButton
-              className="mt-2"
-              startIcon={<FontAwesomeIcon icon={faPlus} />}
-              onClick={() => setAddPostDialog("informacija")}
-            >
-              Dodaj novo
-            </LoadingButton>
-            {/* ************************ POSLOVNICE ******************************* */}
-            <h3 className="font-semibold mb-2 mt-6">Poslovnice</h3>
-            <Paper className="md:!min-w-[260px] md:!max-w-[400px]">
-              <MenuList>
-                {isLoadingPoslovnice ? (
-                  <div className="flex items-center justify-center py-2">
-                    <CircularProgress size={24} />
-                  </div>
-                ) : isPoslovniceError ? (
-                  <div className="text-error my-2 px-4">
-                    Greška kod učitavanja
-                    <LoadingButton
-                      variant="outlined"
-                      className="mt-4"
-                      onClick={() => refetchPoslovnice()}
-                      loading={isRefetchingPoslovnice}
-                    >
-                      Pokušaj ponovno
-                    </LoadingButton>
-                  </div>
-                ) : poslovnice.length <= 0 ? (
-                  <div className="text-gray-500 my-2 px-4">
-                    Nema poslovnica za prikaz
-                  </div>
-                ) : (
-                  poslovnice?.map((post) => (
-                    <MenuItem
-                      key={post.id}
-                      selected={page === post.id}
-                      onClick={() => handleSelectPage(post.id)}
-                    >
-                      {post.status === "draft" && (
-                        <Tooltip title="Još nije vidljivo na stranici." arrow>
-                          <ListItemIcon>
-                            <FontAwesomeIcon
-                              icon={faTriangleExclamation}
-                              className="text-error"
-                            />
-                          </ListItemIcon>
-                        </Tooltip>
-                      )}
-                      <ListItemText className="line-clamp-1">
-                        <QuillTextEditor
-                          value={post.title}
-                          containerClassName="!bg-transparent border-none"
-                          className="[&>div>div]:p-0 [&>div>div]:!min-h-fit [&>div>div]:line-clamp-1 [&>div>div>p]:hover:cursor-pointer"
-                          readOnly
-                        />
-                      </ListItemText>
-                    </MenuItem>
-                  ))
-                )}
-              </MenuList>
-            </Paper>
-            <LoadingButton
-              className="mt-2"
-              startIcon={<FontAwesomeIcon icon={faPlus} />}
-              onClick={() => setAddPostDialog("poslovnica")}
-            >
-              Dodaj novu
-            </LoadingButton>
+                  )}
+                </React.Fragment>
+              ))
+            )}
           </div>
           <div className="flex flex-col items-start gap-4 w-full">
             {page === aboutUsPostId && (
@@ -386,7 +262,7 @@ const Poslovi = () => {
                   Slika
                 </h4>
                 <SelectMediaInput
-                  defaultValue={aboutUs?.[0]?.image}
+                  defaultValue={posts?.find((post) => post.id === page)?.image}
                   onChange={setMediaId}
                   className="w-1/2"
                   mediaCategoryId={studentskiServisCategoryId}
@@ -406,9 +282,8 @@ const Poslovi = () => {
               />
             </div>
             {page !== aboutUsPostId &&
-              ![...(posts || []), ...(poslovnice || [])]
-                .find((post) => post.id === page)
-                ?.categories?.includes(poslovniceCategoryId) && (
+              categories.find((post) => post.id === category)?.slug ===
+                "info" && (
                 <div className="w-full">
                   <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
                     Kratki opis
@@ -443,7 +318,8 @@ const Poslovi = () => {
               >
                 Spremi
               </LoadingButton>
-              {page !== aboutUsPostId && (
+              {categories.find((post) => post.id === category)?.slug !==
+                "page-parts" && (
                 <LoadingButton
                   variant="outlined"
                   color="error"

@@ -500,9 +500,7 @@ const Editor = () => {
                         icon={getIconByMimeType(file.mimeType)}
                         className="text-lg text-gray-800 ml-2"
                       />
-                      <div className="flex-1 line-clamp-1">
-                        {file.src?.split("/").pop()}
-                      </div>
+                      <div className="flex-1 line-clamp-1">{file.title}</div>
                     </div>
                     <IconButton
                       className="!aspect-square"

@@ -1,16 +1,11 @@
 import React from "react";
 import FAQLayout from "../../components/FAQLayout";
-import {
-  adminPrehranaCategory,
-  faqPrehranaCategoryId,
-  prehranaCategoryId,
-} from "../../lib/constants";
+import { faqPrehranaCategoryId, prehranaCategoryId } from "../../lib/constants";
 
 const FAQPage = () => {
   return (
     <FAQLayout
-      adminCategoryId={adminPrehranaCategory}
-      faqCategoryId={faqPrehranaCategoryId}
+      faqPageCategoryId={faqPrehranaCategoryId}
       mediaCategoryId={prehranaCategoryId}
       from="prehrana"
     />

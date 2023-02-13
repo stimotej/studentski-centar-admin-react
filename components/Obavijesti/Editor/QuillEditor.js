@@ -46,6 +46,8 @@ const Editor = ({
     "bold",
     "italic",
     "underline",
+    "color",
+    "background",
     "header",
     "list",
     "align",

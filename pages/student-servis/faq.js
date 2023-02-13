@@ -1,7 +1,6 @@
 import React from "react";
 import FAQLayout from "../../components/FAQLayout";
 import {
-  adminStudentServisCategory,
   faqStudentServisCategoryId,
   studentskiServisCategoryId,
 } from "../../lib/constants";
@@ -9,8 +8,7 @@ import {
 const FAQPage = () => {
   return (
     <FAQLayout
-      adminCategoryId={adminStudentServisCategory}
-      faqCategoryId={faqStudentServisCategoryId}
+      faqPageCategoryId={faqStudentServisCategoryId}
       mediaCategoryId={studentskiServisCategoryId}
       from="student-servis"
     />

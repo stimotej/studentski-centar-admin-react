@@ -30,6 +30,29 @@ export const usePosts = (filters, options) => {
   );
 };
 
+export const useAdminCategories = (filters, options) => {
+  return useQuery(
+    postsKeys.categories(),
+    async () => {
+      const response = await axios.get(
+        "http://161.53.174.14/wp-json/wp/v2/categories",
+        {
+          params: {
+            order: "asc",
+            timestamp: new Date().getTime(),
+            per_page: 100,
+            ...filters,
+          },
+        }
+      );
+      return response.data;
+    },
+    {
+      ...options,
+    }
+  );
+};
+
 export const usePost = (id, options) => {
   return useQuery(
     postsKeys.post(id),
