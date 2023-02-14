@@ -282,7 +282,7 @@ const Poslovi = () => {
               />
             </div>
             {page !== aboutUsPostId &&
-              categories.find((post) => post.id === category)?.slug ===
+              categories?.find((post) => post.id === category)?.slug ===
                 "info" && (
                 <div className="w-full">
                   <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
@@ -318,7 +318,7 @@ const Poslovi = () => {
               >
                 Spremi
               </LoadingButton>
-              {categories.find((post) => post.id === category)?.slug !==
+              {categories?.find((post) => post.id === category)?.slug !==
                 "page-parts" && (
                 <LoadingButton
                   variant="outlined"

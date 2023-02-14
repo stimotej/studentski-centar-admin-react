@@ -40,6 +40,7 @@ export const useMedia = (filters, options) => {
             order: filters?.order,
             search: filters?.search,
             media_type: filters?.mediaType,
+            media_folder: filters?.media_folder,
             per_page: mediaPerPage,
             page: pageParam,
             timestamp: new Date().getTime(),
@@ -59,6 +60,128 @@ export const useMedia = (filters, options) => {
       getNextPageParam: (lastPage, pages) => {
         if (pages.length + 1 <= totalPages.current) return pages.length + 1;
       },
+      ...options,
+    }
+  );
+};
+
+export const useMediaFolders = (filters, options) => {
+  return useQuery(
+    mediaKeys.mediaFolders(filters),
+    async () => {
+      const response = await axios.get(
+        "http://161.53.174.14/wp-json/wp/v2/media_folder",
+        {
+          params: {
+            per_page: 100,
+            timestamp: new Date().getTime(),
+            ...filters,
+          },
+        }
+      );
+      return response.data;
+    },
+    {
+      ...options,
+    }
+  );
+};
+
+export const useCreateMediaFolder = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    async ({ name, parent }) => {
+      const response = await axios.post(
+        `http://161.53.174.14/wp-json/wp/v2/media_folder`,
+        {
+          name,
+          parent,
+        }
+      );
+      return response.data;
+    },
+    {
+      onSuccess: (data) => {
+        toast.success("Folder je uspješno izrađen.");
+        return queryClient.invalidateQueries(mediaKeys.allMedia);
+      },
+      onError: (error) => {
+        if (error.response.data.data.status === 403)
+          toast.error("Nemate dopuštenje za dodavanje foldera.");
+        else toast.error("Greška kod dodavanja foldera.");
+      },
+    }
+  );
+};
+
+export const useUpdateMediaFolder = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    async ({ id, name, parent }) => {
+      const response = await axios.post(
+        `http://161.53.174.14/wp-json/wp/v2/media_folder/${id}`,
+        {
+          name,
+          parent,
+        }
+      );
+      return response.data;
+    },
+    {
+      onSuccess: (data) => {
+        toast.success("Folder je uspješno uređen.");
+        return queryClient.invalidateQueries(mediaKeys.allMedia);
+      },
+      onError: (error) => {
+        if (error.response.data.data.status === 403)
+          toast.error("Nemate dopuštenje za uređivanje foldera.");
+        else toast.error("Greška kod uređivanja foldera.");
+      },
+    }
+  );
+};
+
+export const useDeleteMediaFolder = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    async ({ id }) => {
+      const response = await axios.delete(
+        `http://161.53.174.14/wp-json/wp/v2/media_folder/${id}`,
+        {
+          params: {
+            force: true,
+          },
+        }
+      );
+      return response.data;
+    },
+    {
+      onSuccess: (data) => {
+        toast.success("Folder je uspješno obrisan.");
+        return queryClient.invalidateQueries(mediaKeys.allMedia);
+      },
+      onError: (error) => {
+        if (error.response.data.data.status === 403)
+          toast.error("Nemate dopuštenje za brisanje foldera.");
+        else toast.error("Greška kod brisanja foldera.");
+      },
+    }
+  );
+};
+
+export const useMediaFolder = (id, options) => {
+  return useQuery(
+    mediaKeys.mediaFolder(id),
+    async () => {
+      const response = await axios.get(
+        `http://161.53.174.14/wp-json/wp/v2/media_folder/${id}`
+      );
+      return response.data;
+    },
+    {
       ...options,
     }
   );
@@ -84,7 +207,7 @@ export const useCreateMedia = () => {
   const queryClient = useQueryClient();
 
   return useMutation(
-    async ({ body, type, name, categoryId }) => {
+    async ({ body, type, name, categoryId, media_folder }) => {
       const response = await axios.post(
         "http://161.53.174.14/wp-json/wp/v2/media",
         body,
@@ -101,6 +224,7 @@ export const useCreateMedia = () => {
         "http://161.53.174.14/wp-json/wp/v2/media/" + response.data.id,
         {
           categories: categoryId,
+          media_folder,
         }
       );
       return response.data;
@@ -121,12 +245,13 @@ export const useUpdateMedia = () => {
   const queryClient = useQueryClient();
 
   return useMutation(
-    async ({ id, title, alt, isBanner, bannerUrl }) => {
+    async ({ id, title, alt, isBanner, bannerUrl, folderId }) => {
       const response = await axios.post(
         "http://161.53.174.14/wp-json/wp/v2/media/" + id,
         {
           title: title,
           alt_text: alt,
+          media_folder: folderId,
           meta: { is_banner: isBanner, banner_url: bannerUrl },
         }
       );

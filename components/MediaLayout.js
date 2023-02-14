@@ -1,27 +1,44 @@
-import { useState, useEffect, Fragment } from "react";
+import React, { useState, useEffect, Fragment } from "react";
 import { useRouter } from "next/router";
 import { MdAdd } from "react-icons/md";
 import Image from "next/image";
-import { Checkbox, FormControlLabel, TextField } from "@mui/material";
+import {
+  Checkbox,
+  FormControlLabel,
+  IconButton,
+  MenuItem,
+  TextField,
+  Tooltip,
+} from "@mui/material";
 import { LoadingButton } from "@mui/lab";
 import MediaFileInput from "./Elements/MediaFileInput";
 import Loader from "./Elements/Loader";
 import Header from "./Header";
 import Layout from "./Layout";
-import { userGroups } from "../lib/constants";
+import { mediaUncategorizedFolder, userGroups } from "../lib/constants";
 import MyDialog from "./Elements/MyDialog";
 import {
   useMedia,
   useCreateMedia,
   useDeleteMedia,
   useUpdateMedia,
+  useMediaFolders,
+  useCreateMediaFolder,
+  useDeleteMediaFolder,
+  useUpdateMediaFolder,
 } from "../features/media";
 import useDebounce from "../lib/useDebounce";
 import SearchHeader from "./Elements/SearchHeader";
 import clsx from "clsx";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFile, faFilePdf } from "@fortawesome/pro-regular-svg-icons";
+import {
+  faChevronRight,
+  faFolderPlus,
+  faPen,
+  faTrash,
+} from "@fortawesome/pro-regular-svg-icons";
 import getIconByMimeType from "../lib/getIconbyMimeType";
+import { faFolder } from "@fortawesome/pro-solid-svg-icons";
 
 const imageDisplaySizeClasses = {
   small: "w-1/3 sm:w-1/4 md:w-1/5 lg:w-1/6",
@@ -30,6 +47,13 @@ const imageDisplaySizeClasses = {
 };
 
 const MediaLayout = ({ categoryId, from, includeBanners }) => {
+  const [folderHistory, setFolderHistory] = useState([
+    {
+      name: "Sve datoteke",
+      id: mediaUncategorizedFolder,
+    },
+  ]);
+
   const [sort, setSort] = useState("date|desc");
   const [search, setSearch] = useState("");
 
@@ -47,6 +71,24 @@ const MediaLayout = ({ categoryId, from, includeBanners }) => {
     orderby: sort?.split("|")?.[0],
     order: sort?.split("|")?.[1],
     search: debouncedSearch,
+    media_folder:
+      folderHistory[folderHistory.length - 1].id || mediaUncategorizedFolder,
+  });
+
+  const { data: allFolders } = useMediaFolders({
+    exclude: mediaUncategorizedFolder,
+  });
+
+  const {
+    data: folders,
+    isLoading: isLoadingFolders,
+    isError: isErrorFolders,
+  } = useMediaFolders({
+    orderby: sort?.split("|")?.[0] === "title" ? "name" : undefined,
+    order: sort?.split("|")?.[1],
+    search: debouncedSearch,
+    parent: folderHistory[folderHistory.length - 2]?.id || 0,
+    exclude: mediaUncategorizedFolder,
   });
 
   const [mediaDialog, setMediaDialog] = useState(null);
@@ -55,6 +97,13 @@ const MediaLayout = ({ categoryId, from, includeBanners }) => {
   const [alt, setAlt] = useState("");
   const [isBanner, setIsBanner] = useState(false);
   const [bannerUrl, setBannerUrl] = useState("");
+  const [folderId, setFolderId] = useState(mediaUncategorizedFolder);
+
+  const [addFolderDialog, setAddFolderDialog] = useState(false);
+  const [folderName, setFolderName] = useState("");
+
+  const [updateFolderDialog, setUpdateFolderDialog] = useState(false);
+  const [deleteFolderDialog, setDeleteFolderDialog] = useState(false);
 
   const [addNewDialog, setAddNewDialog] = useState(false);
 
@@ -84,6 +133,7 @@ const MediaLayout = ({ categoryId, from, includeBanners }) => {
           body: reader.result,
           type: selectedFile.type,
           name: selectedFile.name,
+          media_folder: folderHistory[folderHistory.length - 1].id,
           categoryId,
         },
         {
@@ -105,6 +155,7 @@ const MediaLayout = ({ categoryId, from, includeBanners }) => {
         alt,
         isBanner,
         bannerUrl,
+        folderId,
       },
       {
         onSuccess: () => {
@@ -120,6 +171,62 @@ const MediaLayout = ({ categoryId, from, includeBanners }) => {
         setMediaDialog(null);
       },
     });
+  };
+
+  const { mutate: createMediaFolder, isLoading: isCreatingFolder } =
+    useCreateMediaFolder();
+  const { mutate: updateMediaFolder, isLoading: isUpdatingFolder } =
+    useUpdateMediaFolder();
+  const { mutate: deleteMediaFolder, isLoading: isDeletingFolder } =
+    useDeleteMediaFolder();
+
+  const handleCreateFolder = () => {
+    createMediaFolder(
+      {
+        name: folderName,
+        parent: folderHistory[folderHistory.length - 2]?.id,
+      },
+      {
+        onSuccess: () => {
+          setAddFolderDialog(false);
+          setFolderName("");
+        },
+      }
+    );
+  };
+
+  const handleUpdateFolder = () => {
+    updateMediaFolder(
+      {
+        id: folderHistory[folderHistory.length - 1]?.id,
+        name: folderName,
+        // parent: folderHistory[folderHistory.length - 2]?.id,
+      },
+      {
+        onSuccess: (folder) => {
+          setUpdateFolderDialog(false);
+          setFolderName("");
+          setFolderHistory([
+            ...folderHistory.slice(0, folderHistory.length - 1),
+            folder,
+          ]);
+        },
+      }
+    );
+  };
+
+  const handleDeleteFolder = () => {
+    deleteMediaFolder(
+      {
+        id: folderHistory[folderHistory.length - 1]?.id,
+      },
+      {
+        onSuccess: () => {
+          setDeleteFolderDialog(false);
+          setFolderHistory(folderHistory.slice(0, folderHistory.length - 1));
+        },
+      }
+    );
   };
 
   return (
@@ -149,6 +256,52 @@ const MediaLayout = ({ categoryId, from, includeBanners }) => {
         onClose={() => setSelectedFile(null)}
       />
 
+      <MyDialog
+        opened={addFolderDialog}
+        setOpened={setAddFolderDialog}
+        title="Dodaj novi folder"
+        content={
+          <TextField
+            value={folderName}
+            onChange={(e) => setFolderName(e.target.value)}
+            label="Naziv"
+            className="mt-2"
+            fullWidth
+          />
+        }
+        actionTitle="Dodaj"
+        loading={isCreatingFolder}
+        onClick={handleCreateFolder}
+      />
+
+      <MyDialog
+        opened={updateFolderDialog}
+        setOpened={setUpdateFolderDialog}
+        title="Uredi folder"
+        content={
+          <TextField
+            value={folderName}
+            onChange={(e) => setFolderName(e.target.value)}
+            label="Naziv"
+            className="mt-2"
+            fullWidth
+          />
+        }
+        actionTitle="Spremi"
+        loading={isUpdatingFolder}
+        onClick={handleUpdateFolder}
+      />
+
+      <MyDialog
+        opened={deleteFolderDialog}
+        setOpened={setDeleteFolderDialog}
+        title="Obriši folder"
+        content='Ovime se briše trenutno otvoreni folder (Medijske datoteke će biti svrstane pod "Sve datoteke").'
+        actionTitle="Obriši"
+        loading={isDeletingFolder}
+        onClick={handleDeleteFolder}
+      />
+
       <SearchHeader
         searchPlaceholder="Pretraži zbirku medija"
         className="px-4 sm:px-10 mt-10"
@@ -159,78 +312,162 @@ const MediaLayout = ({ categoryId, from, includeBanners }) => {
         size={size}
         setSize={setSize}
       />
+
+      <div className="flex flex-wrap items-center justify-between px-4 sm:px-10 mt-4">
+        <div className="flex items-center">
+          {folderHistory.map((folder, index) => (
+            <React.Fragment key={folder.id}>
+              <button
+                className={clsx(
+                  "text-primary hover:underline",
+                  index + 1 === folderHistory.length && "font-bold"
+                )}
+                onClick={() => {
+                  setFolderHistory(folderHistory.slice(0, index + 1));
+                }}
+              >
+                {folder.name}
+              </button>
+              {index !== folderHistory.length - 1 && (
+                <FontAwesomeIcon
+                  icon={faChevronRight}
+                  size="sm"
+                  className="mx-2 text-gray-500"
+                />
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+        <div>
+          <Tooltip title="Dodaj novi folder" arrow>
+            <IconButton onClick={() => setAddFolderDialog(true)}>
+              <FontAwesomeIcon icon={faFolderPlus} />
+            </IconButton>
+          </Tooltip>
+          {folderHistory.length > 1 && (
+            <>
+              <Tooltip title="Obriši folder" arrow>
+                <IconButton onClick={() => setDeleteFolderDialog(true)}>
+                  <FontAwesomeIcon icon={faTrash} />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Uredi naziv foldera" arrow>
+                <IconButton onClick={() => setUpdateFolderDialog(true)}>
+                  <FontAwesomeIcon icon={faPen} />
+                </IconButton>
+              </Tooltip>
+            </>
+          )}
+        </div>
+      </div>
+
       <div className="flex flex-wrap px-2 sm:px-10 my-10">
-        {isLoading ? (
+        {isLoading || isLoadingFolders ? (
           <Loader className="w-10 h-10 mx-auto mt-12 border-primary" />
-        ) : isError ? (
+        ) : isError || isErrorFolders ? (
           <div className="mt-4 text-error">Greška kod učitavanja medija</div>
-        ) : mediaList.pages?.[0]?.length <= 0 ? (
+        ) : mediaList.pages?.[0]?.length <= 0 && folders.length <= 0 ? (
           <div className="mt-4 text-gray-500">Nema medija za prikaz</div>
         ) : (
-          mediaList.pages?.map((group, index) => (
-            <Fragment key={index}>
-              {group?.map((media) => (
-                <div
-                  key={media.id}
-                  className={clsx("flex p-1", imageDisplaySizeClasses[size])}
+          <>
+            {folders.map((folder) => (
+              <div
+                key={folder.id}
+                className={clsx(
+                  "flex p-1 aspect-square",
+                  imageDisplaySizeClasses[size]
+                )}
+              >
+                <button
+                  key={folder.id}
+                  className="break-words relative w-full rounded-lg p-2 hover:bg-white hover:shadow-lg transition-shadow"
+                  onClick={() => {
+                    setFolderHistory([
+                      ...folderHistory,
+                      { name: folder.name, id: folder.id },
+                    ]);
+                  }}
                 >
-                  <button
+                  <div className="flex flex-col overflow-hidden gap-2 p-3 items-center justify-center w-full h-full rounded-lg bg-gray-100">
+                    <FontAwesomeIcon
+                      icon={faFolder}
+                      className="w-10 h-10 text-yellow-400"
+                    />
+                    <span className="text-xs text-gray-900 line-clamp-2 break-all">
+                      {folder.name}
+                    </span>
+                  </div>
+                </button>
+              </div>
+            ))}
+            {mediaList.pages?.map((group, index) => (
+              <Fragment key={index}>
+                {group?.map((media) => (
+                  <div
                     key={media.id}
-                    className="break-words relative w-full rounded-lg p-2 hover:bg-white hover:shadow-lg transition-shadow"
-                    onClick={() => {
-                      setMediaDialog(media);
-                      setTitle(media.title);
-                      setAlt(media.alt);
-                      setIsBanner(media.isBanner);
-                      setBannerUrl(media.bannerUrl);
-                    }}
+                    className={clsx(
+                      "flex p-1 aspect-square",
+                      imageDisplaySizeClasses[size]
+                    )}
                   >
-                    {media?.mimeType?.includes("image") ? (
-                      <Image
-                        src={media.src}
-                        alt={media.alt || media.title || "Medij"}
-                        width={media.width || 50}
-                        height={media.height || 50}
-                        loading="lazy"
-                        className="rounded-lg object-cover mx-auto w-full aspect-square auto"
-                      />
-                    ) : (
-                      <div className="flex flex-col overflow-hidden gap-2 p-3 items-center justify-center w-full h-full rounded-lg bg-gray-100">
-                        <FontAwesomeIcon
-                          icon={getIconByMimeType(media.mimeType)}
-                          className="w-10 h-10 text-gray-500"
+                    <button
+                      className="break-words relative w-full rounded-lg p-2 hover:bg-white hover:shadow-lg transition-shadow"
+                      onClick={() => {
+                        setMediaDialog(media);
+                        setTitle(media.title);
+                        setAlt(media.alt);
+                        setIsBanner(media.isBanner);
+                        setBannerUrl(media.bannerUrl);
+                        setFolderId(media.folderId);
+                      }}
+                    >
+                      {media?.mimeType?.includes("image") ? (
+                        <Image
+                          src={media.src}
+                          alt={media.alt || media.title || "Medij"}
+                          width={media.width || 50}
+                          height={media.height || 50}
+                          loading="lazy"
+                          className="rounded-lg object-cover mx-auto w-full aspect-square auto"
                         />
-                        <span className="text-xs text-gray-900 line-clamp-2 break-all">
-                          {media.title}
-                        </span>
-                      </div>
-                    )}
-                    {media.isBanner && (
-                      <div className="absolute py-px px-1.5 rounded-full text-xs text-white bg-error top-0 right-0">
-                        Banner
-                      </div>
-                    )}
-                    {/* <h3 className="mt-3 font-medium text-sm text-left">
+                      ) : (
+                        <div className="flex flex-col overflow-hidden gap-2 p-3 items-center justify-center w-full h-full rounded-lg bg-gray-100">
+                          <FontAwesomeIcon
+                            icon={getIconByMimeType(media.mimeType)}
+                            className="w-10 h-10 text-gray-500"
+                          />
+                          <span className="text-xs text-gray-900 line-clamp-2 break-all">
+                            {media.title}
+                          </span>
+                        </div>
+                      )}
+                      {media.isBanner && (
+                        <div className="absolute py-px px-1.5 rounded-full text-xs text-white bg-error top-0 right-0">
+                          Banner
+                        </div>
+                      )}
+                      {/* <h3 className="mt-3 font-medium text-sm text-left">
                       {media.title}
                     </h3> */}
-                  </button>
-                </div>
-              ))}
-            </Fragment>
-          ))
+                    </button>
+                  </div>
+                ))}
+              </Fragment>
+            ))}
+            {hasNextPage ? (
+              <div className="flex items-center justify-center w-full py-4">
+                <LoadingButton
+                  loading={isFetchingNextPage}
+                  onClick={() => fetchNextPage()}
+                  variant="outlined"
+                  size="large"
+                >
+                  Učitaj više
+                </LoadingButton>
+              </div>
+            ) : null}
+          </>
         )}
-        {hasNextPage ? (
-          <div className="flex items-center justify-center w-full py-4">
-            <LoadingButton
-              loading={isFetchingNextPage}
-              onClick={() => fetchNextPage()}
-              variant="outlined"
-              size="large"
-            >
-              Učitaj više
-            </LoadingButton>
-          </div>
-        ) : null}
       </div>
       <MyDialog
         maxWidth="md"
@@ -290,7 +527,23 @@ const MediaLayout = ({ categoryId, from, includeBanners }) => {
                 </div>
               </>
             )}
-            <h3>Naziv:</h3>
+            <h3>Folder:</h3>
+            <TextField
+              value={folderId}
+              onChange={(e) => setFolderId(e.target.value)}
+              className="mt-1"
+              size="small"
+              fullWidth
+              select
+            >
+              <MenuItem value={mediaUncategorizedFolder}>Nema foldera</MenuItem>
+              {allFolders?.map((folder) => (
+                <MenuItem key={folder.id} value={folder.id}>
+                  {folder.name}
+                </MenuItem>
+              ))}
+            </TextField>
+            <h3 className="mt-4">Naziv:</h3>
             <TextField
               value={title}
               onChange={(e) => setTitle(e.target.value)}

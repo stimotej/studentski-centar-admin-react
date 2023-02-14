@@ -1,3 +1,5 @@
+import { mediaUncategorizedFolder } from "../../lib/constants";
+
 const formatMedia = (media) => ({
   id: media.id,
   title: media.title.rendered,
@@ -11,6 +13,7 @@ const formatMedia = (media) => ({
   height: media.media_details.height,
   isBanner: media.meta.is_banner,
   bannerUrl: media.meta.banner_url,
+  folderId: media.media_folder[0] || mediaUncategorizedFolder,
 });
 
 export default formatMedia;

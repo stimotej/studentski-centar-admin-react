@@ -64,7 +64,7 @@ const headCells = [
 
 const SviPoslovi = () => {
   const [page, setPage] = useState(1);
-  const [sort, setSort] = useState("title|desc");
+  const [sort, setSort] = useState("date|desc");
   const [search, setSearch] = useState("");
 
   const debouncedSearch = useDebounce(search, 300);
@@ -195,7 +195,7 @@ const SviPoslovi = () => {
             setSelectedJobs(selected);
           }}
           defaultOrder="desc"
-          defaultOrderBy="title"
+          defaultOrderBy="date"
           error={isError}
           errorMessage="Greška kod dohvaćanja poslova"
           rowsPerPage={itemsPerPage}
