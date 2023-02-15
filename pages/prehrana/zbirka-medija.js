@@ -1,8 +1,17 @@
 import MediaLayout from "../../components/MediaLayout";
-import { prehranaCategoryId } from "../../lib/constants";
+import {
+  mediaUncategorizedFolderPrehrana,
+  prehranaCategoryId,
+} from "../../lib/constants";
 
 const Media = () => {
-  return <MediaLayout from="prehrana" categoryId={prehranaCategoryId} />;
+  return (
+    <MediaLayout
+      from="prehrana"
+      categoryId={prehranaCategoryId}
+      mediaUncategorizedFolder={mediaUncategorizedFolderPrehrana}
+    />
+  );
 };
 
 export default Media;

@@ -340,14 +340,10 @@ const Poslovi = () => {
           setDialogTitle("");
         }}
       >
-        <DialogTitle>
-          {addPostDialog === "informacija"
-            ? "Dodaj sadržaj"
-            : "Dodaj poslovnicu"}
-        </DialogTitle>
+        <DialogTitle>Dodaj novo</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Bit će vidljivo na stranici tek nakon što uredite sadržaj i spremite
+            Bit će vidljivo na stranici tek nakon što uredite i spremite
             promjene.
           </DialogContentText>
           <QuillTextEditor

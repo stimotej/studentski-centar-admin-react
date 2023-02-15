@@ -25,7 +25,7 @@ const croToEngString = (str) => {
 };
 
 export const useMedia = (filters, options) => {
-  const mediaPerPage = 12;
+  const mediaPerPage = 30;
   const totalPages = useRef(0);
 
   return useInfiniteQuery(
@@ -109,32 +109,36 @@ export const useCreateMediaFolder = () => {
       onError: (error) => {
         if (error.response.data.data.status === 403)
           toast.error("Nemate dopuštenje za dodavanje foldera.");
+        if (error.response.data.code === "term_exists")
+          toast.error("Folder s tim nazivom već postoji.");
         else toast.error("Greška kod dodavanja foldera.");
       },
     }
   );
 };
 
-export const useUpdateMediaFolder = () => {
+export const useUpdateMediaFolder = (displayToasts = true) => {
   const queryClient = useQueryClient();
 
   return useMutation(
-    async ({ id, name, parent }) => {
+    async ({ id, name, parent, slug }) => {
       const response = await axios.post(
         `http://161.53.174.14/wp-json/wp/v2/media_folder/${id}`,
         {
           name,
           parent,
+          slug,
         }
       );
       return response.data;
     },
     {
       onSuccess: (data) => {
-        toast.success("Folder je uspješno uređen.");
+        if (displayToasts) toast.success("Folder je uspješno uređen.");
         return queryClient.invalidateQueries(mediaKeys.allMedia);
       },
       onError: (error) => {
+        if (!displayToasts) return;
         if (error.response.data.data.status === 403)
           toast.error("Nemate dopuštenje za uređivanje foldera.");
         else toast.error("Greška kod uređivanja foldera.");
@@ -241,7 +245,7 @@ export const useCreateMedia = () => {
   );
 };
 
-export const useUpdateMedia = () => {
+export const useUpdateMedia = (displayToasts = true) => {
   const queryClient = useQueryClient();
 
   return useMutation(
@@ -259,10 +263,11 @@ export const useUpdateMedia = () => {
     },
     {
       onSuccess: async () => {
-        toast.success("Uspješno spremanje medija");
+        if (displayToasts) toast.success("Uspješno spremanje medija");
         return queryClient.invalidateQueries(mediaKeys.allMedia);
       },
       onError: (error) => {
+        if (!displayToasts) return;
         if (error.response.data.data.status === 403)
           toast.error("Nemate dopuštenje za uređivanje ovog medija");
         else toast.error("Greška kod spremanja medija");

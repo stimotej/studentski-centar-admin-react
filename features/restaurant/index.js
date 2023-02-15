@@ -101,7 +101,6 @@ export const useUpdateRestaurant = () => {
         {
           title: restaurant?.title,
           featured_media: restaurant?.imageId,
-          status: restaurant?.status,
           meta: {
             ponuda: restaurant?.ponuda,
             radno_vrijeme: restaurant?.radnoVrijeme,

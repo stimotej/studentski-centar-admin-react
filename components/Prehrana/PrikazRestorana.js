@@ -1,5 +1,4 @@
 import { useState } from "react";
-import Image from "next/image";
 import {
   useDeleteRestaurant,
   useUpdateRestaurant,
@@ -74,8 +73,6 @@ const PrikazRestorana = ({ restaurant, page, setPage }) => {
 
   const [infoHovered, setInfoHovered] = useState(null);
 
-  const [mediaDialog, setMediaDialog] = useState(false);
-
   const [iconDialog, setIconDialog] = useState(false);
 
   const [deleteRestaurantDialog, setDeleteRestaurantDialog] = useState(false);
@@ -113,14 +110,6 @@ const PrikazRestorana = ({ restaurant, page, setPage }) => {
 
   return (
     <div className="flex flex-col">
-      <MediaSelectDialog
-        opened={mediaDialog}
-        onClose={() => setMediaDialog(false)}
-        value={image}
-        onSelect={(value) => setImage(value)}
-        categoryId={prehranaCategoryId}
-      />
-
       <h3 className="uppercase text-primary text-sm tracking-wider mb-6">
         Prikaz restorana
       </h3>
