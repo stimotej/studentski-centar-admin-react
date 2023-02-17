@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   useDeleteRestaurant,
   useUpdateRestaurant,
@@ -71,6 +71,24 @@ const PrikazRestorana = ({ restaurant, page, setPage }) => {
     }
   }, [restaurant]);
 
+  const quillModules = useMemo(
+    () => ({
+      toolbar: [
+        ["bold", "italic", "underline"],
+        [{ list: "ordered" }, { list: "bullet" }],
+        [{ color: [] }, { background: [] }],
+        ["link"],
+        [
+          { align: "" },
+          { align: "center" },
+          { align: "right" },
+          { align: "justify" },
+        ],
+      ],
+    }),
+    []
+  );
+
   const [infoHovered, setInfoHovered] = useState(null);
 
   const [iconDialog, setIconDialog] = useState(false);
@@ -139,14 +157,7 @@ const PrikazRestorana = ({ restaurant, page, setPage }) => {
         onChange={setDescription}
         className="border rounded-lg [&>div>div]:border-t [&>div>div]:border-gray-200"
         placeholder="Unesi ponudu..."
-        modules={{
-          toolbar: [
-            ["bold", "italic", "underline"],
-            [{ list: "ordered" }, { list: "bullet" }],
-            [{ color: [] }, { background: [] }],
-            [{ align: ["", "center", "right", "justify"] }],
-          ],
-        }}
+        modules={quillModules}
       />
 
       <h3 className="font-semibold mb-2 mt-4">Informacije</h3>
@@ -253,19 +264,7 @@ const PrikazRestorana = ({ restaurant, page, setPage }) => {
         onChange={setWorkingHours}
         className="mt-4 border rounded-lg [&>div>div]:border-t [&>div>div]:border-gray-200"
         placeholder="Unesi radno vrijeme..."
-        modules={{
-          toolbar: [
-            ["bold", "italic", "underline"],
-            [{ list: "ordered" }, { list: "bullet" }],
-            [{ color: [] }, { background: [] }],
-            [
-              { align: "" },
-              { align: "center" },
-              { align: "right" },
-              { align: "justify" },
-            ],
-          ],
-        }}
+        modules={quillModules}
       />
 
       <div className="flex gap-2 items-center mt-6">

@@ -28,6 +28,7 @@ export const useDormitories = (options) => {
     },
     {
       select: (data) => data.map((dormitory) => formatDormitory(dormitory)),
+      refetchOnWindowFocus: false,
       ...options,
     }
   );
@@ -96,6 +97,12 @@ export const useUpdateDormitory = () => {
           title: dormitory?.title,
           excerpt: dormitory?.excerpt,
           featured_media: dormitory?.imageId,
+          meta: {
+            sadrzaj: dormitory?.sadrzaj,
+            kontakt: dormitory?.kontakt,
+            lokacija: dormitory?.lokacija,
+            image_groups: dormitory?.image_groups,
+          },
           status: "publish",
         }
       );

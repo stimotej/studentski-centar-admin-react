@@ -12,6 +12,7 @@ import {
 } from "react-icons/hi";
 import { MdSearch } from "react-icons/md";
 import { useCreateMedia, useMedia } from "../features/media";
+import { getMediaUncategorizedFolderId } from "../lib/constants";
 import getIconByMimeType from "../lib/getIconbyMimeType";
 import useDebounce from "../lib/useDebounce";
 import Loader from "./Elements/Loader";
@@ -83,6 +84,7 @@ const MediaSelectDialog = ({
           body: reader.result,
           type: selectedFile.type,
           name: selectedFile.name,
+          media_folder: getMediaUncategorizedFolderId(categoryId),
           categoryId,
         },
         {

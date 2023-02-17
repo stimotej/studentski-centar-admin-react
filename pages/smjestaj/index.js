@@ -1,10 +1,8 @@
 import Header from "../../components/Header";
-import PrikazRestorana from "../../components/Prehrana/PrikazRestorana";
 import Layout from "../../components/Layout";
 import { useEffect, useState } from "react";
 import { smjestajCategoryId, userGroups } from "../../lib/constants";
 import { useRouter } from "next/router";
-import { useCreateRestaurant, useRestaurants } from "../../features/restaurant";
 import dynamic from "next/dynamic";
 import {
   Button,
@@ -19,6 +17,7 @@ import {
   MenuItem,
   MenuList,
   Paper,
+  TextField,
   Tooltip,
 } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -34,6 +33,9 @@ import {
   useUpdateDormitory,
 } from "../../features/dormitories";
 import SelectMediaInput from "../../components/Elements/SelectMediaInput";
+import { useMemo } from "react";
+import ReorderImages from "../../components/Elements/ReorderImages";
+import Image from "next/image";
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
 const Home = () => {
@@ -56,6 +58,13 @@ const Home = () => {
   const [image, setImage] = useState(null);
   const [title, setTitle] = useState("");
   const [excerpt, setExcerpt] = useState("");
+  const [sadrzaj, setSadrzaj] = useState("");
+  const [kontakt, setKontakt] = useState("");
+  const [lokacija, setLokacija] = useState("");
+  const [imageGroups, setImageGroups] = useState([]);
+
+  const [editLocation, setEditLocation] = useState(false);
+  const [locationGuideDialog, setLocationGuideDialog] = useState(false);
 
   const dormitory = dormitories?.find((d) => d.id === page);
 
@@ -68,8 +77,30 @@ const Home = () => {
       setImage(dormitory.imageId);
       setTitle(dormitory.title);
       setExcerpt(dormitory.excerpt);
+      setSadrzaj(dormitory.sadrzaj);
+      setKontakt(dormitory.kontakt);
+      setLokacija(dormitory.lokacija);
+      setImageGroups(dormitory.image_groups);
     }
   }, [dormitories, page]);
+
+  const quillModules = useMemo(
+    () => ({
+      toolbar: [
+        ["bold", "italic", "underline"],
+        [{ list: "ordered" }, { list: "bullet" }],
+        [{ color: [] }, { background: [] }],
+        ["link"],
+        [
+          { align: "" },
+          { align: "center" },
+          { align: "right" },
+          { align: "justify" },
+        ],
+      ],
+    }),
+    []
+  );
 
   useEffect(() => {
     const token = window.localStorage.getItem("access_token");
@@ -102,12 +133,23 @@ const Home = () => {
   };
 
   const handleUpdateDormitory = () => {
-    updateDormitory({
-      id: page,
-      title: title,
-      excerpt: excerpt,
-      ...(image ? { imageId: image } : {}),
-    });
+    updateDormitory(
+      {
+        id: page,
+        title: title,
+        excerpt: excerpt,
+        sadrzaj: sadrzaj,
+        kontakt: kontakt,
+        lokacija: lokacija,
+        image_groups: imageGroups,
+        ...(image ? { imageId: image } : {}),
+      },
+      {
+        onError: (err) => {
+          console.log("err", err.response.data);
+        },
+      }
+    );
   };
 
   const handleDeleteDormitory = () => {
@@ -216,20 +258,122 @@ const Home = () => {
               onChange={setExcerpt}
               className="border rounded-lg [&>div>div]:border-t [&>div>div]:border-gray-200"
               placeholder="Unesi opis..."
-              modules={{
-                toolbar: [
-                  ["bold", "italic", "underline"],
-                  [{ list: "ordered" }, { list: "bullet" }],
-                  [{ color: [] }, { background: [] }],
-                  [
-                    { align: "" },
-                    { align: "center" },
-                    { align: "right" },
-                    { align: "justify" },
-                  ],
-                ],
-              }}
+              modules={quillModules}
             />
+            <h3 className="font-semibold mt-4 mb-2">Sadržaj</h3>
+            <ReactQuill
+              value={sadrzaj}
+              onChange={setSadrzaj}
+              className="border rounded-lg [&>div>div]:border-t [&>div>div]:border-gray-200"
+              placeholder="Unesi sadržaj..."
+              modules={quillModules}
+            />
+            <h3 className="font-semibold mt-4 mb-2">Kontakt</h3>
+            <ReactQuill
+              value={kontakt}
+              onChange={setKontakt}
+              className="border rounded-lg [&>div>div]:border-t [&>div>div]:border-gray-200"
+              placeholder="Unesi kontakt..."
+              modules={quillModules}
+            />
+
+            <h3 className="font-semibold mt-4 mb-2">Grupe slika</h3>
+            <ReorderImages
+              imageGroups={imageGroups}
+              setImageGroups={setImageGroups}
+              mediaCategoryId={smjestajCategoryId}
+            />
+
+            <h3 className="font-semibold mt-4 mb-2">Lokacija</h3>
+            <ReactQuill
+              value={lokacija}
+              className="mb-2 border rounded-lg [&>div>div]:p-0 [&>div>div]:rounded-lg"
+              placeholder='Nema lokacije za prikaz. Pritisnite "Uredi lokaciju" za dodavanje.'
+              modules={{ toolbar: false }}
+              readOnly
+            />
+            <Button
+              className="mb-2"
+              onClick={() => setEditLocation(!editLocation)}
+            >
+              {editLocation ? "Zatvori" : "Uredi lokaciju"}
+            </Button>
+            {editLocation && (
+              <div>
+                <div className="mb-2 text-sm text-gray-800">
+                  Ovdje zaljepite HTML za ugrađivanje karte.{" "}
+                  <button
+                    className="text-primary underline"
+                    onClick={() => setLocationGuideDialog(true)}
+                  >
+                    Pogledaj upute
+                  </button>
+                </div>
+                <TextField
+                  value={lokacija}
+                  onChange={(e) => {
+                    //Replace text width="{any_character}" with width="100%" and height="{number}" with height="450"
+                    const value = e.target.value
+                      .replace(/width="[^"]*"/g, 'width="100%"')
+                      .replace(/height="[^"]*"/g, 'height="450"');
+                    setLokacija(value);
+                  }}
+                  placeholder='<iframe src="...'
+                  type="text"
+                  multiline
+                  fullWidth
+                />
+              </div>
+            )}
+            <Dialog
+              open={locationGuideDialog}
+              onClose={() => setLocationGuideDialog(false)}
+              scroll="body"
+              maxWidth="md"
+              fullWidth
+            >
+              <DialogTitle>Kopiranje HTML-a za ugrađivanje karte</DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  <ol className="list-decimal">
+                    <li className="mb-2">
+                      Potražite adresu na Google maps-u i pritisnite na
+                      &quot;Dijeli&quot;.
+                      <Image
+                        src="/zaposlenici/location-step-one.png"
+                        alt="Upute za ugrađivanje lokacije, prvi korak."
+                        className="mt-2 w-full h-auto"
+                        width={500}
+                        height={300}
+                      />
+                    </li>
+                    <li className="mt-4">
+                      Odaberite &quot;Ugrađivanje karte&quot; i pritisnite na
+                      &quot;Kopiraj HTML&quot;.
+                      <Image
+                        src="/zaposlenici/location-step-two.png"
+                        alt="Upute za ugrađivanje lokacije, drugi korak."
+                        className="mt-2 w-full h-auto"
+                        width={500}
+                        height={300}
+                      />
+                    </li>
+                    <li className="mt-4">
+                      Kopirani kod sada možete zalijepiti i spremiti promjene.
+                    </li>
+                  </ol>
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  onClick={() => setLocationGuideDialog(false)}
+                  className="!text-black"
+                >
+                  Zatvori
+                </Button>
+              </DialogActions>
+            </Dialog>
+
             <div className="flex gap-2 items-center mt-6">
               <LoadingButton
                 variant="contained"
