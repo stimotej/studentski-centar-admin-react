@@ -75,7 +75,7 @@ export const useCreateDormitory = () => {
     {
       onSuccess: (data) => {
         toast.success("Uspješno dodan dom.");
-        return queryClient.invalidateQueries(dormitoryKeys.dormitories);
+        queryClient.invalidateQueries(dormitoryKeys.dormitories);
       },
       onError: (error) => {
         if (error.response.data.data.status === 403)

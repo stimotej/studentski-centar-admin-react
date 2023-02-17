@@ -7,6 +7,7 @@ const formatRestaurant = (restaurant) => ({
   info: restaurant.meta.restaurant_info,
   ponuda: restaurant.meta.ponuda,
   radnoVrijeme: restaurant.meta.radno_vrijeme,
+  lokacija: restaurant.meta.lokacija,
   category_id: restaurant.meta.kategorija_proizvoda,
 });
 

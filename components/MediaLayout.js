@@ -82,10 +82,6 @@ const MediaLayout = ({
     media_folder: folderHistory[folderHistory.length - 1].id,
   });
 
-  const { data: allFolders } = useMediaFolders({
-    exclude: mediaUncategorizedFolder,
-  });
-
   const {
     data: folders,
     isLoading: isLoadingFolders,
@@ -340,7 +336,7 @@ const MediaLayout = ({
       />
 
       <div className="flex flex-wrap items-center justify-between px-4 sm:px-10 mt-4">
-        <div className="flex items-center">
+        <div className="flex flex-wrap items-center">
           {folderHistory.map((folder, index) => (
             <FolderHistoryItem
               key={folder.id}
@@ -503,23 +499,8 @@ const MediaLayout = ({
                 </div>
               </>
             )}
-            <h3>Folder:</h3>
-            <TextField
-              value={folderId}
-              onChange={(e) => setFolderId(e.target.value)}
-              className="mt-1"
-              size="small"
-              fullWidth
-              select
-            >
-              <MenuItem value={mediaUncategorizedFolder}>Sve datoteke</MenuItem>
-              {allFolders?.map((folder) => (
-                <MenuItem key={folder.id} value={folder.id}>
-                  {folder.name}
-                </MenuItem>
-              ))}
-            </TextField>
-            <h3 className="mt-4">Naziv:</h3>
+
+            <h3>Naziv:</h3>
             <TextField
               value={title}
               onChange={(e) => setTitle(e.target.value)}

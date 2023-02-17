@@ -17,7 +17,6 @@ import {
   MenuItem,
   MenuList,
   Paper,
-  TextField,
   Tooltip,
 } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -35,7 +34,7 @@ import {
 import SelectMediaInput from "../../components/Elements/SelectMediaInput";
 import { useMemo } from "react";
 import ReorderImages from "../../components/Elements/ReorderImages";
-import Image from "next/image";
+import EditLocation from "../../components/Elements/EditLocation";
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
 const Home = () => {
@@ -63,11 +62,6 @@ const Home = () => {
   const [lokacija, setLokacija] = useState("");
   const [imageGroups, setImageGroups] = useState([]);
 
-  const [editLocation, setEditLocation] = useState(false);
-  const [locationGuideDialog, setLocationGuideDialog] = useState(false);
-
-  const dormitory = dormitories?.find((d) => d.id === page);
-
   useEffect(() => {
     if (dormitories) {
       const dormitory =
@@ -80,9 +74,22 @@ const Home = () => {
       setSadrzaj(dormitory.sadrzaj);
       setKontakt(dormitory.kontakt);
       setLokacija(dormitory.lokacija);
-      setImageGroups(dormitory.image_groups);
+      setImageGroups(dormitory.image_groups || []);
     }
-  }, [dormitories, page]);
+  }, [dormitories]);
+
+  const handleSelectPage = (dormitoryId) => {
+    const dormitory = dormitories.find((d) => d.id === dormitoryId);
+    if (!dormitory) return;
+    setPage(dormitory.id);
+    setImage(dormitory.imageId);
+    setTitle(dormitory.title);
+    setExcerpt(dormitory.excerpt);
+    setSadrzaj(dormitory.sadrzaj);
+    setKontakt(dormitory.kontakt);
+    setLokacija(dormitory.lokacija);
+    setImageGroups(dormitory.image_groups || []);
+  };
 
   const quillModules = useMemo(
     () => ({
@@ -200,7 +207,7 @@ const Home = () => {
                     <MenuItem
                       key={dormitory.id}
                       selected={page === dormitory.id}
-                      onClick={() => setPage(dormitory.id)}
+                      onClick={() => handleSelectPage(dormitory.id)}
                     >
                       {dormitory.status === "draft" && (
                         <Tooltip title="Još nije vidljivo na stranici." arrow>
@@ -236,7 +243,7 @@ const Home = () => {
           <div className="flex-1">
             <h3 className="font-semibold">Slika</h3>
             <SelectMediaInput
-              defaultValue={dormitory?.image}
+              defaultValue={dormitories?.find((d) => d.id === page)?.image}
               onChange={setImage}
               className="w-1/2 !bg-transparent border-gray-200"
               mediaCategoryId={smjestajCategoryId}
@@ -285,94 +292,7 @@ const Home = () => {
             />
 
             <h3 className="font-semibold mt-4 mb-2">Lokacija</h3>
-            <ReactQuill
-              value={lokacija}
-              className="mb-2 border rounded-lg [&>div>div]:p-0 [&>div>div]:rounded-lg"
-              placeholder='Nema lokacije za prikaz. Pritisnite "Uredi lokaciju" za dodavanje.'
-              modules={{ toolbar: false }}
-              readOnly
-            />
-            <Button
-              className="mb-2"
-              onClick={() => setEditLocation(!editLocation)}
-            >
-              {editLocation ? "Zatvori" : "Uredi lokaciju"}
-            </Button>
-            {editLocation && (
-              <div>
-                <div className="mb-2 text-sm text-gray-800">
-                  Ovdje zaljepite HTML za ugrađivanje karte.{" "}
-                  <button
-                    className="text-primary underline"
-                    onClick={() => setLocationGuideDialog(true)}
-                  >
-                    Pogledaj upute
-                  </button>
-                </div>
-                <TextField
-                  value={lokacija}
-                  onChange={(e) => {
-                    //Replace text width="{any_character}" with width="100%" and height="{number}" with height="450"
-                    const value = e.target.value
-                      .replace(/width="[^"]*"/g, 'width="100%"')
-                      .replace(/height="[^"]*"/g, 'height="450"');
-                    setLokacija(value);
-                  }}
-                  placeholder='<iframe src="...'
-                  type="text"
-                  multiline
-                  fullWidth
-                />
-              </div>
-            )}
-            <Dialog
-              open={locationGuideDialog}
-              onClose={() => setLocationGuideDialog(false)}
-              scroll="body"
-              maxWidth="md"
-              fullWidth
-            >
-              <DialogTitle>Kopiranje HTML-a za ugrađivanje karte</DialogTitle>
-              <DialogContent>
-                <DialogContentText>
-                  <ol className="list-decimal">
-                    <li className="mb-2">
-                      Potražite adresu na Google maps-u i pritisnite na
-                      &quot;Dijeli&quot;.
-                      <Image
-                        src="/zaposlenici/location-step-one.png"
-                        alt="Upute za ugrađivanje lokacije, prvi korak."
-                        className="mt-2 w-full h-auto"
-                        width={500}
-                        height={300}
-                      />
-                    </li>
-                    <li className="mt-4">
-                      Odaberite &quot;Ugrađivanje karte&quot; i pritisnite na
-                      &quot;Kopiraj HTML&quot;.
-                      <Image
-                        src="/zaposlenici/location-step-two.png"
-                        alt="Upute za ugrađivanje lokacije, drugi korak."
-                        className="mt-2 w-full h-auto"
-                        width={500}
-                        height={300}
-                      />
-                    </li>
-                    <li className="mt-4">
-                      Kopirani kod sada možete zalijepiti i spremiti promjene.
-                    </li>
-                  </ol>
-                </DialogContentText>
-              </DialogContent>
-              <DialogActions>
-                <Button
-                  onClick={() => setLocationGuideDialog(false)}
-                  className="!text-black"
-                >
-                  Zatvori
-                </Button>
-              </DialogActions>
-            </Dialog>
+            <EditLocation value={lokacija} onChange={setLokacija} />
 
             <div className="flex gap-2 items-center mt-6">
               <LoadingButton

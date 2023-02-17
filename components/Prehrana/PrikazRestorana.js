@@ -4,7 +4,6 @@ import {
   useUpdateRestaurant,
 } from "../../features/restaurant";
 import dynamic from "next/dynamic";
-import MediaSelectDialog from "../MediaSelectDialog";
 import { prehranaCategoryId } from "../../lib/constants";
 import {
   MdAdd,
@@ -32,6 +31,7 @@ import MyDialog from "../Elements/MyDialog";
 import { useEffect } from "react";
 import { LoadingButton } from "@mui/lab";
 import SelectMediaInput from "../Elements/SelectMediaInput";
+import EditLocation from "../Elements/EditLocation";
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
 const iconList = [
@@ -51,6 +51,7 @@ const PrikazRestorana = ({ restaurant, page, setPage }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [workingHours, setWorkingHours] = useState("");
+  const [lokacija, setLokacija] = useState("");
 
   const [infoList, setInfoList] = useState([]);
 
@@ -60,6 +61,7 @@ const PrikazRestorana = ({ restaurant, page, setPage }) => {
       setTitle(restaurant.title);
       setDescription(restaurant.ponuda);
       setWorkingHours(restaurant.radnoVrijeme);
+      setLokacija(restaurant.lokacija);
       setInfoList(
         restaurant.info.length > 0
           ? restaurant.info.map((item) => ({
@@ -105,6 +107,7 @@ const PrikazRestorana = ({ restaurant, page, setPage }) => {
       title: title,
       ponuda: description,
       radnoVrijeme: workingHours,
+      lokacija: lokacija,
       info: infoList.map((item) => ({ ...item, icon: item.icon.name })),
     });
   };
@@ -266,6 +269,9 @@ const PrikazRestorana = ({ restaurant, page, setPage }) => {
         placeholder="Unesi radno vrijeme..."
         modules={quillModules}
       />
+
+      <h3 className="font-semibold mt-4 mb-2">Lokacija</h3>
+      <EditLocation value={lokacija} onChange={setLokacija} />
 
       <div className="flex gap-2 items-center mt-6">
         <LoadingButton

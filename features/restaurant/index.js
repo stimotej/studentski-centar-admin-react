@@ -104,6 +104,7 @@ export const useUpdateRestaurant = () => {
           meta: {
             ponuda: restaurant?.ponuda,
             radno_vrijeme: restaurant?.radnoVrijeme,
+            lokacija: restaurant?.lokacija,
             restaurant_info: restaurant?.info,
           },
           tags: restaurant?.tags,

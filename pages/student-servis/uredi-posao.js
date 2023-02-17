@@ -609,6 +609,7 @@ const UrediPosao = () => {
                     {...params}
                     label="Obavezna znanja"
                     placeholder="Unesi znanje"
+                    helperText="Unesite znanje i pritisnite tipku Enter za dodavanje"
                   />
                 )}
               />
@@ -638,6 +639,7 @@ const UrediPosao = () => {
                     {...params}
                     label="Poželjne vještine"
                     placeholder="Unesi vještinu"
+                    helperText="Unesite znanje i pritisnite tipku Enter za dodavanje"
                   />
                 )}
               />

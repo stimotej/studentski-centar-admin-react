@@ -1,4 +1,5 @@
-import { faFile, faFilePdf } from "@fortawesome/pro-regular-svg-icons";
+import { faChevronRight } from "@fortawesome/pro-regular-svg-icons";
+import { faFolder } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { LoadingButton } from "@mui/lab";
 import { MenuItem, TextField } from "@mui/material";
@@ -11,7 +12,7 @@ import {
   HiOutlineArrowNarrowUp,
 } from "react-icons/hi";
 import { MdSearch } from "react-icons/md";
-import { useCreateMedia, useMedia } from "../features/media";
+import { useCreateMedia, useMedia, useMediaFolders } from "../features/media";
 import { getMediaUncategorizedFolderId } from "../lib/constants";
 import getIconByMimeType from "../lib/getIconbyMimeType";
 import useDebounce from "../lib/useDebounce";
@@ -39,6 +40,13 @@ const MediaSelectDialog = ({
   categoryId,
   mediaType,
 }) => {
+  const [folderHistory, setFolderHistory] = useState([
+    {
+      name: "Sve datoteke",
+      id: getMediaUncategorizedFolderId(categoryId),
+    },
+  ]);
+
   const [sort, setSort] = useState("date_desc");
   const [search, setSearch] = useState("");
 
@@ -56,7 +64,19 @@ const MediaSelectDialog = ({
     orderby: sort?.split("_")?.[0],
     order: sort?.split("_")?.[1],
     search: debouncedSearch,
+    media_folder: folderHistory[folderHistory.length - 1].id,
     mediaType,
+  });
+
+  const {
+    data: folders,
+    isLoading: isLoadingFolders,
+    isError: isErrorFolders,
+  } = useMediaFolders({
+    orderby: sort?.split("|")?.[0] === "title" ? "name" : undefined,
+    order: sort?.split("|")?.[1],
+    search: debouncedSearch,
+    parent: folderHistory[folderHistory.length - 1]?.id,
   });
 
   const [selectedTab, setSelectedTab] = useState(0);
@@ -84,7 +104,7 @@ const MediaSelectDialog = ({
           body: reader.result,
           type: selectedFile.type,
           name: selectedFile.name,
-          media_folder: getMediaUncategorizedFolderId(categoryId),
+          media_folder: folderHistory[folderHistory.length - 1].id,
           categoryId,
         },
         {
@@ -132,6 +152,7 @@ const MediaSelectDialog = ({
                 startAdornment: <MdSearch className="text-gray-500 mr-1" />,
               }}
             />
+
             <div className="flex items-center w-fit mb-6 md:mb-0 ml-auto">
               <span className="mr-2">Sortiraj po:</span>
               <TextField
@@ -155,20 +176,67 @@ const MediaSelectDialog = ({
               </TextField>
             </div>
           </div>
-          {isLoading ? (
+          <div className="flex flex-wrap items-center">
+            {folderHistory.map((folder, index) => (
+              <React.Fragment key={folder.id}>
+                <button
+                  className="!text-primary hover:underline"
+                  onClick={() => {
+                    setFolderHistory(folderHistory.slice(0, index + 1));
+                  }}
+                >
+                  {folder.name}
+                </button>
+                {!(folderHistory.length === index + 1) && (
+                  <FontAwesomeIcon
+                    icon={faChevronRight}
+                    size="sm"
+                    className="mx-2 text-gray-500"
+                  />
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+          {isLoading || isLoadingFolders ? (
             <Loader className="w-10 h-10 mx-auto mt-12 border-primary" />
-          ) : isError ? (
+          ) : isError || isErrorFolders ? (
             <div className="mt-10 text-error">Greška kod učitavanja medija</div>
-          ) : mediaList.pages?.[0]?.length <= 0 ? (
+          ) : mediaList.pages?.[0]?.length <= 0 && folders.length <= 0 ? (
             <div className="mt-10 text-gray-500">Nema medija za prikaz</div>
           ) : (
             <div className="flex flex-wrap">
+              {folders.map((folder) => (
+                <div
+                  key={folder.id}
+                  className="flex p-1 aspect-square relative w-1/2 sm:w-1/3 md:w-1/4 lg:w-1/5"
+                >
+                  <button
+                    className="break-words relative w-full rounded-lg p-2 hover:bg-white hover:shadow-lg transition-shadow"
+                    onClick={() => {
+                      setFolderHistory([
+                        ...folderHistory,
+                        { name: folder.name, id: folder.id },
+                      ]);
+                    }}
+                  >
+                    <div className="flex flex-col overflow-hidden gap-2 p-3 items-center justify-center w-full h-full rounded-lg bg-gray-100">
+                      <FontAwesomeIcon
+                        icon={faFolder}
+                        className="w-10 h-10 text-yellow-400"
+                      />
+                      <span className="text-xs text-gray-900 line-clamp-2 break-all">
+                        {folder.name}
+                      </span>
+                    </div>
+                  </button>
+                </div>
+              ))}
               {mediaList.pages.map((group, index) => (
                 <Fragment key={index}>
                   {group?.map((media) => (
                     <button
                       key={media.id}
-                      className="w-1/2 sm:w-1/3 md:w-1/4 lg:w-1/5 h-40 rounded-lg p-2"
+                      className="w-1/2 sm:w-1/3 md:w-1/4 lg:w-1/5 aspect-square rounded-lg p-2"
                       onClick={() => setSelectedImage(media)}
                       onDoubleClick={handleSelectMedia}
                     >
