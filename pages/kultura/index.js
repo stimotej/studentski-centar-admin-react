@@ -7,7 +7,6 @@ import ObavijestPreview from "../../components/Obavijesti/Home/Preview";
 import ObavijestSelect from "../../components/Obavijesti/Home/Select";
 import Loader from "../../components/Elements/Loader";
 import Layout from "../../components/Layout";
-import { userGroups } from "../../lib/constants";
 import SearchHeader from "../../components/Elements/SearchHeader";
 import { useDeleteEvent, useEvents } from "../../features/events";
 import useDebounce from "../../lib/useDebounce";
@@ -15,7 +14,6 @@ import { Fragment } from "react";
 import { LoadingButton } from "@mui/lab";
 import MyDialog from "../../components/Elements/MyDialog";
 import axios from "axios";
-import { useCreatePostffffff } from "../../features/posts";
 
 const Home = () => {
   const [event, setEvent] = useState(null);
@@ -104,8 +102,6 @@ const Home = () => {
         loading={isDeleting}
         onClick={handleDelete}
       />
-
-      <button onClick={() => handleCreateUses()}>Create users</button>
 
       <div className="px-5 sm:px-10 flex">
         <div className="flex-1 w-1/2 lg:pr-5">
