@@ -88,14 +88,6 @@ const SviPoslovi = () => {
 
   const [deleteModal, setDeleteModal] = useState(false);
 
-  useEffect(() => {
-    const token = window.localStorage.getItem("access_token");
-    const username = window.localStorage.getItem("username");
-
-    if (!token || !userGroups["student-servis"].includes(username))
-      router.push("/student-servis/login");
-  }, [router]);
-
   const { mutate: updateJob } = useUpdateJob();
   const { mutateAsync: deleteJob } = useDeleteJob();
 

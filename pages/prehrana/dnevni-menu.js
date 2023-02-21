@@ -95,14 +95,6 @@ const NewDnevniMenu = () => {
 
   const [selectedMenu, setSelectedMenu] = useState("dorucak-menu");
 
-  useEffect(() => {
-    const token = window.localStorage.getItem("access_token");
-    const username = window.localStorage.getItem("username");
-
-    if (!token || !userGroups["prehrana"].includes(username))
-      router.push("/prehrana/login");
-  }, [router]);
-
   const addSelectedProduct = (product) => {
     const menuName = selectedMenu.split("-")[0];
     const mealName = selectedMenu.split("-")[1];

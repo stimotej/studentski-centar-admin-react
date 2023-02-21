@@ -13,7 +13,7 @@ const QuillTextEditor = dynamic(() => import("./Elements/QuillTextEditor"), {
 });
 import StoredPostNote from "./Obavijesti/Editor/StoredPostNote";
 import Layout from "./Layout";
-import { obavijestiCategoryId, userGroups } from "../lib/constants";
+import { obavijestiCategoryId } from "../lib/constants";
 import Loader from "./Elements/Loader";
 import {
   Checkbox,
@@ -68,12 +68,6 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
   );
 
   useEffect(() => {
-    const token = window.localStorage.getItem("access_token");
-    const username = window.localStorage.getItem("username");
-
-    if (!token || !userGroups[from].includes(username))
-      router.push(`/${from}/login`);
-
     let storedPostExists = false;
     storedPostKeys.forEach((key) => {
       let storedPost = window.localStorage.getItem(key);
@@ -86,7 +80,7 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
         storedPostExists = false;
     });
     if (storedPostExists) setStoredPostNote(true);
-  }, [router, from, storedPostKeys]);
+  }, [storedPostKeys, from]);
 
   const { data: categories } = useCategories({
     enabled: !categoryId,

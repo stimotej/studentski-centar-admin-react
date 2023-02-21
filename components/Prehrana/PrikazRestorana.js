@@ -138,6 +138,7 @@ const PrikazRestorana = ({ restaurant, page, setPage }) => {
       <h3 className="font-semibold">Slika</h3>
       <SelectMediaInput
         defaultValue={restaurant?.image}
+        imgAlt="Restoran"
         onChange={setImage}
         className="w-1/2 !bg-transparent border-gray-200"
         mediaCategoryId={prehranaCategoryId}

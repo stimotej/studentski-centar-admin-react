@@ -2,11 +2,11 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { MdArrowBack } from "react-icons/md";
-import { userGroups } from "../lib/constants";
 import { TextField } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
 import clsx from "clsx";
-import { login } from "../features/auth";
+import { useLogin, useResetPassword } from "../features/auth";
+import MyDialog from "./Elements/MyDialog";
 
 const Login = ({ from, title }) => {
   const [username, setUsername] = useState("");
@@ -15,64 +15,37 @@ const Login = ({ from, title }) => {
   const router = useRouter();
 
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const token = window.localStorage.getItem("access_token");
-    const username = window.localStorage.getItem("username");
+    if (token) router.push(`/${from}`);
+  }, [router, from]);
 
-    if (token && userGroups[from].includes(username)) router.push(`/${from}`);
-  }, []);
+  const { login, isLoading } = useLogin();
 
-  const handleLogin = async (e) => {
+  const handleLogin = (e) => {
     e.preventDefault();
-    setLoading(true);
-    try {
-      const user = await login(from, username, password);
-
-      if (user?.wrongCategory) {
-        setError(user?.message);
-        setLoading(false);
-        return;
-      }
-
-      router.push(`/${from}`);
-    } catch (error) {
-      console.log("error", error);
-      if (error.response?.status === 400) {
-        setError("Pogrešno korisničko ime ili lozinka");
-      } else setError("Greška prilikom slanja zahtjeva");
-    } finally {
-      setLoading(false);
-    }
+    login({ from, username, password })
+      .then((res) => {
+        if (res) router.push(`/${from}`);
+      })
+      .catch((err) => {
+        setError(err.message);
+      });
   };
 
-  const devLogin = (e) => {
-    e.preventDefault();
-    if (from.toLowerCase() === "obavijesti") {
-      setUsername("obavijesti");
-      setPassword("obavijestilozinka");
-    }
-    if (from.toLowerCase() === "prehrana") {
-      setUsername("express");
-      setPassword("restoranexpress");
-    }
-    if (from.toLowerCase() === "kultura") {
-      setUsername("kultura");
-      setPassword("kulturalozinka");
-    }
-    if (from.toLowerCase() === "student-servis") {
-      setUsername("poslovi");
-      setPassword("poslovilozinka");
-    }
-    if (from.toLowerCase() === "smjestaj") {
-      setUsername("smjestaj");
-      setPassword("smjestajlozinka");
-    }
-    if (from.toLowerCase() === "sport") {
-      setUsername("sport");
-      setPassword("sportlozinka");
-    }
+  const [resetPasswordModal, setResetPasswordModal] = useState(false);
+  const [email, setEmail] = useState("");
+
+  const { mutate: resetPassword } = useResetPassword();
+
+  const handleResetPassword = () => {
+    resetPassword(email, {
+      onSuccess: () => {
+        setResetPasswordModal(false);
+        setEmail("");
+      },
+    });
   };
 
   return (
@@ -81,6 +54,31 @@ const Login = ({ from, title }) => {
         "theme-" + from
       }`}
     >
+      <MyDialog
+        opened={resetPasswordModal}
+        setOpened={setResetPasswordModal}
+        title="Resetiranje lozinke"
+        content={
+          <>
+            <span>
+              Na email adresu će vam biti poslan link za resetiranje lozinke.
+            </span>
+            <TextField
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              type="email"
+              label="Email"
+              className="mt-4"
+              fullWidth
+            />
+          </>
+        }
+        actionTitle="Pošalji"
+        loading={isLoading}
+        onClick={handleResetPassword}
+        onClose={() => setResetPasswordModal(false)}
+      />
+
       <div className="flex flex-col items-center justify-center p-5">
         <h3 className="uppercase tracking-widest font-semibold text-md">
           Studentski centar
@@ -130,10 +128,10 @@ const Login = ({ from, title }) => {
           />
           <button
             className="text-primary mb-4 hover:underline"
-            onClick={devLogin}
+            onClick={() => setResetPasswordModal(true)}
             type="button"
           >
-            Ispuni automatski (za testiranje)
+            Zaboravljena lozinka?
           </button>
           <LoadingButton
             variant="contained"
@@ -142,11 +140,11 @@ const Login = ({ from, title }) => {
             color="primary"
             className={clsx(
               "!py-3 !rounded-lg",
-              loading
+              isLoading
                 ? "!bg-gray-200 !shadow-none"
                 : "!bg-primary hover:!bg-primary"
             )}
-            loading={loading}
+            loading={isLoading}
             // className="flex items-center justify-center uppercase text-sm text-white py-3 px-5 rounded-lg tracking-wide cursor-pointer shadow-md shadow-primary/50 hover:shadow-lg hover:shadow-primary/50 bg-primary transition-shadow"
           >
             Prijava

@@ -61,14 +61,6 @@ const ProductForm = ({ product }) => {
 
   const router = useRouter();
 
-  useEffect(() => {
-    const token = window.localStorage.getItem("access_token");
-    const username = window.localStorage.getItem("username");
-
-    if (!token || !userGroups["prehrana"].includes(username))
-      router.push("/prehrana/login");
-  }, [router]);
-
   const { mutate: createMedia, isLoading: isCreatingMedia } = useCreateMedia();
   const { mutate: createProduct, isLoading: isCreating } = useCreateProduct();
   const { mutate: updateProduct, isLoading: isUpdating } = useUpdateProduct();

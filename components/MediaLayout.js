@@ -121,14 +121,6 @@ const MediaLayout = ({
 
   const router = useRouter();
 
-  useEffect(() => {
-    const token = window.localStorage.getItem("access_token");
-    const username = window.localStorage.getItem("username");
-
-    if (!token || !userGroups[from].includes(username))
-      router.push(`/${from}/login`);
-  }, [from, router]);
-
   const { mutate: createMedia, isLoading: isCreating } = useCreateMedia();
   const { mutate: updateMedia, isLoading: isUpdating } = useUpdateMedia();
   const { mutate: deleteMedia, isLoading: isDeleting } = useDeleteMedia();

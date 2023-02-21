@@ -58,14 +58,6 @@ const ProductsPage = () => {
 
   const router = useRouter();
 
-  useEffect(() => {
-    const token = window.localStorage.getItem("access_token");
-    const username = window.localStorage.getItem("username");
-
-    if (!token || !userGroups["prehrana"].includes(username))
-      router.push("/prehrana/login");
-  }, []);
-
   const [stockLoading, setStockLoading] = useState(null);
 
   const { mutate: updateProduct } = useUpdateProduct();

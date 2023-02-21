@@ -4,7 +4,7 @@ import MediaSelectDialog from "../MediaSelectDialog";
 import clsx from "clsx";
 
 const SelectMediaInput = forwardRef(function SelectMediaInput(
-  { defaultValue, onChange, className, mediaCategoryId },
+  { defaultValue, onChange, className, mediaCategoryId, imgAlt },
   ref
 ) {
   const [mediaDialog, setMediaDialog] = useState(false);
@@ -34,7 +34,7 @@ const SelectMediaInput = forwardRef(function SelectMediaInput(
         {file?.src ? (
           <Image
             src={file?.src}
-            alt={file?.alt || "Slika obavijesti"}
+            alt={file?.alt || imgAlt || "Slika obavijesti"}
             width={file?.width || 500}
             height={file?.height || 500}
             className="rounded-lg object-cover w-full h-auto"

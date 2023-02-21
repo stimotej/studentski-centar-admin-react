@@ -1,6 +1,10 @@
 import { useRouter } from "next/router";
 import Sidebar from "./Sidebar";
-import { createTheme, ThemeProvider } from "@mui/material";
+import MyDialog from "./Elements/MyDialog";
+import { createTheme, TextField, ThemeProvider } from "@mui/material";
+import { useEffect } from "react";
+import { useResetEmail, useUser } from "../features/auth";
+import { useState } from "react";
 
 const Layout = ({ children }) => {
   const router = useRouter();
@@ -94,6 +98,32 @@ const Layout = ({ children }) => {
     },
   });
 
+  const { data: user } = useUser();
+
+  const [changeMailModal, setChangeMailModal] = useState(false);
+  const [email, setEmail] = useState("");
+
+  useEffect(() => {
+    const token = window.localStorage.getItem("access_token");
+    if (!token) router.push(`/${category}/login`);
+  }, [router, category]);
+
+  useEffect(() => {
+    if (user?.data?.email.endsWith("@check.com")) {
+      setChangeMailModal(true);
+    }
+  }, [user]);
+
+  const { mutate: resetEmail, isLoading } = useResetEmail();
+
+  const handleResetEmail = () => {
+    resetEmail(email, {
+      onSuccess: () => {
+        setChangeMailModal(false);
+      },
+    });
+  };
+
   return (
     <ThemeProvider
       theme={
@@ -111,6 +141,31 @@ const Layout = ({ children }) => {
       }
     >
       <div className={`theme-${category}`}>
+        <MyDialog
+          opened={changeMailModal}
+          setOpened={setChangeMailModal}
+          title="Postavljanje email adrese"
+          content={
+            <>
+              <span>
+                Spremanjem email adrese, bit će Vam poslan email za resetiranje
+                loznike.
+              </span>
+              <TextField
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                type="email"
+                label="Email adresa"
+                className="mt-4"
+                fullWidth
+              />
+            </>
+          }
+          actionTitle="Spremi"
+          loading={isLoading}
+          onClick={handleResetEmail}
+          onClose={() => setChangeMailModal(false)}
+        />
         <Sidebar category={category} />
         <main className="sm:pl-20">{children}</main>
       </div>

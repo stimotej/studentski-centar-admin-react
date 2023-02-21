@@ -109,14 +109,6 @@ const Home = () => {
     []
   );
 
-  useEffect(() => {
-    const token = window.localStorage.getItem("access_token");
-    const username = window.localStorage.getItem("username");
-
-    if (!token || !userGroups["smjestaj"].includes(username))
-      router.push("/smjestaj/login");
-  }, [router]);
-
   const { mutate: createDormitory, isLoading: isCreating } =
     useCreateDormitory();
   const { mutate: updateDormitory, isLoading: isUpdating } =

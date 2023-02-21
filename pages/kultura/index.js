@@ -15,6 +15,7 @@ import { Fragment } from "react";
 import { LoadingButton } from "@mui/lab";
 import MyDialog from "../../components/Elements/MyDialog";
 import axios from "axios";
+import { useCreatePostffffff } from "../../features/posts";
 
 const Home = () => {
   const [event, setEvent] = useState(null);
@@ -42,14 +43,6 @@ const Home = () => {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const router = useRouter();
-
-  useEffect(() => {
-    const token = window.localStorage.getItem("access_token");
-    const username = window.localStorage.getItem("username");
-
-    if (!token || !userGroups["kultura"].includes(username))
-      router.push("/kultura/login");
-  }, []);
 
   useEffect(() => {
     if (events) setEvent(events[0]);
@@ -111,6 +104,8 @@ const Home = () => {
         loading={isDeleting}
         onClick={handleDelete}
       />
+
+      <button onClick={() => handleCreateUses()}>Create users</button>
 
       <div className="px-5 sm:px-10 flex">
         <div className="flex-1 w-1/2 lg:pr-5">

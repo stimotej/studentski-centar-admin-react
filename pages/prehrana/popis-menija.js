@@ -81,14 +81,6 @@ const MenuList = () => {
 
   const router = useRouter();
 
-  useEffect(() => {
-    const token = window.localStorage.getItem("access_token");
-    const username = window.localStorage.getItem("username");
-
-    if (!token || !userGroups["prehrana"].includes(username))
-      router.push("/prehrana/login");
-  }, [router]);
-
   const [deleteModal, setDeleteModal] = useState(false);
   const [showMenuPreviewDialog, setShowMenuPreviewDialog] = useState({
     state: false,

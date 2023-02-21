@@ -86,14 +86,6 @@ const Poslovi = () => {
   const [files, setFiles] = useState([]);
 
   useEffect(() => {
-    const token = window.localStorage.getItem("access_token");
-    const username = window.localStorage.getItem("username");
-
-    if (!token || !userGroups["student-servis"].includes(username))
-      router.push("/student-servis/login");
-  }, [router]);
-
-  useEffect(() => {
     if (posts) {
       const post = posts.find((post) => post.id === page) || posts?.[0];
       if (!post) return;

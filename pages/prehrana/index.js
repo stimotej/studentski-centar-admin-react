@@ -2,7 +2,6 @@ import Header from "../../components/Header";
 import PrikazRestorana from "../../components/Prehrana/PrikazRestorana";
 import Layout from "../../components/Layout";
 import { useEffect, useState } from "react";
-import { userGroups } from "../../lib/constants";
 import { useRouter } from "next/router";
 import { useCreateRestaurant, useRestaurants } from "../../features/restaurant";
 import dynamic from "next/dynamic";
@@ -38,8 +37,6 @@ const Home = () => {
     isRefetching: isRefetchingRestaurants,
   } = useRestaurants();
 
-  const router = useRouter();
-
   const [page, setPage] = useState(0);
   const [addRestaurantDialog, setAddRestaurantDialog] = useState(false);
   const [dialogTitle, setDialogTitle] = useState("");
@@ -52,14 +49,6 @@ const Home = () => {
       setPage(restaurants[0].id);
     }
   }, [restaurants]);
-
-  useEffect(() => {
-    const token = window.localStorage.getItem("access_token");
-    const username = window.localStorage.getItem("username");
-
-    if (!token || !userGroups["prehrana"].includes(username))
-      router.push("/prehrana/login");
-  }, [router]);
 
   const { mutate: createRestaurant, isLoading: isCreating } =
     useCreateRestaurant();

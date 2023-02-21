@@ -6,7 +6,6 @@ import ObavijestPreview from "./Obavijesti/Home/Preview";
 import ObavijestSelect from "./Obavijesti/Home/Select";
 import Loader from "./Elements/Loader";
 import Layout from "./Layout";
-import { userGroups } from "../lib/constants";
 import { useObavijesti } from "../features/obavijesti";
 import useDebounce from "../lib/useDebounce";
 import { LoadingButton } from "@mui/lab";
@@ -14,8 +13,6 @@ import { Fragment } from "react";
 import SearchHeader from "./Elements/SearchHeader";
 
 const ObavijestiLayout = ({ categoryId, from }) => {
-  const router = useRouter();
-
   const [obavijest, setObavijest] = useState(null);
 
   const [search, setSearch] = useState("");
@@ -36,14 +33,6 @@ const ObavijestiLayout = ({ categoryId, from }) => {
     order: sort?.split("|")?.[1],
     search: debouncedSearch,
   });
-
-  useEffect(() => {
-    const token = window.localStorage.getItem("access_token");
-    const username = window.localStorage.getItem("username");
-
-    if (!token || !userGroups[from].includes(username))
-      router.push(`/${from}/login`);
-  }, [router, from]);
 
   return (
     <Layout>

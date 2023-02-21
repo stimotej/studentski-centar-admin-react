@@ -46,14 +46,6 @@ const FAQLayout = ({ faqPageCategoryId, mediaCategoryId, from }) => {
     categories: faqPageCategoryId,
   });
 
-  useEffect(() => {
-    const token = window.localStorage.getItem("access_token");
-    const username = window.localStorage.getItem("username");
-
-    if (!token || !userGroups[from].includes(username))
-      router.push(`/${from}/login`);
-  }, [router, from]);
-
   const [mediaDialogOpened, setMediaDialogOpened] = useState(false);
 
   const [image, setImage] = useState(null);

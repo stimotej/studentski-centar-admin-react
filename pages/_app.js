@@ -24,8 +24,10 @@ axios.defaults.baseURL = "http://161.53.174.14/wp-json/wp/v2/";
 function MyApp({ Component, pageProps }) {
   useEffect(() => {
     const token = window.localStorage.getItem("access_token");
-    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     axios.defaults.headers.post["Content-Type"] = "application/json";
+    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    axios.defaults.params = {};
+    axios.defaults.params["JWT"] = token;
   }, []);
 
   return (
