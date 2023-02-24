@@ -21,6 +21,10 @@ const formatPost = (post) => ({
   status: post.status,
   image: post.image_url,
   imageId: post.featured_media,
+  sadrzaj: post.meta.sadrzaj,
+  kontakt: post.meta.kontakt,
+  lokacija: post.meta.lokacija,
+  image_groups: post.meta.image_groups,
 });
 
 export default formatPost;

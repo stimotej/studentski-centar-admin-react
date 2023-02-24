@@ -1,8 +1,12 @@
 import Header from "../../components/Header";
 import Layout from "../../components/Layout";
 import { useEffect, useState } from "react";
-import { smjestajCategoryId, userGroups } from "../../lib/constants";
-import { useRouter } from "next/router";
+import {
+  adminSmjestajCategory,
+  smjestajCategoryId,
+  userGroups,
+} from "../../lib/constants";
+import React, { useRouter } from "next/router";
 import dynamic from "next/dynamic";
 import {
   Button,
@@ -35,24 +39,54 @@ import SelectMediaInput from "../../components/Elements/SelectMediaInput";
 import { useMemo } from "react";
 import ReorderImages from "../../components/Elements/ReorderImages";
 import EditLocation from "../../components/Elements/EditLocation";
+import { useAdminCategories, usePosts } from "../../features/posts";
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
 const Home = () => {
   const {
-    data: dormitories,
-    isLoading: isLoadingDormitories,
-    isError: isDormitoriesError,
-    refetch: refetchDormitories,
-    isRefetching: isRefetchingDormitories,
-  } = useDormitories();
+    data: categories,
+    isLoading: isLoadingCategories,
+    isError: isCategoriesError,
+  } = useAdminCategories(
+    {
+      parent: adminSmjestajCategory,
+    },
+    {
+      onSuccess: (data) => {
+        console.log("categories", data);
+      },
+      onError: (error) => {
+        console.log("categories error", error.response);
+      },
+      onSettled: (error) => {
+        console.log("categories error setlled", error);
+      },
+    }
+  );
+  console.log("categoriescategories", categories);
 
-  const router = useRouter();
+  const {
+    data: posts,
+    isInitialLoading: isLoadingPosts,
+    isError: isPostsError,
+    refetch: refetchPosts,
+    isRefetching: isRefetchingPosts,
+  } = usePosts(
+    {
+      categories: adminSmjestajCategory,
+    },
+    {
+      enabled: !!categories,
+    }
+  );
 
   const [page, setPage] = useState(0);
-  const [addDormitoryDialog, setAddDormitoryDialog] = useState(false);
+  const [category, setCategory] = useState(0);
+
+  const [addPostDialog, setAddPostDialog] = useState(false);
   const [dialogTitle, setDialogTitle] = useState("");
 
-  const [deleteDormitoryDialog, setDeleteDormitoryDialog] = useState(false);
+  const [deletePostDialog, setDeletePostDialog] = useState(false);
 
   const [image, setImage] = useState(null);
   const [title, setTitle] = useState("");
@@ -63,9 +97,8 @@ const Home = () => {
   const [imageGroups, setImageGroups] = useState([]);
 
   useEffect(() => {
-    if (dormitories) {
-      const dormitory =
-        dormitories.find((d) => d.id === page) || dormitories?.[0];
+    if (posts) {
+      const dormitory = posts.find((d) => d.id === page) || posts?.[0];
       if (!dormitory) return;
       setPage(dormitory.id);
       setImage(dormitory.imageId);
@@ -76,10 +109,10 @@ const Home = () => {
       setLokacija(dormitory.lokacija);
       setImageGroups(dormitory.image_groups || []);
     }
-  }, [dormitories]);
+  }, [posts]);
 
   const handleSelectPage = (dormitoryId) => {
-    const dormitory = dormitories.find((d) => d.id === dormitoryId);
+    const dormitory = posts.find((d) => d.id === dormitoryId);
     if (!dormitory) return;
     setPage(dormitory.id);
     setImage(dormitory.imageId);
@@ -123,7 +156,7 @@ const Home = () => {
       },
       {
         onSuccess: (data) => {
-          setAddDormitoryDialog(false);
+          setAddPostDialog(false);
           setDialogTitle("");
           setPage(data.id);
         },
@@ -158,7 +191,7 @@ const Home = () => {
       },
       {
         onSuccess: () => {
-          setDeleteDormitoryDialog(false);
+          setDeletePostDialog(false);
           setPage(0);
         },
       }
@@ -171,63 +204,71 @@ const Home = () => {
       <div className="px-5 md:px-10 pb-6">
         <div className="flex gap-10 flex-wrap md:flex-nowrap">
           <div>
-            <h3 className="font-semibold mb-2">Domovi</h3>
-            <Paper className="md:!min-w-[260px] md:!max-w-[400px]">
-              <MenuList>
-                {isLoadingDormitories ? (
-                  <div className="flex items-center justify-center py-2">
-                    <CircularProgress size={24} />
-                  </div>
-                ) : isDormitoriesError ? (
-                  <div className="text-error my-2 px-4">
-                    Greška kod učitavanja
-                    <LoadingButton
-                      variant="outlined"
-                      className="mt-4"
-                      onClick={() => refetchDormitories()}
-                      loading={isRefetchingDormitories}
-                    >
-                      Pokušaj ponovno
-                    </LoadingButton>
-                  </div>
-                ) : dormitories.length <= 0 ? (
-                  <div className="text-gray-500 my-2 px-4">
-                    Nema domova za prikaz
-                  </div>
-                ) : (
-                  dormitories?.map((dormitory) => (
-                    <MenuItem
-                      key={dormitory.id}
-                      selected={page === dormitory.id}
-                      onClick={() => handleSelectPage(dormitory.id)}
-                    >
-                      {dormitory.status === "draft" && (
-                        <Tooltip title="Još nije vidljivo na stranici." arrow>
-                          <ListItemIcon>
-                            <FontAwesomeIcon
-                              icon={faTriangleExclamation}
-                              className="text-error"
+            {isLoadingCategories || isLoadingPosts ? (
+              <div className="flex items-center justify-center py-2">
+                <CircularProgress size={24} />
+              </div>
+            ) : isCategoriesError || isPostsError ? (
+              <div className="text-error my-2 px-4">
+                Greška kod učitavanja
+                <LoadingButton
+                  variant="outlined"
+                  className="mt-4"
+                  onClick={() => refetchPosts()}
+                  loading={isRefetchingPosts}
+                >
+                  Pokušaj ponovno
+                </LoadingButton>
+              </div>
+            ) : [...posts, ...categories].length <= 0 ? (
+              <div className="text-gray-500 my-2 px-4">
+                Nema informacija za prikaz
+              </div>
+            ) : (
+              categories?.map((category) => (
+                <React.Fragment key={category.id}>
+                  <h3 className="font-semibold mb-2">{category.name}</h3>
+                  <Paper className="md:!min-w-[260px] md:!max-w-[400px]">
+                    <MenuList>
+                      {posts?.map((post) => (
+                        <MenuItem
+                          key={post.id}
+                          selected={page === post.id}
+                          onClick={() => handleSelectPage(post.id)}
+                        >
+                          {post.status === "draft" && (
+                            <Tooltip
+                              title="Još nije vidljivo na stranici."
+                              arrow
+                            >
+                              <ListItemIcon>
+                                <FontAwesomeIcon
+                                  icon={faTriangleExclamation}
+                                  className="text-error"
+                                />
+                              </ListItemIcon>
+                            </Tooltip>
+                          )}
+                          <ListItemText className="line-clamp-1">
+                            <ReactQuill
+                              value={post.title}
+                              className="[&>div>div]:p-0 [&>div>div]:!min-h-fit [&>div>div]:line-clamp-1 [&>div>div>p]:hover:cursor-pointer"
+                              modules={{ toolbar: false }}
+                              readOnly
                             />
-                          </ListItemIcon>
-                        </Tooltip>
-                      )}
-                      <ListItemText className="line-clamp-1">
-                        <ReactQuill
-                          value={dormitory.title}
-                          className="[&>div>div]:p-0 [&>div>div]:!min-h-fit [&>div>div]:line-clamp-1 [&>div>div>p]:hover:cursor-pointer"
-                          modules={{ toolbar: false }}
-                          readOnly
-                        />
-                      </ListItemText>
-                    </MenuItem>
-                  ))
-                )}
-              </MenuList>
-            </Paper>
+                          </ListItemText>
+                        </MenuItem>
+                      ))}
+                    </MenuList>
+                  </Paper>
+                </React.Fragment>
+              ))
+            )}
+
             <LoadingButton
               className="mt-2"
               startIcon={<FontAwesomeIcon icon={faPlus} />}
-              onClick={() => setAddDormitoryDialog(true)}
+              onClick={() => setAddPostDialog(true)}
             >
               Dodaj novi
             </LoadingButton>
@@ -235,7 +276,7 @@ const Home = () => {
           <div className="flex-1">
             <h3 className="font-semibold">Slika</h3>
             <SelectMediaInput
-              defaultValue={dormitories?.find((d) => d.id === page)?.image}
+              defaultValue={posts?.find((d) => d.id === page)?.image}
               onChange={setImage}
               className="w-1/2 !bg-transparent border-gray-200"
               mediaCategoryId={smjestajCategoryId}
@@ -298,7 +339,7 @@ const Home = () => {
               <LoadingButton
                 variant="outlined"
                 color="error"
-                onClick={() => setDeleteDormitoryDialog(true)}
+                onClick={() => setDeletePostDialog(true)}
               >
                 Obriši
               </LoadingButton>
@@ -308,8 +349,8 @@ const Home = () => {
       </div>
 
       <Dialog
-        open={deleteDormitoryDialog}
-        onClose={() => setDeleteDormitoryDialog(false)}
+        open={deletePostDialog}
+        onClose={() => setDeletePostDialog(false)}
       >
         <DialogTitle>Brisanje doma</DialogTitle>
         <DialogContent>
@@ -320,7 +361,7 @@ const Home = () => {
         </DialogContent>
         <DialogActions>
           <Button
-            onClick={() => setDeleteDormitoryDialog(false)}
+            onClick={() => setDeletePostDialog(false)}
             className="!text-black"
           >
             Odustani
@@ -336,9 +377,9 @@ const Home = () => {
       </Dialog>
 
       <Dialog
-        open={!!addDormitoryDialog}
+        open={!!addPostDialog}
         onClose={() => {
-          setAddDormitoryDialog(null);
+          setAddPostDialog(null);
           setDialogTitle("");
         }}
       >
@@ -361,7 +402,7 @@ const Home = () => {
         <DialogActions>
           <Button
             onClick={() => {
-              setAddDormitoryDialog(null);
+              setAddPostDialog(null);
               setDialogTitle("");
             }}
             className="!text-black"
