@@ -116,6 +116,10 @@ export const useUpdatePost = () => {
       status,
       featuredMedia,
       documents,
+      sadrzaj,
+      kontakt,
+      lokacija,
+      image_groups,
     }) => {
       const response = await axios.post(
         `http://161.53.174.14/wp-json/wp/v2/posts/${id}`,
@@ -127,6 +131,10 @@ export const useUpdatePost = () => {
           featured_media: featuredMedia,
           meta: {
             documents,
+            sadrzaj,
+            kontakt,
+            lokacija,
+            image_groups,
           },
         }
       );

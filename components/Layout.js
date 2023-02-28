@@ -3,7 +3,7 @@ import Sidebar from "./Sidebar";
 import MyDialog from "./Elements/MyDialog";
 import { createTheme, TextField, ThemeProvider } from "@mui/material";
 import { useEffect } from "react";
-import { useResetEmail, useUser } from "../features/auth";
+import { useCheckAuth, useResetEmail, useUser } from "../features/auth";
 import { useState } from "react";
 
 const Layout = ({ children }) => {
@@ -99,14 +99,25 @@ const Layout = ({ children }) => {
   });
 
   const { data: user } = useUser();
+  const { mutate: checkAuth } = useCheckAuth();
 
   const [changeMailModal, setChangeMailModal] = useState(false);
   const [email, setEmail] = useState("");
 
   useEffect(() => {
-    const token = window.localStorage.getItem("access_token");
-    if (!token) router.push(`/${category}/login`);
-  }, [router, category]);
+    checkAuth(
+      {},
+      {
+        onSuccess: () => {
+          console.log("success");
+        },
+        onError: (err) => {
+          console.log("err", err.response.data);
+          router.push(`/${category}/login`);
+        },
+      }
+    );
+  }, [router, category, checkAuth]);
 
   useEffect(() => {
     if (user?.data?.email.endsWith("@check.com")) {

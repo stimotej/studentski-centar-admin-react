@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef, useEffect } from "react";
+import { useMemo, useState, useRef, useEffect, useId } from "react";
 import { MdOutlineImage } from "react-icons/md";
 import { FaYoutube } from "react-icons/fa";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -14,7 +14,7 @@ import clsx from "clsx";
 
 Quill.register("modules/imageResize", ImageResize, true);
 
-const formats = [
+const formatsDefault = [
   "bold",
   "italic",
   "underline",
@@ -37,10 +37,13 @@ const QuillTextEditor = ({
   readOnly = false,
   className,
   containerClassName,
+  formats,
   files,
   setFiles = () => {},
 }) => {
   const [mediaDialog, setMediaDialog] = useState(null);
+
+  const toolbarId = useId();
 
   const [ytModal, setYtModal] = useState(false);
   const [ytUrl, setYtUrl] = useState("");
@@ -62,6 +65,7 @@ const QuillTextEditor = ({
   };
 
   const addDocumentToolbar = () => {
+    console.log("dd");
     setMediaDialog({ type: "application", action: "document" });
   };
 
@@ -80,7 +84,7 @@ const QuillTextEditor = ({
         readOnly || !useToolbar
           ? false
           : {
-              container: "#toolbar",
+              container: `[id='${toolbarId}']`,
               handlers: {
                 addImageToolbar: addImageToolbar,
                 addYoutubeVideo: addYoutubeVideo,
@@ -129,7 +133,9 @@ const QuillTextEditor = ({
           containerClassName
         )}
       >
-        {!readOnly && useToolbar ? <Header useFiles={!!files} /> : null}
+        {!readOnly && useToolbar ? (
+          <Header useFiles={!!files} toolbarId={toolbarId} />
+        ) : null}
         <ReactQuill
           ref={(el) => (reactQuillRef.current = el)}
           className={clsx(
@@ -142,7 +148,7 @@ const QuillTextEditor = ({
           onChange={onChange}
           readOnly={readOnly}
           modules={modules}
-          formats={formats}
+          formats={formats || formatsDefault}
         />
         {files?.length > 0 && (
           <div className="p-[15px]">
@@ -204,9 +210,9 @@ const QuillTextEditor = ({
   );
 };
 
-const Header = ({ useFiles = true }) => {
+const Header = ({ useFiles = true, toolbarId }) => {
   return (
-    <header id="toolbar" className="w-full p-4 flex flex-wrap">
+    <header id={toolbarId} className="w-full p-4 flex flex-wrap">
       <select className="ql-header">
         <option value="">Tekst</option>
         <option value="6">Naslov 6</option>

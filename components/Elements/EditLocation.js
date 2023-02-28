@@ -16,6 +16,13 @@ const EditLocation = ({ value, onChange }) => {
   const [editLocation, setEditLocation] = useState(false);
   const [locationGuideDialog, setLocationGuideDialog] = useState(false);
 
+  const handleLocationValueChange = (e) => {
+    const value = e.target.value
+      .replace(/width="[^"]*"/g, 'width="100%"')
+      .replace(/height="[^"]*"/g, 'height="450"');
+    onChange(value);
+  };
+
   return (
     <>
       <ReactQuill
@@ -44,12 +51,7 @@ const EditLocation = ({ value, onChange }) => {
           </div>
           <TextField
             value={value}
-            onChange={(e) => {
-              const value = e.target.value
-                .replace(/width="[^"]*"/g, 'width="100%"')
-                .replace(/height="[^"]*"/g, 'height="450"');
-              onChange(value);
-            }}
+            onChange={handleLocationValueChange}
             placeholder='<iframe src="...'
             type="text"
             multiline
@@ -109,4 +111,4 @@ const EditLocation = ({ value, onChange }) => {
   );
 };
 
-export default EditLocation;
+export default React.memo(EditLocation);

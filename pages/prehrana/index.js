@@ -163,6 +163,7 @@ const Home = () => {
             onChange={setDialogTitle}
             className="mt-2 border rounded-lg"
             placeholder="Naslov"
+            formats={[]}
             modules={{
               toolbar: false,
             }}

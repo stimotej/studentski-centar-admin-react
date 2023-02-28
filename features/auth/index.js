@@ -1,12 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import jwt from "jsonwebtoken";
 import { useState } from "react";
 import { toast } from "react-toastify";
-import { userGroups } from "../../lib/constants";
 
 // const url = "https://unaprijedi.com/?rest_route=/simple-jwt-login/v1/auth";
-const url = "http://161.53.174.14/?rest_route=/simple-jwt-login/v1/auth";
+const url = "http://161.53.174.14/wp-json/jwt-auth/v1/token";
 
 export const useLogin = () => {
   const queryClient = useQueryClient();
@@ -15,18 +13,17 @@ export const useLogin = () => {
   const login = async ({ from, username, password }) => {
     setIsLoading(true);
     try {
+      delete axios.defaults.headers.common["Authorization"];
       const loginRes = await axios.post(url, {
         username,
         password,
       });
+      console.log("res", loginRes.data);
       const userRes = await axios.get(
         "http://161.53.174.14/wp-json/wp/v2/users/me",
         {
           headers: {
-            Authorization: `Bearer ${loginRes.data.data.jwt}`,
-          },
-          params: {
-            JWT: loginRes.data.data.jwt,
+            Authorization: `Bearer ${loginRes.data.token}`,
           },
         }
       );
@@ -35,14 +32,12 @@ export const useLogin = () => {
       // if (!userRes.data?.data?.roles.includes(loginFrom)) {
       //   throw new Error("wrong_group");
       // }
-      window.localStorage.setItem("access_token", loginRes.data.data.jwt);
+      window.localStorage.setItem("access_token", loginRes.data.token);
       window.localStorage.setItem(
         "roles",
         JSON.stringify(userRes.data?.data?.roles)
       );
-      axios.defaults.headers.common.Authorization = `Bearer ${loginRes.data.data.jwt}`;
-      axios.defaults.params = {};
-      axios.defaults.params["JWT"] = loginRes.data.data.jwt;
+      axios.defaults.headers.common.Authorization = `Bearer ${loginRes.data.token}`;
       return userRes;
     } catch (error) {
       if (error.response?.status === 400) {
@@ -51,6 +46,7 @@ export const useLogin = () => {
       // if (error.message === "wrong_group") {
       //   throw new Error("Ne možete se prijavljivati u druge grupe");
       // }
+      console.log("err", error);
       throw new Error("Greška prilikom slanja zahtjeva");
     } finally {
       setIsLoading(false);
@@ -58,6 +54,23 @@ export const useLogin = () => {
   };
 
   return { login, isLoading };
+};
+
+export const useCheckAuth = () => {
+  return useMutation(
+    async () => {
+      const response = await axios.post(
+        "http://161.53.174.14/wp-json/jwt-auth/v1/token/validate"
+      );
+
+      return response.data;
+    },
+    {
+      onError: () => {
+        logout();
+      },
+    }
+  );
 };
 
 export const useUser = (options) => {
@@ -130,9 +143,8 @@ export const useResetPassword = () => {
   );
 };
 
-export const logout = () => {
+export function logout() {
   window.localStorage.removeItem("access_token");
   window.localStorage.removeItem("roles");
   delete axios.defaults.headers.common["Authorization"];
-  axios.defaults.params = {};
-};
+}

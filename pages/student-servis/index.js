@@ -41,7 +41,6 @@ import {
   adminStudentServisCategory,
   poslovniceCategoryId,
   studentskiServisCategoryId,
-  userGroups,
 } from "../../lib/constants";
 import SelectMediaInput from "../../components/Elements/SelectMediaInput";
 
@@ -176,7 +175,7 @@ const Poslovi = () => {
                 <CircularProgress size={24} />
               </div>
             ) : isCategoriesError || isPostsError ? (
-              <div className="text-error my-2 px-4">
+              <div className="flex flex-col text-error my-2 px-4">
                 Greška kod učitavanja
                 <LoadingButton
                   variant="outlined"
@@ -197,41 +196,47 @@ const Poslovi = () => {
                   )}
                   <Paper className="md:!min-w-[260px] md:!max-w-[400px]">
                     <MenuList>
-                      {posts
-                        ?.filter((post) =>
-                          post.categories.includes(category.id)
-                        )
-                        ?.map((post) => (
-                          <MenuItem
-                            key={post.id}
-                            selected={page === post.id}
-                            onClick={() =>
-                              handleSelectPage(post.id, category.id)
-                            }
-                          >
-                            {post.status === "draft" && (
-                              <Tooltip
-                                title="Još nije vidljivo na stranici."
-                                arrow
-                              >
-                                <ListItemIcon>
-                                  <FontAwesomeIcon
-                                    icon={faTriangleExclamation}
-                                    className="text-error"
-                                  />
-                                </ListItemIcon>
-                              </Tooltip>
-                            )}
-                            <ListItemText className="line-clamp-1">
-                              <QuillTextEditor
-                                value={post.title}
-                                containerClassName="!bg-transparent border-none"
-                                className="[&>div>div]:p-0 [&>div>div]:!min-h-fit [&>div>div]:line-clamp-1 [&>div>div>p]:hover:cursor-pointer"
-                                readOnly
-                              />
-                            </ListItemText>
-                          </MenuItem>
-                        ))}
+                      {posts?.filter((post) =>
+                        post.categories.includes(category.id)
+                      ).length <= 0 ? (
+                        <div className="px-4">Nema informacija za prikaz</div>
+                      ) : (
+                        posts
+                          ?.filter((post) =>
+                            post.categories.includes(category.id)
+                          )
+                          ?.map((post) => (
+                            <MenuItem
+                              key={post.id}
+                              selected={page === post.id}
+                              onClick={() =>
+                                handleSelectPage(post.id, category.id)
+                              }
+                            >
+                              {post.status === "draft" && (
+                                <Tooltip
+                                  title="Još nije vidljivo na stranici."
+                                  arrow
+                                >
+                                  <ListItemIcon>
+                                    <FontAwesomeIcon
+                                      icon={faTriangleExclamation}
+                                      className="text-error"
+                                    />
+                                  </ListItemIcon>
+                                </Tooltip>
+                              )}
+                              <ListItemText className="line-clamp-1">
+                                <QuillTextEditor
+                                  value={post.title}
+                                  containerClassName="!bg-transparent border-none"
+                                  className="[&>div>div]:p-0 [&>div>div]:!min-h-fit [&>div>div]:line-clamp-1 [&>div>div>p]:hover:cursor-pointer"
+                                  readOnly
+                                />
+                              </ListItemText>
+                            </MenuItem>
+                          ))
+                      )}
                     </MenuList>
                   </Paper>
                   {category.slug !== "page-part" && (
@@ -269,6 +274,7 @@ const Poslovi = () => {
                 value={title}
                 onChange={setTitle}
                 useToolbar={false}
+                formats={["bold"]}
                 className="[&>div>div]:!min-h-fit"
                 placeholder="Unesi naslov..."
               />
@@ -343,6 +349,7 @@ const Poslovi = () => {
             onChange={setDialogTitle}
             useToolbar={false}
             containerClassName="mt-2"
+            formats={[]}
             className="[&>div>div]:!min-h-fit"
             placeholder="Naslov"
           />

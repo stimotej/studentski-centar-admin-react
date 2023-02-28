@@ -63,7 +63,7 @@ const PrikazRestorana = ({ restaurant, page, setPage }) => {
       setWorkingHours(restaurant.radnoVrijeme);
       setLokacija(restaurant.lokacija);
       setInfoList(
-        restaurant.info.length > 0
+        restaurant.info?.length > 0
           ? restaurant.info.map((item) => ({
               ...item,
               icon: iconList.find((i) => i.name === item.icon),
@@ -149,7 +149,7 @@ const PrikazRestorana = ({ restaurant, page, setPage }) => {
         value={title}
         onChange={setTitle}
         className="border rounded-lg obavijest-title font-semibold"
-        formats={["header"]}
+        formats={["bold"]}
         placeholder="Unesi naslov..."
         modules={{
           toolbar: false,
