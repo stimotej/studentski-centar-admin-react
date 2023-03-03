@@ -2,7 +2,6 @@ import Header from "../../components/Header";
 import Layout from "../../components/Layout";
 import React, { useEffect, useState } from "react";
 import { adminSmjestajCategory, smjestajCategoryId } from "../../lib/constants";
-import dynamic from "next/dynamic";
 import {
   Button,
   CircularProgress,
@@ -25,7 +24,6 @@ import {
 } from "@fortawesome/pro-regular-svg-icons";
 import { LoadingButton } from "@mui/lab";
 import SelectMediaInput from "../../components/Elements/SelectMediaInput";
-import { useMemo } from "react";
 import ReorderImages from "../../components/Elements/ReorderImages";
 import EditLocation from "../../components/Elements/EditLocation";
 import {
@@ -35,7 +33,7 @@ import {
   usePosts,
   useUpdatePost,
 } from "../../features/posts";
-const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
+import dynamic from "next/dynamic";
 const QuillTextEditor = dynamic(
   () => import("../../components/Elements/QuillTextEditor"),
   { ssr: false }
@@ -79,6 +77,7 @@ const Home = () => {
   const [content, setContent] = useState("");
   const [sadrzaj, setSadrzaj] = useState("");
   const [kontakt, setKontakt] = useState("");
+  const [radnoVrijemeBlagajni, setRadnoVrijemeBlagajni] = useState("");
   const [lokacija, setLokacija] = useState("");
   const [imageGroups, setImageGroups] = useState([]);
 
@@ -96,6 +95,7 @@ const Home = () => {
       setExcerpt(dormitory.excerpt);
       setContent(dormitory.content);
       setSadrzaj(dormitory.sadrzaj);
+      setRadnoVrijemeBlagajni(dormitory.radno_vrijeme_blagajni);
       setKontakt(dormitory.kontakt);
       setLokacija(dormitory.lokacija);
       setImageGroups(dormitory.image_groups || []);
@@ -113,32 +113,10 @@ const Home = () => {
     setContent(dormitory.content);
     setSadrzaj(dormitory.sadrzaj);
     setKontakt(dormitory.kontakt);
+    setRadnoVrijemeBlagajni(dormitory.radno_vrijeme_blagajni);
     setLokacija(dormitory.lokacija);
     setImageGroups(dormitory.image_groups || []);
   };
-
-  const quillModules = useMemo(
-    () => ({
-      toolbar: [
-        [
-          {
-            header: ["", 1, 2, 3, 4, 5, 6],
-          },
-        ],
-        ["bold", "italic", "underline"],
-        [{ list: "ordered" }, { list: "bullet" }],
-        [{ color: [] }, { background: [] }],
-        ["link"],
-        [
-          { align: "" },
-          { align: "center" },
-          { align: "right" },
-          { align: "justify" },
-        ],
-      ],
-    }),
-    []
-  );
 
   const { mutate: createPost, isLoading: isCreating } = useCreatePost();
   const { mutate: updatePost, isLoading: isUpdating } = useUpdatePost();
@@ -165,6 +143,7 @@ const Home = () => {
   };
 
   const handleUpdateDormitory = () => {
+    const dormitory = posts.find((d) => d.id === page);
     updatePost(
       {
         id: page,
@@ -173,7 +152,8 @@ const Home = () => {
         content: content,
         sadrzaj: sadrzaj,
         kontakt: kontakt,
-        lokacija: lokacija,
+        radno_vrijeme_blagajni: radnoVrijemeBlagajni,
+        lokacija: lokacija !== dormitory.lokacija ? lokacija : undefined,
         image_groups: imageGroups,
         status: "publish",
         ...(image ? { featuredMedia: image } : {}),
@@ -263,11 +243,12 @@ const Home = () => {
                                 </Tooltip>
                               )}
                               <ListItemText className="line-clamp-1">
-                                <ReactQuill
+                                <QuillTextEditor
                                   value={post.title}
-                                  className="[&>div>div]:p-0 [&>div>div]:!min-h-fit [&>div>div]:line-clamp-1 [&>div>div>p]:hover:cursor-pointer"
-                                  modules={{ toolbar: false }}
+                                  useToolbar={false}
+                                  className="[&>div>div>p]:hover:cursor-pointer [&>div>div]:line-clamp-1"
                                   readOnly
+                                  includeStyles={false}
                                 />
                               </ListItemText>
                             </MenuItem>
@@ -276,7 +257,7 @@ const Home = () => {
                     </MenuList>
                   </Paper>
                   <LoadingButton
-                    className="mt-2"
+                    className="!mt-2"
                     startIcon={<FontAwesomeIcon icon={faPlus} />}
                     onClick={() => {
                       setAddPostDialog(true);
@@ -303,16 +284,15 @@ const Home = () => {
               </>
             )}
             <h3 className="font-semibold mt-4 mb-2">Naziv</h3>
-            <ReactQuill
+            <QuillTextEditor
               value={title}
               onChange={setTitle}
-              className="border rounded-lg obavijest-title font-semibold"
-              formats={["bold"]}
+              formats={[]}
+              className="[&>div>div]:!min-h-fit [&>div>div]:line-clamp-1"
               placeholder="Unesi naslov..."
-              modules={{
-                toolbar: false,
-              }}
+              useToolbar={false}
             />
+
             <h3 className="font-semibold mt-4 mb-2">Opis</h3>
             <QuillTextEditor
               value={excerpt}
@@ -335,6 +315,15 @@ const Home = () => {
                   value={kontakt}
                   onChange={setKontakt}
                   placeholder="Unesi kontakt..."
+                />
+
+                <h3 className="font-semibold mt-4 mb-2">
+                  Radno vrijeme blagajni
+                </h3>
+                <QuillTextEditor
+                  value={radnoVrijemeBlagajni}
+                  onChange={setRadnoVrijemeBlagajni}
+                  placeholder="Unesi radno vrijeme blagajni..."
                 />
 
                 <h3 className="font-semibold mt-4 mb-2">Grupe slika</h3>
@@ -414,21 +403,20 @@ const Home = () => {
           setDialogTitle("");
         }}
       >
-        <DialogTitle>Dodaj dom</DialogTitle>
+        <DialogTitle>Dodaj novi</DialogTitle>
         <DialogContent>
           <DialogContentText>
             Bit će vidljivo na stranici tek nakon što uredite sadržaj i spremite
             promjene.
           </DialogContentText>
-          <ReactQuill
+          <QuillTextEditor
             value={dialogTitle}
             onChange={setDialogTitle}
-            className="mt-2 border rounded-lg"
+            formats={["bold"]}
+            containerClassName="mt-2"
+            className="[&>div>div]:!min-h-fit [&>div>div]:line-clamp-1"
             placeholder="Naslov"
-            formats={[]}
-            modules={{
-              toolbar: false,
-            }}
+            useToolbar={false}
           />
         </DialogContent>
         <DialogActions>

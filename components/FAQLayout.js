@@ -11,14 +11,12 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  TextField,
-  Typography,
 } from "@mui/material";
 import { Fragment, useState } from "react";
 import Header from "./Header";
 import Layout from "./Layout";
 import MediaSelectDialog from "./MediaSelectDialog";
-import { faqCategoryId, userGroups } from "../lib/constants";
+import { faqCategoryId } from "../lib/constants";
 import dynamic from "next/dynamic";
 import {
   useCreatePost,
@@ -27,15 +25,12 @@ import {
   useUpdatePost,
 } from "../features/posts";
 import { LoadingButton } from "@mui/lab";
-import { useEffect } from "react";
 import { useRouter } from "next/router";
 const QuillTextEditor = dynamic(() => import("./Elements/QuillTextEditor"), {
   ssr: false,
 });
 
 const FAQLayout = ({ faqPageCategoryId, mediaCategoryId, from }) => {
-  const router = useRouter();
-
   const {
     data: faqList,
     isLoading: isLoadingFaq,
@@ -149,8 +144,8 @@ const FAQLayout = ({ faqPageCategoryId, mediaCategoryId, from }) => {
                 >
                   <QuillTextEditor
                     value={faq.title}
-                    containerClassName="bg-white border-none"
-                    className="[&>div>div]:p-0 [&>div>div]:!min-h-fit [&>div>div>p]:hover:cursor-pointer"
+                    className="[&>div>div>p]:hover:cursor-pointer"
+                    includeStyles={false}
                     readOnly
                   />
                 </AccordionSummary>
@@ -181,6 +176,7 @@ const FAQLayout = ({ faqPageCategoryId, mediaCategoryId, from }) => {
       <Dialog
         open={!!addFAQModal}
         maxWidth="md"
+        fullWidth
         scroll="body"
         onClose={() => {
           setAddFAQModal(false);

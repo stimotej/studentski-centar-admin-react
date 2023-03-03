@@ -198,11 +198,12 @@ export default function MyTable({
   titleComponent,
   selectedAction,
   containerClassName,
-  onSelectionChange,
   enableRowSelect = true,
   enableSelectAll = true,
   displayToolbar = true,
   rowsPerPage = 10,
+  selected,
+  setSelected,
   totalNumberOfItems,
   customSort,
   onChangeSort,
@@ -219,7 +220,6 @@ export default function MyTable({
 }) {
   const [order, setOrder] = React.useState(defaultOrder || "asc");
   const [orderBy, setOrderBy] = React.useState(defaultOrderBy);
-  const [selected, setSelected] = React.useState([]);
   const [page, setPage] = React.useState(0);
   const [opened, setOpened] = React.useState(null);
 
@@ -238,10 +238,6 @@ export default function MyTable({
     }
     setSelected([]);
   };
-
-  useEffect(() => {
-    onSelectionChange && onSelectionChange(selected);
-  }, [selected]);
 
   const handleClick = (event, id) => {
     const selectedIndex = selected.indexOf(id);

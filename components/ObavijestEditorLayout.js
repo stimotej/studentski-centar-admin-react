@@ -27,7 +27,6 @@ import {
   TextField,
 } from "@mui/material";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { MobileDatePicker } from "@mui/x-date-pickers/MobileDatePicker";
 import Select from "@mui/material/Select";
@@ -334,82 +333,75 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
           </FormControl>
         ) : null}
         <div className="mt-4 mb-3">Prikazivanje na stranici:</div>
-        <LocalizationProvider dateAdapter={AdapterDateFns}>
-          <div className="flex flex-col">
-            <MobileDatePicker
-              inputFormat="dd/MM/yyyy"
-              views={["day", "month", "year"]}
-              value={startShowing}
-              toolbarTitle="Odaberite datum"
-              label="Početak"
-              disabled={showAlways}
-              onChange={(value) => {
-                setStartShowing(value);
-                !obavijestId &&
-                  window.localStorage.setItem(
-                    `${from}_editor_start_showing`,
-                    value
-                  );
-              }}
-              renderInput={(params) => <TextField {...params} />}
-            />
-            <MobileDatePicker
-              inputFormat="dd/MM/yyyy"
-              views={["day", "month", "year"]}
-              value={endShowing}
-              toolbarTitle="Odaberite datum"
-              className="!mt-4"
-              label="Kraj"
-              disabled={showAlways}
-              onChange={(value) => {
-                setEndShowing(value);
-                !obavijestId &&
-                  window.localStorage.setItem(
-                    `${from}_editor_end_showing`,
-                    value
-                  );
-              }}
-              renderInput={(params) => <TextField {...params} />}
-            />
-            <FormControlLabel
-              className="mt-1"
-              control={
-                <Checkbox
-                  checked={showAlways}
-                  onChange={(e) => {
-                    setShowAlways(e.target.checked);
-                    !obavijestId &&
-                      window.localStorage.setItem(
-                        `${from}_editor_show_always`,
-                        e.target.checked
-                      );
-                  }}
-                />
-              }
-              label="Uvijek prikazuj"
-            />
-          </div>
-        </LocalizationProvider>
+        <div className="flex flex-col">
+          <MobileDatePicker
+            inputFormat="dd/MM/yyyy"
+            views={["day", "month", "year"]}
+            value={startShowing}
+            toolbarTitle="Odaberite datum"
+            label="Početak"
+            disabled={showAlways}
+            onChange={(value) => {
+              setStartShowing(value);
+              !obavijestId &&
+                window.localStorage.setItem(
+                  `${from}_editor_start_showing`,
+                  value
+                );
+            }}
+            renderInput={(params) => <TextField {...params} />}
+          />
+          <MobileDatePicker
+            inputFormat="dd/MM/yyyy"
+            views={["day", "month", "year"]}
+            value={endShowing}
+            toolbarTitle="Odaberite datum"
+            className="!mt-4"
+            label="Kraj"
+            disabled={showAlways}
+            onChange={(value) => {
+              setEndShowing(value);
+              !obavijestId &&
+                window.localStorage.setItem(
+                  `${from}_editor_end_showing`,
+                  value
+                );
+            }}
+            renderInput={(params) => <TextField {...params} />}
+          />
+          <FormControlLabel
+            className="mt-1"
+            control={
+              <Checkbox
+                checked={showAlways}
+                onChange={(e) => {
+                  setShowAlways(e.target.checked);
+                  !obavijestId &&
+                    window.localStorage.setItem(
+                      `${from}_editor_show_always`,
+                      e.target.checked
+                    );
+                }}
+              />
+            }
+            label="Uvijek prikazuj"
+          />
+        </div>
         <div className="mt-4 mb-3">Dodaj na kalendar:</div>
-        <LocalizationProvider dateAdapter={AdapterDateFns}>
-          <div className="flex flex-col gap-4">
-            <DateTimePicker
-              inputFormat="dd/MM/yyyy HH:mm"
-              value={eventDate}
-              toolbarTitle="Odaberite datum"
-              label="Odaberite datum"
-              onChange={(value) => {
-                setEventDate(value);
-                !obavijestId &&
-                  window.localStorage.setItem(
-                    `${from}_editor_event_date`,
-                    value
-                  );
-              }}
-              renderInput={(params) => <TextField {...params} />}
-            />
-          </div>
-        </LocalizationProvider>
+        <div className="flex flex-col gap-4">
+          <DateTimePicker
+            inputFormat="dd/MM/yyyy HH:mm"
+            value={eventDate}
+            toolbarTitle="Odaberite datum"
+            label="Odaberite datum"
+            onChange={(value) => {
+              setEventDate(value);
+              !obavijestId &&
+                window.localStorage.setItem(`${from}_editor_event_date`, value);
+            }}
+            renderInput={(params) => <TextField {...params} />}
+          />
+        </div>
         <div className="mt-4">Status:</div>
         <RadioGroup
           value={status}

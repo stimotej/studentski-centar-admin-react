@@ -32,7 +32,10 @@ import { useEffect } from "react";
 import { LoadingButton } from "@mui/lab";
 import SelectMediaInput from "../Elements/SelectMediaInput";
 import EditLocation from "../Elements/EditLocation";
-const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
+const QuillTextEditor = dynamic(
+  () => import("../../components/Elements/QuillTextEditor"),
+  { ssr: false }
+);
 
 const iconList = [
   { name: "location_pin", Icon: MdLocationPin },
@@ -145,27 +148,24 @@ const PrikazRestorana = ({ restaurant, page, setPage }) => {
       />
 
       <h3 className="font-semibold mt-4 mb-2">Naziv</h3>
-      <ReactQuill
+      <QuillTextEditor
         value={title}
         onChange={setTitle}
-        className="border rounded-lg obavijest-title font-semibold"
-        formats={["bold"]}
+        formats={[]}
+        className="[&>div>div]:!min-h-fit [&>div>div]:line-clamp-1"
         placeholder="Unesi naslov..."
-        modules={{
-          toolbar: false,
-        }}
+        useToolbar={false}
       />
       <h3 className="font-semibold mt-4 mb-2">Ponuda</h3>
-      <ReactQuill
+      <QuillTextEditor
         value={description}
         onChange={setDescription}
-        className="border rounded-lg [&>div>div]:border-t [&>div>div]:border-gray-200"
+        className="[&>div>div]:!min-h-[120px]"
         placeholder="Unesi ponudu..."
-        modules={quillModules}
       />
 
-      <h3 className="font-semibold mb-2 mt-4">Informacije</h3>
-      <div className="flex flex-col gap-2 border rounded-lg p-3">
+      <h3 className="font-semibold mb-2 mt-4 ">Informacije</h3>
+      <div className="flex flex-col gap-2 border rounded-lg p-3 bg-secondary border-gray-400 w-full">
         {infoList
           ?.sort((a, b) => a.order - b.order)
           ?.map((infoItem, index) => (
@@ -263,12 +263,11 @@ const PrikazRestorana = ({ restaurant, page, setPage }) => {
       <h3 className="uppercase text-primary text-sm tracking-wider mt-6">
         Radno vrijeme
       </h3>
-      <ReactQuill
+      <QuillTextEditor
         value={workingHours}
         onChange={setWorkingHours}
-        className="mt-4 border rounded-lg [&>div>div]:border-t [&>div>div]:border-gray-200"
+        containerClassName="mt-4"
         placeholder="Unesi radno vrijeme..."
-        modules={quillModules}
       />
 
       <h3 className="font-semibold mt-4 mb-2">Lokacija</h3>

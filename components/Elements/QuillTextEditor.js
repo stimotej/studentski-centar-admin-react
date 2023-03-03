@@ -35,6 +35,7 @@ const QuillTextEditor = ({
   placeholder,
   useToolbar = true,
   readOnly = false,
+  includeStyles = true,
   className,
   containerClassName,
   formats,
@@ -129,7 +130,8 @@ const QuillTextEditor = ({
     <>
       <div
         className={clsx(
-          "bg-secondary border border-gray-400 rounded-lg w-full",
+          includeStyles &&
+            "bg-secondary border border-gray-400 rounded-lg w-full",
           containerClassName
         )}
       >
@@ -139,7 +141,7 @@ const QuillTextEditor = ({
         <ReactQuill
           ref={(el) => (reactQuillRef.current = el)}
           className={clsx(
-            "my-ql",
+            includeStyles ? "my-ql" : "[&>div>div]:p-0",
             !readOnly && useToolbar && "border-t border-gray-400",
             className
           )}

@@ -108,11 +108,7 @@ const Layout = ({ children }) => {
     checkAuth(
       {},
       {
-        onSuccess: () => {
-          console.log("success");
-        },
-        onError: (err) => {
-          console.log("err", err.response.data);
+        onError: () => {
           router.push(`/${category}/login`);
         },
       }

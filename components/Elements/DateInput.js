@@ -17,7 +17,6 @@ const DateInput = ({ value, onChange, markedDays }) => {
       if (window.innerWidth > 300) {
         let offsetRight =
           window.innerWidth - node.getBoundingClientRect().right;
-        console.log(offsetRight);
         let offsetBottom =
           window.innerHeight - node.getBoundingClientRect().bottom;
 

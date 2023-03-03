@@ -125,7 +125,8 @@ const ProductsPage = () => {
         <MyTable
           headCells={headCells}
           rows={products || []}
-          onSelectionChange={(selected) => setSelectedProducts(selected)}
+          selected={selectedProducts}
+          setSelected={setSelectedProducts}
           defaultOrder="desc"
           defaultOrderBy="title"
           error={isError}
@@ -264,11 +265,13 @@ const ProductsPage = () => {
           stockModal={stockModal}
           setStockModal={setStockModal}
           selectedProducts={selectedProducts}
+          setSelectedProducts={setSelectedProducts}
         />
         <DeleteDialog
           deleteModal={deleteModal}
           setDeleteModal={setDeleteModal}
           selectedProducts={selectedProducts}
+          setSelectedProducts={setSelectedProducts}
         />
         {/* <TableProducts
           products={

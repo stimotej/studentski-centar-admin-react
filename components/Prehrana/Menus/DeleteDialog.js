@@ -14,7 +14,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import clsx from "clsx";
 import { useDeleteMenu } from "../../../features/menus";
 
-const DeleteDialog = ({ deleteModal, setDeleteModal, selectedMenus }) => {
+const DeleteDialog = ({
+  deleteModal,
+  setDeleteModal,
+  selectedMenus,
+  setSelectedMenus,
+}) => {
   const { mutateAsync: deleteMenu, isLoading: isDeleting } =
     useDeleteMenu(false);
 
@@ -25,6 +30,7 @@ const DeleteDialog = ({ deleteModal, setDeleteModal, selectedMenus }) => {
       .then((res) => {
         toast.success(`Uspješno obrisano ${selectedMenus.length} menija`);
         setDeleteModal(false);
+        setSelectedMenus([]);
       })
       .catch((error) => {
         toast.error("Greška kod brisanja menija");

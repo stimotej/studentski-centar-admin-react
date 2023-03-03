@@ -211,7 +211,7 @@ const NewDnevniMenu = () => {
             >
               {restaurants?.map((restaurant) => (
                 <MenuItem key={restaurant.id} value={restaurant.id}>
-                  {restaurant.title}
+                  {restaurant.title.replace(/<\/?[^>]+(>|$)/g, "")}
                 </MenuItem>
               ))}
             </TextField>

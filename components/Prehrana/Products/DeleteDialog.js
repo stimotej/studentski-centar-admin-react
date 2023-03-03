@@ -15,7 +15,12 @@ import { useState } from "react";
 import clsx from "clsx";
 import { useDeleteProduct } from "../../../features/products";
 
-const DeleteDialog = ({ deleteModal, setDeleteModal, selectedProducts }) => {
+const DeleteDialog = ({
+  deleteModal,
+  setDeleteModal,
+  selectedProducts,
+  setSelectedProducts,
+}) => {
   const [deleteLoading, setDeleteLoading] = useState(false);
 
   const { mutateAsync: deleteProduct } = useDeleteProduct(false);
@@ -31,6 +36,7 @@ const DeleteDialog = ({ deleteModal, setDeleteModal, selectedProducts }) => {
       .then((res) => {
         toast.success(`Uspješno obrisano ${selectedProducts.length} proizvoda`);
         setDeleteModal(false);
+        setSelectedProducts([]);
       })
       .catch((error) => {
         toast.error("Greška kod brisanja proizvoda");

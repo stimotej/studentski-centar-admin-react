@@ -11,6 +11,10 @@ import Image from "next/image";
 import React, { useState } from "react";
 import dynamic from "next/dynamic";
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
+const QuillTextEditor = dynamic(
+  () => import("../../components/Elements/QuillTextEditor"),
+  { ssr: false }
+);
 
 const EditLocation = ({ value, onChange }) => {
   const [editLocation, setEditLocation] = useState(false);
@@ -25,11 +29,19 @@ const EditLocation = ({ value, onChange }) => {
 
   return (
     <>
-      <ReactQuill
+      {/* <ReactQuill
         value={value}
         className="mb-2 border rounded-lg [&>div>div]:p-0 [&>div>div]:rounded-lg [&>div>div]:before:line-clamp-1"
         placeholder='Nema lokacije za prikaz. Pritisnite "Uredi lokaciju" za dodavanje.'
         modules={{ toolbar: false }}
+        readOnly
+      /> */}
+      <QuillTextEditor
+        value={value}
+        containerClassName="mb-2"
+        className="[&>div>div]:p-0 [&>div>div]:rounded-lg"
+        placeholder='Nema lokacije za prikaz. Pritisnite "Uredi lokaciju" za dodavanje.'
+        useToolbar={false}
         readOnly
       />
       <Button

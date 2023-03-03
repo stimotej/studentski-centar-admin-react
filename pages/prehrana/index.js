@@ -2,7 +2,6 @@ import Header from "../../components/Header";
 import PrikazRestorana from "../../components/Prehrana/PrikazRestorana";
 import Layout from "../../components/Layout";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/router";
 import { useCreateRestaurant, useRestaurants } from "../../features/restaurant";
 import dynamic from "next/dynamic";
 import {
@@ -26,7 +25,10 @@ import {
   faTriangleExclamation,
 } from "@fortawesome/pro-regular-svg-icons";
 import { LoadingButton } from "@mui/lab";
-const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
+const QuillTextEditor = dynamic(
+  () => import("../../components/Elements/QuillTextEditor"),
+  { ssr: false }
+);
 
 const Home = () => {
   const {
@@ -115,11 +117,12 @@ const Home = () => {
                         </Tooltip>
                       )}
                       <ListItemText className="line-clamp-1">
-                        <ReactQuill
+                        <QuillTextEditor
                           value={restaurant.title}
-                          className="[&>div>div]:p-0 [&>div>div]:!min-h-fit [&>div>div]:line-clamp-1 [&>div>div>p]:hover:cursor-pointer"
-                          modules={{ toolbar: false }}
+                          useToolbar={false}
+                          className="[&>div>div>p]:hover:cursor-pointer [&>div>div]:line-clamp-1"
                           readOnly
+                          includeStyles={false}
                         />
                       </ListItemText>
                     </MenuItem>
@@ -158,15 +161,14 @@ const Home = () => {
             Bit će vidljivo na stranici tek nakon što uredite sadržaj i spremite
             promjene.
           </DialogContentText>
-          <ReactQuill
+          <QuillTextEditor
             value={dialogTitle}
             onChange={setDialogTitle}
-            className="mt-2 border rounded-lg"
-            placeholder="Naslov"
             formats={[]}
-            modules={{
-              toolbar: false,
-            }}
+            containerClassName="mt-2"
+            className="[&>div>div]:!min-h-fit [&>div>div]:line-clamp-1"
+            placeholder="Naslov"
+            useToolbar={false}
           />
         </DialogContent>
         <DialogActions>

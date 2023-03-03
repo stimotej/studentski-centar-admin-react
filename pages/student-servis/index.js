@@ -45,8 +45,6 @@ import {
 import SelectMediaInput from "../../components/Elements/SelectMediaInput";
 
 const Poslovi = () => {
-  const router = useRouter();
-
   const {
     data: categories,
     isLoading: isLoadingCategories,
@@ -273,10 +271,10 @@ const Poslovi = () => {
               <QuillTextEditor
                 value={title}
                 onChange={setTitle}
-                useToolbar={false}
                 formats={["bold"]}
-                className="[&>div>div]:!min-h-fit"
+                className="[&>div>div]:!min-h-fit [&>div>div]:line-clamp-1"
                 placeholder="Unesi naslov..."
+                useToolbar={false}
               />
             </div>
             {page !== aboutUsPostId &&

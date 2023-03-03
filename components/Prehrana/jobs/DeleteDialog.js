@@ -15,7 +15,12 @@ import { useState } from "react";
 import clsx from "clsx";
 import { useDeleteJob } from "../../../features/jobs";
 
-const DeleteDialog = ({ deleteModal, setDeleteModal, selectedJobs }) => {
+const DeleteDialog = ({
+  deleteModal,
+  setDeleteModal,
+  selectedJobs,
+  setSelectedJobs,
+}) => {
   const [deleteLoading, setDeleteLoading] = useState(false);
 
   const { mutateAsync: deleteJob } = useDeleteJob(false);
@@ -29,6 +34,7 @@ const DeleteDialog = ({ deleteModal, setDeleteModal, selectedJobs }) => {
       .then((res) => {
         toast.success(`Uspješno obrisano ${selectedJobs.length} poslova`);
         setDeleteModal(false);
+        setSelectedJobs([]);
       })
       .catch((error) => {
         toast.error("Greška kod brisanja poslova");

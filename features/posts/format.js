@@ -22,6 +22,7 @@ const formatPost = (post) => ({
   image: post.image_url,
   imageId: post.featured_media,
   sadrzaj: post.meta.sadrzaj,
+  radno_vrijeme_blagajni: post.meta.radno_vrijeme_blagajni,
   kontakt: post.meta.kontakt,
   lokacija: post.meta.lokacija,
   image_groups: post.meta.image_groups,

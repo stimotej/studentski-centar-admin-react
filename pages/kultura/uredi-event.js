@@ -24,7 +24,6 @@ import {
   TextField,
 } from "@mui/material";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import Autocomplete from "@mui/material/Autocomplete";
 import dayjs from "dayjs";
@@ -317,7 +316,6 @@ const Editor = () => {
           }}
         />
         {/* <div className="mt-4 mb-3">Datum i vrijeme eventa:</div>
-        <LocalizationProvider dateAdapter={AdapterDateFns}>
           <div className="flex flex-col gap-4">
             <DateTimePicker
               inputFormat="dd/MM/yyyy HH:mm"
@@ -331,70 +329,67 @@ const Editor = () => {
               }}
               renderInput={(params) => <TextField {...params} />}
             />
-          </div>
-        </LocalizationProvider> */}
+            </div> */}
         <div className="mt-4 mb-3">Datumi eventa:</div>
-        <LocalizationProvider dateAdapter={AdapterDateFns}>
-          <div className="flex flex-col gap-4">
-            <DateTimePicker
-              inputFormat="dd/MM/yyyy HH:mm"
-              value={eventDate}
-              toolbarTitle="Dodaj datum"
-              label="Dodaj datum"
-              onAccept={(value) => {
-                setEventDates([...eventDates, value]);
-                !eventId &&
-                  window.localStorage.setItem("event_dates", [
-                    ...eventDates,
-                    value,
-                  ]);
-              }}
-              onClose={() => setEventDate(null)}
-              onChange={(value) => {
-                setEventDate(value);
-              }}
-              renderInput={(params) => (
-                <TextField
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      setEventDates([...eventDates, eventDate]);
-                      setEventDate(null);
+        <div className="flex flex-col gap-4">
+          <DateTimePicker
+            inputFormat="dd/MM/yyyy HH:mm"
+            value={eventDate}
+            toolbarTitle="Dodaj datum"
+            label="Dodaj datum"
+            onAccept={(value) => {
+              setEventDates([...eventDates, value]);
+              !eventId &&
+                window.localStorage.setItem("event_dates", [
+                  ...eventDates,
+                  value,
+                ]);
+            }}
+            onClose={() => setEventDate(null)}
+            onChange={(value) => {
+              setEventDate(value);
+            }}
+            renderInput={(params) => (
+              <TextField
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    setEventDates([...eventDates, eventDate]);
+                    setEventDate(null);
+                  }
+                }}
+                {...params}
+              />
+            )}
+          />
+        </div>
+        <div className="flex flex-col gap-1 mt-2">
+          {eventDates.length > 0 &&
+            eventDates.map((date, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-between bg-secondary py-1 px-2 rounded-lg"
+              >
+                <span>{dayjs(date).format("DD.MM.YYYY HH:mm[h]")}</span>
+                <IconButton
+                  size="small"
+                  className="px-2"
+                  onClick={() => {
+                    setEventDates(eventDates.filter((item) => item !== date));
+                    if (!eventId) {
+                      eventDates.length - 1 > 0
+                        ? window.localStorage.setItem(
+                            "event_dates",
+                            eventDates.filter((item) => item !== date)
+                          )
+                        : window.localStorage.removeItem("event_dates");
                     }
                   }}
-                  {...params}
-                />
-              )}
-            />
-          </div>
-          <div className="flex flex-col gap-1 mt-2">
-            {eventDates.length > 0 &&
-              eventDates.map((date, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between bg-secondary py-1 px-2 rounded-lg"
                 >
-                  <span>{dayjs(date).format("DD.MM.YYYY HH:mm[h]")}</span>
-                  <IconButton
-                    size="small"
-                    className="px-2"
-                    onClick={() => {
-                      setEventDates(eventDates.filter((item) => item !== date));
-                      if (!eventId) {
-                        eventDates.length - 1 > 0
-                          ? window.localStorage.setItem(
-                              "event_dates",
-                              eventDates.filter((item) => item !== date)
-                            )
-                          : window.localStorage.removeItem("event_dates");
-                      }
-                    }}
-                  >
-                    <FontAwesomeIcon icon={faXmark} />
-                  </IconButton>
-                </div>
-              ))}
-          </div>
-        </LocalizationProvider>
+                  <FontAwesomeIcon icon={faXmark} />
+                </IconButton>
+              </div>
+            ))}
+        </div>
         <div className="mt-4">Status:</div>
         <RadioGroup
           value={status}

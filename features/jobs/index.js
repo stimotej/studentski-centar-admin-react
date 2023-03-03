@@ -92,7 +92,7 @@ export const useSkills = (options) => {
 
 export const useCompanies = (options) => {
   return useQuery(
-    jobKeys.skills,
+    jobKeys.companies,
     async () => {
       const response = await axios.get("https://api.spajalica.hr/v2/companies");
       return response.data?.companies;
@@ -113,6 +113,7 @@ export const useCreateJob = () => {
         {
           title: job.title,
           excerpt: job.description,
+          categories: job.categories,
           status: "publish",
           meta: job,
         }
@@ -122,6 +123,12 @@ export const useCreateJob = () => {
     {
       onSuccess: () => {
         return queryClient.invalidateQueries(jobKeys.jobs);
+      },
+      onError: (err) => {
+        console.log("err", err.response.data);
+        if (err?.response?.data?.code === "empty_content")
+          toast.error("Naziv posla ne može biti prazan.");
+        else toast.error("Greška kod izrade posla.");
       },
     }
   );
@@ -162,6 +169,7 @@ export const useUpdateJob = () => {
           title: job.title,
           slug: job.title,
           excerpt: job.description,
+          categories: job.categories,
           meta: job,
         }
       );

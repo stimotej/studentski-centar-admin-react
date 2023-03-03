@@ -147,7 +147,7 @@ const MenuList = () => {
             >
               {restaurants?.map((restaurant) => (
                 <MenuItem key={restaurant.id} value={restaurant.id}>
-                  {restaurant.title}
+                  {restaurant.title.replace(/<\/?[^>]+(>|$)/g, "")}
                 </MenuItem>
               ))}
             </TextField>
@@ -157,7 +157,8 @@ const MenuList = () => {
           title=""
           headCells={headCells}
           rows={menus || []}
-          onSelectionChange={(selected) => setSelectedMenus(selected)}
+          selected={selectedMenus}
+          setSelected={setSelectedMenus}
           defaultOrder="asc"
           defaultOrderBy="date"
           error={isError}
@@ -291,6 +292,7 @@ const MenuList = () => {
           deleteModal={deleteModal}
           setDeleteModal={setDeleteModal}
           selectedMenus={selectedMenus}
+          setSelectedMenus={setSelectedMenus}
         />
 
         <ChangeDateDialog

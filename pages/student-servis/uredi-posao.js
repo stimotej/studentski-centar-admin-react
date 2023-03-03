@@ -1,6 +1,5 @@
 import { LoadingButton } from "@mui/lab";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { LocalizationProvider, MobileDatePicker } from "@mui/x-date-pickers";
+import { MobileDatePicker } from "@mui/x-date-pickers";
 import {
   Autocomplete,
   Checkbox,
@@ -16,9 +15,6 @@ import { useState, useEffect } from "react";
 import { MdArrowBack } from "react-icons/md";
 import Layout from "../../components/Layout";
 import { Controller, useForm } from "react-hook-form";
-import * as yup from "yup";
-import { yupResolver } from "@hookform/resolvers/yup";
-import dayjs from "dayjs";
 import {
   useCompanies,
   useCreateJob,
@@ -26,57 +22,14 @@ import {
   useSkills,
   useUpdateJob,
 } from "../../features/jobs";
-
-const schema = yup.object().shape({
-  company_name: yup.string().required("Ovo polje je obavezno"),
-  company_oib: yup.string().required("Ovo polje je obavezno"),
-  title: yup.string().required("Ovo polje je obavezno"),
-  type: yup.number("Mora biti broj").required("Ovo polje je obavezno"),
-  description: yup.string().required("Ovo polje je obavezno"),
-  positions: yup
-    .number()
-    .typeError("Mora biti broj")
-    .min(1, "Mora biti barem jedna otvorena pozicija")
-    .required("Ovo polje je obavezno"),
-  work_start: yup
-    .date()
-    .typeError("Mora biti datum")
-    .required("Ovo polje je obavezno"),
-  work_end: yup
-    .date()
-    .typeError("Mora biti datum")
-    .required("Ovo polje je obavezno"),
-  work_hours: yup
-    .number()
-    .typeError("Mora biti broj")
-    .min(1, "Mora biti barem 1 sat")
-    .required("Ovo polje je obavezno"),
-  payment_rate: yup
-    .number()
-    .typeError("Mora biti broj")
-    .min(4.38, "Mora biti barem 4.38 €/sat")
-    .required("Ovo polje je obavezno"),
-  payment_rate_max: yup
-    .number()
-    .typeError("Mora biti broj")
-    .min(4.38, "Mora biti barem 4.38 €/sat")
-    .required("Ovo polje je obavezno"),
-  active_until: yup
-    .date()
-    .typeError("Mora biti datum")
-    .required("Ovo polje je obavezno"),
-});
-
-const jobTypeList = [
-  { value: "1", label: "Administrativni poslovi" },
-  { value: "2", label: "Fizički poslovi" },
-  { value: "3", label: "Poslovi čišćenja" },
-  { value: "4", label: "Promidžba; Marketing" },
-  { value: "5", label: "Rad u proizvodnji" },
-  { value: "6", label: "Razni poslovi" },
-  { value: "7", label: "Skladišni poslovi" },
-  { value: "8", label: "Trgovina; Ugostiteljstvo" },
-];
+import { jobTypesCategoryId } from "../../lib/constants";
+import { useAdminCategories } from "../../features/posts";
+import dynamic from "next/dynamic";
+import { toast } from "react-toastify";
+const QuillTextEditor = dynamic(
+  () => import("../../components/Elements/QuillTextEditor"),
+  { ssr: false }
+);
 
 const UrediPosao = () => {
   const router = useRouter();
@@ -85,21 +38,26 @@ const UrediPosao = () => {
   const { data: skills, isLoading: loadingSkills } = useSkills();
   const { data: companies, isLoading: loadingCompanies } = useCompanies();
 
-  const [jobType, setJobType] = useState(1);
+  const { data: categories, isLoading: isLoadingCategories } =
+    useAdminCategories({
+      parent: jobTypesCategoryId,
+    });
+
   const [fromHome, setFromHome] = useState(false);
-  const [rate, setRate] = useState(0);
+
+  const [files, setFiles] = useState([]);
 
   const formOptions = {
     mode: "onChange",
-    resolver: yupResolver(schema),
     defaultValues: {
       company_name: "",
       company_oib: "",
+      long_island_id: "",
       title: "",
       description: "",
       whyme: "",
       other_description: "",
-      type: 1,
+      type: 0,
       skills: [],
       labels: [],
       city: "",
@@ -107,8 +65,8 @@ const UrediPosao = () => {
       work_start: null,
       work_end: null,
       work_hours: "",
-      payment_rate: "",
-      payment_rate_max: "",
+      payment_rate: 0,
+      payment_other: 0,
       active_until: null,
       contact_student: "",
       contact_sc: "",
@@ -117,27 +75,33 @@ const UrediPosao = () => {
 
   const {
     handleSubmit,
-    watch,
     setValue,
     reset,
     control,
     formState: { isValid, errors },
   } = useForm(formOptions);
 
-  const values = watch();
-
-  const { data: job, isInitialLoading: isLoadingJob } = useJob(jobId, {
+  const { data: job } = useJob(jobId, {
     enabled: !!jobId,
   });
 
   useEffect(() => {
     if (job) {
-      reset({ ...job, city: job.city === "FROM_HOME" ? "" : job.city });
-      setJobType(job.job_type);
+      reset({
+        ...job,
+        city: job.city === "FROM_HOME" ? "" : job.city,
+        type: job.categories[0],
+      });
       setFromHome(job.city === "FROM_HOME");
-      setRate(job.payment_rate !== job.payment_rate_max ? 1 : 0);
+      setFiles(job.documents || []);
     }
   }, [job]);
+
+  useEffect(() => {
+    if (categories) {
+      setValue("type", categories[0].id);
+    }
+  }, [categories]);
 
   const { mutate: createJob, isLoading: isCreating } = useCreateJob();
   const { mutate: updateJob, isLoading: isUpdating } = useUpdateJob();
@@ -150,12 +114,21 @@ const UrediPosao = () => {
           job: {
             ...data,
             city: fromHome ? "FROM_HOME" : data.city,
-            job_type: jobType,
+            categories: data.type,
+            documents:
+              files.length > 0 &&
+              files.map((file) => ({
+                id: file.id,
+                title: file.title,
+                media_type: file.mediaType,
+                mime_type: file.mimeType,
+                source_url: file.src,
+              })),
           },
         },
         {
           onSuccess: () => {
-            router.back();
+            toast.success("Posao je uspješno spremljen");
           },
         }
       );
@@ -164,7 +137,18 @@ const UrediPosao = () => {
         {
           ...data,
           city: fromHome ? "FROM_HOME" : data.city,
-          job_type: jobType,
+          categories: data.type,
+          allowed_sc: false,
+          featured: false,
+          documents:
+            files.length > 0 &&
+            files.map((file) => ({
+              id: file.id,
+              title: file.title,
+              media_type: file.mediaType,
+              mime_type: file.mimeType,
+              source_url: file.src,
+            })),
         },
         {
           onSuccess: () => {
@@ -191,6 +175,22 @@ const UrediPosao = () => {
             : "Dodaj novi posao"}
         </h1>
         <div className="flex flex-col gap-6 mx-auto pb-8">
+          {/* LONG ISLAND ID */}
+          <Controller
+            control={control}
+            name="long_island_id"
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Broj narudžbe"
+                error={!!errors.long_island_id}
+                helperText={
+                  errors.long_island_id && errors.long_island_id.message
+                }
+              />
+            )}
+          />
+
           {/* TVRTKA */}
           <Controller
             control={control}
@@ -226,6 +226,7 @@ const UrediPosao = () => {
             )}
           />
 
+          {/* COMPANY OIB */}
           <Controller
             control={control}
             name="company_oib"
@@ -253,21 +254,6 @@ const UrediPosao = () => {
             )}
           />
 
-          {/* KATEGORIJA */}
-          {/* <Controller
-            control={control}
-            name="jobType"
-            render={({ field }) => (
-              <TextField select label="Kategorija">
-                {types.map((option) => (
-                  <MenuItem key={option.id} value={option.id}>
-                    {options[option.name]}
-                  </MenuItem>
-                ))}
-              </TextField>
-            )}
-          /> */}
-
           <Controller
             control={control}
             name="type"
@@ -279,38 +265,18 @@ const UrediPosao = () => {
                 error={!!errors.type}
                 helperText={errors.type && errors.type.message}
               >
-                {jobTypeList.map((option) => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                  </MenuItem>
-                ))}
+                {isLoadingCategories ? (
+                  <MenuItem value={0}>Učitavanje...</MenuItem>
+                ) : (
+                  categories?.map((category) => (
+                    <MenuItem key={category.id} value={category.id}>
+                      {category.name}
+                    </MenuItem>
+                  ))
+                )}
               </TextField>
             )}
           />
-
-          {/* VRSTA POSLA */}
-          <div>
-            <div className="flex mt-1 gap-2 flex-wrap">
-              <button
-                onClick={() => setJobType(1)}
-                className={clsx(
-                  "border-[#ebebeb] border-[1px] py-2 px-4 rounded-[24px] transition",
-                  jobType === 1 && "bg-primary text-white"
-                )}
-              >
-                <span className="body">Privremeni posao</span>
-              </button>
-              <button
-                onClick={() => setJobType(2)}
-                className={clsx(
-                  "border-[#ebebeb] border-[1px] py-2 px-4 rounded-[24px] transition",
-                  jobType === 2 && "bg-primary text-white"
-                )}
-              >
-                <span className="body">Projekt</span>
-              </button>
-            </div>
-          </div>
 
           {/* MJESTO */}
           <div className="flex flex-col">
@@ -328,7 +294,7 @@ const UrediPosao = () => {
               )}
             />
             <FormControlLabel
-              className="!ml-1 mt-1"
+              className="!ml-1 mt-1 w-fit"
               control={<Checkbox />}
               checked={fromHome}
               onChange={(e) => setFromHome(e.target.checked)}
@@ -337,147 +303,92 @@ const UrediPosao = () => {
           </div>
 
           {/* POČETAK I KRAJ RADA */}
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <div className="flex gap-4">
-              <div className="flex-1 flex flex-col">
-                <Controller
-                  control={control}
-                  name="work_start"
-                  render={({ field }) => (
-                    <MobileDatePicker
-                      {...field}
-                      onChange={(date) => {
-                        field.onChange(date);
-                        setValue("work_end", date, {
-                          shouldDirty: true,
-                          shouldValidate: true,
-                        });
-                        setValue("active_until", date, {
-                          shouldDirty: true,
-                          shouldValidate: true,
-                        });
-                      }}
-                      label="Početak rada"
-                      minDate={dayjs().startOf("day")}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          error={!!errors.work_start}
-                          helperText={
-                            errors.work_start && errors.work_start.message
-                          }
-                        />
-                      )}
-                    />
-                  )}
-                />
-              </div>
-              <div className="flex-1 flex flex-col">
-                <Controller
-                  control={control}
-                  name="work_end"
-                  render={({ field }) => (
-                    <MobileDatePicker
-                      {...field}
-                      label="Kraj rada"
-                      minDate={values.work_start || dayjs().startOf("day")}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          error={!!errors.work_end}
-                          helperText={
-                            errors.work_end && errors.work_end.message
-                          }
-                        />
-                      )}
-                    />
-                  )}
-                />
-              </div>
-            </div>
-          </LocalizationProvider>
-
-          {/* SATNICA */}
-          <div>
-            <span className="ml-1 mt-3">Satnica</span>
-            <div className="flex mt-1 gap-2 flex-wrap">
-              <button
-                onClick={() => setRate(0)}
-                className={clsx(
-                  "border-[#ebebeb] border-[1px] py-2 px-4 rounded-[24px] transition",
-                  rate === 0 && "bg-primary text-white"
-                )}
-              >
-                <span className="body">Fiksna satnica</span>
-              </button>
-              <button
-                onClick={() => setRate(1)}
-                className={clsx(
-                  "border-[#ebebeb] border-[1px] py-2 px-4 rounded-[24px] transition",
-                  rate === 1 && "bg-primary text-white"
-                )}
-              >
-                <span className="body">Raspon satnice</span>
-              </button>
-            </div>
-            <div className="flex mt-4 gap-4 flex-wrap">
-              <div className="flex-1 flex flex-col">
-                <Controller
-                  control={control}
-                  name="payment_rate"
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      onChange={(e) => {
-                        field.onChange(e);
-                        rate === 0 &&
-                          setValue("payment_rate_max", e.target.value);
-                      }}
-                      type="number"
-                      InputProps={{
-                        endAdornment: (
-                          <InputAdornment position="end">€</InputAdornment>
-                        ),
-                      }}
-                      label={
-                        rate === 0
-                          ? "Neto cijena sata ili količina posla (za redoviti rad)"
-                          : "Minimalna satnica"
-                      }
-                      error={!!errors.payment_rate}
-                      helperText={
-                        errors.payment_rate && errors.payment_rate.message
-                      }
-                    />
-                  )}
-                />
-              </div>
-              {rate === 1 && (
-                <div className="flex-1 flex flex-col">
-                  <Controller
-                    control={control}
-                    name="payment_rate_max"
-                    render={({ field }) => (
+          <div className="flex gap-4">
+            <div className="flex-1 flex flex-col">
+              <Controller
+                control={control}
+                name="work_start"
+                render={({ field }) => (
+                  <MobileDatePicker
+                    {...field}
+                    label="Početak rada"
+                    renderInput={(params) => (
                       <TextField
-                        {...field}
-                        label="Maksimalna satnica"
-                        InputProps={{
-                          endAdornment: (
-                            <InputAdornment position="end">€</InputAdornment>
-                          ),
-                        }}
-                        error={!!errors.payment_rate_max}
+                        {...params}
+                        error={!!errors.work_start}
                         helperText={
-                          errors.payment_rate_max &&
-                          errors.payment_rate_max.message
+                          errors.work_start && errors.work_start.message
                         }
                       />
                     )}
                   />
-                </div>
-              )}
+                )}
+              />
+            </div>
+            <div className="flex-1 flex flex-col">
+              <Controller
+                control={control}
+                name="work_end"
+                render={({ field }) => (
+                  <MobileDatePicker
+                    {...field}
+                    label="Očekivano trajanje posla"
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        error={!!errors.work_end}
+                        helperText={errors.work_end && errors.work_end.message}
+                      />
+                    )}
+                  />
+                )}
+              />
             </div>
           </div>
+
+          {/* SATNICA */}
+          <Controller
+            control={control}
+            name="payment_rate"
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                type="number"
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">€</InputAdornment>
+                  ),
+                }}
+                label={"Neto cijena sata ili količina posla (za redoviti rad)"}
+                error={!!errors.payment_rate}
+                helperText={errors.payment_rate && errors.payment_rate.message}
+              />
+            )}
+          />
+
+          {/* DRUGE NAKNADE */}
+          <Controller
+            control={control}
+            name="payment_other"
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                type="number"
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">€</InputAdornment>
+                  ),
+                }}
+                label={"Druge naknade (putni troškovi, hrana, smještaj i dr.)"}
+                error={!!errors.payment_other}
+                helperText={
+                  errors.payment_other && errors.payment_other.message
+                }
+              />
+            )}
+          />
 
           <div className="flex flex-wrap gap-4">
             <div className="flex flex-col flex-1">
@@ -487,7 +398,7 @@ const UrediPosao = () => {
                 render={({ field }) => (
                   <TextField
                     {...field}
-                    label="Broj sati"
+                    label="Radno vrijeme"
                     error={!!errors.work_hours}
                     helperText={errors.work_hours && errors.work_hours.message}
                   />
@@ -505,6 +416,8 @@ const UrediPosao = () => {
                     <TextField
                       {...field}
                       label="Potreban broj izvođača (studenata/ica)"
+                      type={"number"}
+                      inputProps={{ min: 1 }}
                       error={!!errors.positions}
                       helperText={errors.positions && errors.positions.message}
                     />
@@ -515,76 +428,87 @@ const UrediPosao = () => {
           </div>
 
           {/* TRAJANJE PRIJAVA */}
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <Controller
+            control={control}
+            name="active_until"
+            render={({ field }) => (
+              <MobileDatePicker
+                {...field}
+                label="Trajanje prijava do"
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    error={!!errors.active_until}
+                    helperText={
+                      errors.active_until && errors.active_until.message
+                    }
+                  />
+                )}
+              />
+            )}
+          />
+
+          {/* OPIS POSLA */}
+          <div>
+            <h3 className="mb-2">Opis posla</h3>
             <Controller
               control={control}
-              name="active_until"
+              name="description"
               render={({ field }) => (
-                <MobileDatePicker
+                <QuillTextEditor
                   {...field}
-                  label="Trajanje prijava do"
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      error={!!errors.active_until}
-                      helperText={
-                        errors.active_until && errors.active_until.message
-                      }
-                    />
-                  )}
+                  placeholder="Unesi opis posla..."
+                  files={files}
+                  setFiles={setFiles}
                 />
               )}
             />
-          </LocalizationProvider>
-
-          {/* OPIS POSLA */}
-          <Controller
-            control={control}
-            name="description"
-            render={({ field }) => (
-              <TextField
-                {...field}
-                multiline
-                minRows={5}
-                label="Opis posla"
-                error={!!errors.description}
-                helperText={errors.description && errors.description.message}
-              />
+            {!!errors.description && (
+              <span className="text-sm text-error pl-2 mt-1">
+                {errors.description.message}
+              </span>
             )}
-          />
+          </div>
 
           {/* WHY ME */}
-          <Controller
-            control={control}
-            name="whyme"
-            render={({ field }) => (
-              <TextField
-                {...field}
-                multiline
-                minRows={5}
-                label="Zašto tražimo tebe?"
-                error={!!errors.whyme}
-                helperText={errors.whyme && errors.whyme.message}
-              />
+          <div>
+            <h3 className="mb-2">Zašto tražimo tebe?</h3>
+            <Controller
+              control={control}
+              name="whyme"
+              render={({ field }) => (
+                <QuillTextEditor
+                  {...field}
+                  placeholder="Unesi zašto tražimo tebe..."
+                />
+              )}
+            />
+            {!!errors.whyme && (
+              <span className="text-sm text-error pl-2 mt-1">
+                {errors.whyme.message}
+              </span>
             )}
-          />
+          </div>
 
-          <Controller
-            control={control}
-            name="other_description"
-            render={({ field }) => (
-              <TextField
-                {...field}
-                multiline
-                minRows={5}
-                label="Ostale napomene i uvjeti"
-                error={!!errors.other_description}
-                helperText={
-                  errors.other_description && errors.other_description.message
-                }
-              />
+          {/* OTHER DESCRIPTION */}
+          <div>
+            <h3 className="mb-2">Ostale napomene i uvjeti</h3>
+            <Controller
+              control={control}
+              name="other_description"
+              render={({ field }) => (
+                <QuillTextEditor
+                  {...field}
+                  placeholder="Unesi ostale napomene i uvjete..."
+                />
+              )}
+            />
+            {!!errors.other_description && (
+              <span className="text-sm text-error pl-2 mt-1">
+                {errors.other_description.message}
+              </span>
             )}
-          />
+          </div>
 
           {/* SKILLS */}
           <Controller
@@ -646,20 +570,21 @@ const UrediPosao = () => {
             )}
           />
 
-          <Controller
-            control={control}
-            name="contact_student"
-            render={({ field }) => (
-              <TextField
-                {...field}
-                label="Način i kontakt za prijavu studenata"
-                error={!!errors.contact_student}
-                helperText={
-                  errors.contact_student && errors.contact_student.message
-                }
-              />
+          <div>
+            <h3 className="mb-2">Način i kontakt za prijavu studenata</h3>
+            <Controller
+              control={control}
+              name="contact_student"
+              render={({ field }) => (
+                <QuillTextEditor {...field} placeholder="Unesi kontakt..." />
+              )}
+            />
+            {!!errors.contact_student && (
+              <span className="text-sm text-error pl-2 mt-1">
+                {errors.contact_student.message}
+              </span>
             )}
-          />
+          </div>
 
           <Controller
             control={control}

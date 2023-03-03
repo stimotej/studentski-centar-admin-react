@@ -11,7 +11,6 @@ import {
   TextField,
 } from "@mui/material";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import LoadingButton from "@mui/lab/LoadingButton";
 import { useEffect, useState } from "react";
@@ -67,17 +66,15 @@ const ChangeDateDialog = ({
           <div className="flex flex-col items-start">
             <div className="flex items-center flex-wrap gap-3">
               <span className="mr-4">Odaberite datum:</span>
-              <LocalizationProvider dateAdapter={AdapterDateFns}>
-                <DatePicker
-                  disableFuture
-                  openTo="day"
-                  inputFormat="dd/MM/yyyy"
-                  views={["day", "month", "year"]}
-                  value={date}
-                  onChange={handleSelectDate}
-                  renderInput={(params) => <TextField {...params} />}
-                />
-              </LocalizationProvider>
+              <DatePicker
+                disableFuture
+                openTo="day"
+                inputFormat="dd/MM/yyyy"
+                views={["day", "month", "year"]}
+                value={date}
+                onChange={handleSelectDate}
+                renderInput={(params) => <TextField {...params} />}
+              />
             </div>
             {/* {dateExists && (
               <span className="text-left mt-3 text-sm text-error">

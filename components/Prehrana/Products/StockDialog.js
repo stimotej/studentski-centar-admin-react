@@ -16,7 +16,12 @@ import clsx from "clsx";
 import { useUpdateProduct } from "../../../features/products";
 import { toast } from "react-toastify";
 
-const StockDialog = ({ stockModal, setStockModal, selectedProducts }) => {
+const StockDialog = ({
+  stockModal,
+  setStockModal,
+  selectedProducts,
+  setSelectedProducts,
+}) => {
   const [selectedStock, setSelectedStock] = useState("instock");
 
   const [loading, setLoading] = useState(false);
@@ -33,6 +38,7 @@ const StockDialog = ({ stockModal, setStockModal, selectedProducts }) => {
     Promise.all(requests)
       .then((res) => {
         setStockModal(false);
+        setSelectedProducts([]);
         toast.success(
           "Uspješno je promijenjeno stanje zalihe odabranih proizvoda"
         );

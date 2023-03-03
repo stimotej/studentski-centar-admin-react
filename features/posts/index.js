@@ -32,7 +32,7 @@ export const usePosts = (filters, options) => {
 
 export const useAdminCategories = (filters, options) => {
   return useQuery(
-    postsKeys.categories(),
+    postsKeys.categoriesFiltered(filters),
     async () => {
       const response = await axios.get(
         "http://161.53.174.14/wp-json/wp/v2/categories",
@@ -49,6 +49,92 @@ export const useAdminCategories = (filters, options) => {
     },
     {
       ...options,
+    }
+  );
+};
+
+export const useCreateCategory = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    async ({ name, parent }) => {
+      const response = await axios.post(
+        `http://161.53.174.14/wp-json/wp/v2/categories`,
+        {
+          name,
+          parent,
+        }
+      );
+      return response.data;
+    },
+    {
+      onSuccess: (data) => {
+        toast.success("Uspješno dodano.");
+        queryClient.invalidateQueries(postsKeys.categories());
+      },
+      onError: (error) => {
+        if (error.response.data.data.status === 403)
+          toast.error("Nemate dopuštenje za dodavanje.");
+        else toast.error("Greška kod dodavanja.");
+      },
+    }
+  );
+};
+
+export const useUpdateCategory = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    async ({ id, name, parent, meta }) => {
+      const response = await axios.post(
+        `http://161.53.174.14/wp-json/wp/v2/categories/${id}`,
+        {
+          name,
+          parent,
+          meta,
+        }
+      );
+      return response.data;
+    },
+    {
+      onSuccess: (data) => {
+        toast.success("Uspješno uređeno.");
+        queryClient.invalidateQueries(postsKeys.categories());
+      },
+      onError: (error) => {
+        if (error.response.data.data.status === 403)
+          toast.error("Nemate dopuštenje za uređivanje.");
+        else toast.error("Greška kod uređivanja.");
+      },
+    }
+  );
+};
+
+export const useDeleteCategory = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    async ({ id }) => {
+      const response = await axios.delete(
+        `http://161.53.174.14/wp-json/wp/v2/categories/${id}`,
+        {
+          params: {
+            force: true,
+          },
+        }
+      );
+      return response.data;
+    },
+    {
+      onSuccess: (data) => {
+        toast.success("Uspješno obrisano.");
+        queryClient.invalidateQueries(postsKeys.categories());
+      },
+      onError: (error) => {
+        if (error.response.data.data.status === 403)
+          toast.error("Nemate dopuštenje za brisanje.");
+        else toast.error("Greška kod brisanja.");
+      },
     }
   );
 };
@@ -118,6 +204,7 @@ export const useUpdatePost = () => {
       documents,
       sadrzaj,
       kontakt,
+      radno_vrijeme_blagajni,
       lokacija,
       image_groups,
     }) => {
@@ -133,6 +220,7 @@ export const useUpdatePost = () => {
             documents,
             sadrzaj,
             kontakt,
+            radno_vrijeme_blagajni,
             lokacija,
             image_groups,
           },

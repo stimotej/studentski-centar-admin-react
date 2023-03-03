@@ -18,21 +18,23 @@ import {
 } from "@mui/material";
 import dayjs from "dayjs";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import React from "react";
 import { useState } from "react";
-import { useEffect } from "react";
 import { MdAdd } from "react-icons/md";
 import { toast } from "react-toastify";
 import MyTable from "../../components/Elements/Table";
 import Header from "../../components/Header";
 import Layout from "../../components/Layout";
 import DeleteDialog from "../../components/Prehrana/jobs/DeleteDialog";
-import { useDeleteJob, useJobs, useUpdateJob } from "../../features/jobs/index";
-import { userGroups } from "../../lib/constants";
+import { useJobs, useUpdateJob } from "../../features/jobs/index";
 import useDebounce from "../../lib/useDebounce";
 
 const headCells = [
+  {
+    id: "long_island_id",
+    label: "Broj narudžbe",
+    sort: true,
+  },
   {
     id: "company_name",
     label: "Poslodavac",
@@ -51,14 +53,17 @@ const headCells = [
   {
     id: "active_until",
     label: "Aktivan do",
+    sort: true,
   },
   {
-    id: "actions",
+    id: "featured",
     label: "Radnje",
+    sort: true,
   },
   {
-    id: "status",
+    id: "allowed_sc",
     label: "Status",
+    sort: true,
   },
 ];
 
@@ -82,14 +87,11 @@ const SviPoslovi = () => {
     page,
   });
 
-  const router = useRouter();
-
   const [selectedJobs, setSelectedJobs] = useState([]);
 
   const [deleteModal, setDeleteModal] = useState(false);
 
   const { mutate: updateJob } = useUpdateJob();
-  const { mutateAsync: deleteJob } = useDeleteJob();
 
   const handleAllow = (e, jobId) => {
     e.stopPropagation();
@@ -115,26 +117,6 @@ const SviPoslovi = () => {
     );
   };
 
-  const handleDelete = () => {
-    setDeleteLoading(true);
-
-    let requests = selectedProducts.map((productId) =>
-      deleteProduct(productId)
-    );
-
-    Promise.all(requests)
-      .then((res) => {
-        toast.success(`Uspješno obrisano ${selectedProducts.length} proizvoda`);
-        setDeleteModal(false);
-      })
-      .catch((error) => {
-        toast.error("Greška kod brisanja proizvoda");
-      })
-      .finally(() => {
-        setDeleteLoading(false);
-      });
-  };
-
   return (
     <Layout>
       <Header
@@ -150,6 +132,7 @@ const SviPoslovi = () => {
         deleteModal={deleteModal}
         setDeleteModal={setDeleteModal}
         selectedJobs={selectedJobs}
+        setSelectedJobs={setSelectedJobs}
       />
       <div className="px-5 md:px-10">
         {/* <ProductsHeader searchValue={search} handleSearch={handleSearch} /> */}
@@ -183,9 +166,8 @@ const SviPoslovi = () => {
           }
           headCells={headCells}
           rows={jobs || []}
-          onSelectionChange={(selected) => {
-            setSelectedJobs(selected);
-          }}
+          selected={selectedJobs}
+          setSelected={setSelectedJobs}
           defaultOrder="desc"
           defaultOrderBy="date"
           error={isError}
@@ -198,6 +180,7 @@ const SviPoslovi = () => {
           }}
           customSort
           onChangeSort={(field, order) => {
+            console.log("sort", [field, order].join("|"));
             setSort([field, order].join("|"));
           }}
           // containerClassName="mt-6"
@@ -238,6 +221,7 @@ const SviPoslovi = () => {
           )}
           rowCells={(row) => (
             <>
+              <TableCell>{row?.long_island_id || "---"}</TableCell>
               <TableCell>
                 <strong>{row?.company_name}</strong>
               </TableCell>
