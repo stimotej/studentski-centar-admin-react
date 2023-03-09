@@ -3,50 +3,26 @@ import axios from "axios";
 import { useState } from "react";
 import { toast } from "react-toastify";
 
-// const url = "https://unaprijedi.com/?rest_route=/simple-jwt-login/v1/auth";
 const url = "http://161.53.174.14/wp-json/jwt-auth/v1/token";
 
 export const useLogin = () => {
-  const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
 
   const login = async ({ from, username, password }) => {
     setIsLoading(true);
     try {
       delete axios.defaults.headers.common["Authorization"];
-      const loginRes = await axios.post(url, {
+      const response = await axios.post(url, {
         username,
         password,
       });
-      console.log("res", loginRes.data);
-      const userRes = await axios.get(
-        "http://161.53.174.14/wp-json/wp/v2/users/me",
-        {
-          headers: {
-            Authorization: `Bearer ${loginRes.data.token}`,
-          },
-        }
-      );
-      queryClient.setQueryData(["user"], userRes.data);
-      // const loginFrom = from === "student-servis" ? "student_servis" : from;
-      // if (!userRes.data?.data?.roles.includes(loginFrom)) {
-      //   throw new Error("wrong_group");
-      // }
-      window.localStorage.setItem("access_token", loginRes.data.token);
-      window.localStorage.setItem(
-        "roles",
-        JSON.stringify(userRes.data?.data?.roles)
-      );
-      axios.defaults.headers.common.Authorization = `Bearer ${loginRes.data.token}`;
-      return userRes;
+      window.localStorage.setItem("access_token", response.data?.token);
+      axios.defaults.headers.common.Authorization = `Bearer ${response.data?.token}`;
+      return response.data;
     } catch (error) {
       if (error.response?.status === 400) {
         throw new Error("Pogrešno korisničko ime ili lozinka");
       }
-      // if (error.message === "wrong_group") {
-      //   throw new Error("Ne možete se prijavljivati u druge grupe");
-      // }
-      console.log("err", error);
       throw new Error("Greška prilikom slanja zahtjeva");
     } finally {
       setIsLoading(false);
@@ -79,6 +55,10 @@ export const useUser = (options) => {
     async () => {
       const response = await axios.get(
         "http://161.53.174.14/wp-json/wp/v2/users/me"
+      );
+      window.localStorage.setItem(
+        "roles",
+        JSON.stringify(response.data?.data?.roles)
       );
       return response.data;
     },

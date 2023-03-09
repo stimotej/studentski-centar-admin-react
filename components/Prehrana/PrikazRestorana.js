@@ -143,7 +143,7 @@ const PrikazRestorana = ({ restaurant, page, setPage }) => {
         defaultValue={restaurant?.image}
         imgAlt="Restoran"
         onChange={setImage}
-        className="w-1/2 !bg-transparent border-gray-200"
+        className="!w-1/2 !bg-transparent border-gray-200"
         mediaCategoryId={prehranaCategoryId}
       />
 
