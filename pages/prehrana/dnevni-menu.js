@@ -147,6 +147,21 @@ const NewDnevniMenu = () => {
     setMenuProducts(menuCopy);
   };
 
+  const clearEmptyMeals = () => {
+    let menuCopy = { ...menuProducts };
+    Object.keys(menuCopy).forEach((menu) => {
+      Object.keys(menuCopy[menu]).forEach((meal) => {
+        if (menuCopy[menu][meal].length === 0) {
+          delete menuCopy[menu][meal];
+        }
+      });
+      if (Object.keys(menuCopy[menu]).length === 0) {
+        delete menuCopy[menu];
+      }
+    });
+    return menuCopy;
+  };
+
   const handleRemoveItem = (value, productId) => {
     const menuName = value.split("-")[0];
     const mealName = value.split("-")[1];
@@ -180,7 +195,7 @@ const NewDnevniMenu = () => {
     updateMenu({
       id: activeMenu,
       menu_date: date,
-      products: menuProducts,
+      products: clearEmptyMeals(),
       restaurantId: selectedRestaurantId,
       status: menuStatus,
       title: menuTitle,
@@ -277,6 +292,7 @@ const NewDnevniMenu = () => {
             onChange={setSearch}
             onSelected={(value) => addSelectedProduct(value)}
             placeholder="Dodaj proizvode..."
+            disabled={!activeMenu}
             displayItems={8}
           />
         </StickyElement>
@@ -289,6 +305,7 @@ const NewDnevniMenu = () => {
                 onChange={(value) => {
                   setDate(value);
                   setActiveMenu(null);
+                  setMenuProducts(null);
                 }}
               />
             </div>
@@ -377,6 +394,10 @@ const NewDnevniMenu = () => {
         <div className="mt-10">
           {isLoading ? (
             <Loader className="w-10 h-10 mx-auto mt-12 border-primary" />
+          ) : !activeMenu ? (
+            <div className="text-gray-600 mt-20 text-center">
+              Odaberite menu za dodavanje proizvoda
+            </div>
           ) : (
             <MenuSelect
               menuProducts={menuProducts}
