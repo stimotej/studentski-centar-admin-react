@@ -3,7 +3,6 @@ import { MdAdd, MdOutlineVisibility } from "react-icons/md";
 import Header from "../../components/Header";
 import Layout from "../../components/Layout";
 import { useRouter } from "next/router";
-import { userGroups } from "../../lib/constants";
 import MyTable from "../../components/Elements/Table";
 import {
   Button,
@@ -22,6 +21,7 @@ import {
   faPen,
   faMagnifyingGlass,
   faExclamationTriangle,
+  faFilePdf,
 } from "@fortawesome/pro-regular-svg-icons";
 import Link from "next/link";
 import dayjs from "dayjs";
@@ -32,6 +32,9 @@ import { useMenus } from "../../features/menus";
 import useDebounce from "../../lib/useDebounce";
 import { useRestaurants } from "../../features/restaurant";
 import clearHtmlFromString from "../../lib/clearHtmlFromString";
+import MenuPdf from "../../components/MenuPdf";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import Loader from "../../components/Elements/Loader";
 
 const MenuList = () => {
   const [page, setPage] = useState(1);
@@ -281,16 +284,49 @@ const MenuList = () => {
                 </Button>
               </TableCell>
               <TableCell>
-                <Tooltip title="Pregledaj menu" arrow>
-                  <IconButton
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowMenuPreviewDialog({ state: true, menu: row });
-                    }}
+                <div className="flex items-center">
+                  <Tooltip title="Pregledaj menu" arrow>
+                    <IconButton
+                      className="mr-2"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowMenuPreviewDialog({ state: true, menu: row });
+                      }}
+                    >
+                      <MdOutlineVisibility className="w-5 h-5" />
+                    </IconButton>
+                  </Tooltip>
+                  <PDFDownloadLink
+                    document={
+                      <MenuPdf
+                        title={clearHtmlFromString(row.title)}
+                        restaurant={clearHtmlFromString(
+                          restaurants?.find(
+                            (item) => item.id === selectedRestaurantId
+                          )?.title || ""
+                        )}
+                        date={row.date}
+                        products={row.products}
+                      />
+                    }
+                    fileName={`${clearHtmlFromString(
+                      restaurants?.find(
+                        (item) => item.id === selectedRestaurantId
+                      )?.title || ""
+                    )}_${row.slug}_${dayjs().format("DD_MM_YYYY")}.pdf`}
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    <MdOutlineVisibility className="w-5 h-5" />
-                  </IconButton>
-                </Tooltip>
+                    {({ blob, url, loading, error }) =>
+                      loading ? (
+                        <Loader className="w-5 h-5 border-gray-600" />
+                      ) : (
+                        <IconButton size="small" className="w-9 h-9">
+                          <FontAwesomeIcon icon={faFilePdf} />
+                        </IconButton>
+                      )
+                    }
+                  </PDFDownloadLink>
+                </div>
               </TableCell>
             </>
           )}

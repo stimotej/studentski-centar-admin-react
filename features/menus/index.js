@@ -127,6 +127,7 @@ export const useUpdateMenu = (displayToasts = true) => {
         "http://161.53.174.14/wp-json/wp/v2/menus/" + menu.id,
         {
           title: menu?.title,
+          slug: menu?.title,
           status: menu?.status,
           meta: {
             menu_date:

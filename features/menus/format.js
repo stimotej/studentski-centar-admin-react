@@ -1,6 +1,7 @@
 const formatMenu = (menu) => ({
   id: menu.id,
   status: menu.status,
+  slug: menu.slug,
   title: menu.title.rendered,
   date: menu.meta.menu_date,
   createdAt: menu.date,

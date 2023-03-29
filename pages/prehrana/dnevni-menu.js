@@ -101,7 +101,7 @@ const NewDnevniMenu = () => {
   }, [menus]);
 
   useEffect(() => {
-    if (activeMenu) {
+    if (menus && activeMenu) {
       const currentMenu = menus.find((item) => item.id === activeMenu);
       setMenuProducts(currentMenu?.products);
       setMenuStatus(currentMenu?.status || "draft");
@@ -143,6 +143,7 @@ const NewDnevniMenu = () => {
       stock: product.stock,
       allergens: product.allergens,
       weight: product.weight,
+      price: product.price,
     });
     setMenuProducts(menuCopy);
   };
