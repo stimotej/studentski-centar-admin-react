@@ -103,7 +103,7 @@ const MenuPdf = ({ restaurant, title, date, products }) => {
                         )}
                       </View>
                     ) : (
-                      <View style={{ flex: 1 }}></View>
+                      <View key={type.field_name} style={{ flex: 1 }}></View>
                     )
                   )}
                 </View>
