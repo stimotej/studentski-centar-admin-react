@@ -4,8 +4,6 @@ import { useRef, useEffect } from "react";
 import { toast } from "react-toastify";
 import formatMenu from "./format";
 import menuKeys from "./queries";
-import jwt from "jsonwebtoken";
-import { usersRestaurantIds } from "../../lib/constants";
 import dayjs from "dayjs";
 
 export const useMenus = (filters, options) => {
@@ -26,6 +24,7 @@ export const useMenus = (filters, options) => {
           per_page: menusPerPage,
           page: newFilters?.page,
           restaurant: newFilters?.restaurantId,
+          status: ["publish", "draft"],
         },
       }
     );
@@ -60,7 +59,7 @@ export const useMenus = (filters, options) => {
   };
 };
 
-export const useMenuByDate = ({ date, restaurantId }, options) => {
+export const useMenusByDate = ({ date, restaurantId }, options) => {
   return useQuery(
     menuKeys.menuByDate({ date, restaurantId }),
     async () => {
@@ -70,13 +69,16 @@ export const useMenuByDate = ({ date, restaurantId }, options) => {
           params: {
             menu_date: date,
             restaurant: restaurantId,
+            orderby: "date",
+            order: "asc",
+            status: ["publish", "draft"],
           },
         }
       );
       return response.data;
     },
     {
-      select: (menus) => (menus.length > 0 ? formatMenu(menus?.[0]) : {}),
+      select: (menus) => menus.map((menu) => formatMenu(menu)),
       staleTime: Infinity,
       ...options,
     }
@@ -91,8 +93,8 @@ export const useCreateMenu = () => {
       const response = await axios.post(
         "http://161.53.174.14/wp-json/wp/v2/menus",
         {
-          title: "Menu",
-          status: "publish",
+          title: menu.title,
+          status: "draft",
           meta: {
             menu_date: dayjs(menu.menu_date).format("YYYY-MM-DD"),
             menu_products: menu.products,
@@ -124,6 +126,8 @@ export const useUpdateMenu = (displayToasts = true) => {
       const response = await axios.post(
         "http://161.53.174.14/wp-json/wp/v2/menus/" + menu.id,
         {
+          title: menu?.title,
+          status: menu?.status,
           meta: {
             menu_date:
               menu.menu_date && dayjs(menu.menu_date).format("YYYY-MM-DD"),

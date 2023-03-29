@@ -24,7 +24,7 @@ export const useJobs = (filters, options) => {
           search: newFilters?.search,
           per_page: jobsPerPage,
           page: newFilters?.page,
-          author: userId,
+          // author: userId,
         },
       }
     );

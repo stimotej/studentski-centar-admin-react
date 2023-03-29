@@ -120,6 +120,7 @@ const Home = () => {
                         <QuillTextEditor
                           value={restaurant.title}
                           useToolbar={false}
+                          formats={[]}
                           className="[&>div>div>p]:hover:cursor-pointer [&>div>div]:line-clamp-1"
                           readOnly
                           includeStyles={false}

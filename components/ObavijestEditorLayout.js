@@ -41,7 +41,6 @@ import MyDialog from "./Elements/MyDialog";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/pro-regular-svg-icons";
 import getIconByMimeType from "../lib/getIconbyMimeType";
-import axios from "axios";
 
 const ObavijestEditorLayout = ({ categoryId, from }) => {
   const [storedPostNote, setStoredPostNote] = useState(false);
@@ -78,8 +77,8 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
       if (key === `${from}_editor_status` && storedPost === "publish")
         storedPostExists = false;
     });
-    if (storedPostExists) setStoredPostNote(true);
-  }, [storedPostKeys, from]);
+    if (storedPostExists && !categoryId) setStoredPostNote(true);
+  }, [storedPostKeys, from, categoryId]);
 
   const { data: categories } = useCategories({
     enabled: !categoryId,
@@ -335,7 +334,7 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
         <div className="mt-4 mb-3">Prikazivanje na stranici:</div>
         <div className="flex flex-col">
           <MobileDatePicker
-            inputFormat="dd/MM/yyyy"
+            inputFormat="DD/MM/YYYY"
             views={["day", "month", "year"]}
             value={startShowing}
             toolbarTitle="Odaberite datum"
@@ -352,7 +351,7 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
             renderInput={(params) => <TextField {...params} />}
           />
           <MobileDatePicker
-            inputFormat="dd/MM/yyyy"
+            inputFormat="DD/MM/YYYY"
             views={["day", "month", "year"]}
             value={endShowing}
             toolbarTitle="Odaberite datum"
@@ -390,7 +389,7 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
         <div className="mt-4 mb-3">Dodaj na kalendar:</div>
         <div className="flex flex-col gap-4">
           <DateTimePicker
-            inputFormat="dd/MM/yyyy HH:mm"
+            inputFormat="DD/MM/YYYY HH:mm"
             value={eventDate}
             toolbarTitle="Odaberite datum"
             label="Odaberite datum"
@@ -458,6 +457,7 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
               !obavijestId &&
                 window.localStorage.setItem(`${from}_editor_title`, value);
             }}
+            formats={[]}
             placeholder="Naslov..."
             containerClassName="!bg-transparent border-none px-3 mt-14 sm:mt-12 "
             className="[&>div>div]:p-0 [&>div>div]:!min-h-fit [&>div>div:before]:!left-0 [&>div>div:before]:text-2xl [&>div>div:before]:font-semibold [&>div>div>p]:text-2xl [&>div>div>p]:font-semibold"

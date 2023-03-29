@@ -10,13 +10,12 @@ const StickyElement = ({ children, className, stickyClassName }) => {
       ([e]) => setIsSticky(e.intersectionRatio < 1),
       {
         threshold: [1],
-        rootMargin: "-1px 0px 0px 0px", // alternativly, use this and set `top:0` in the CSS
+        rootMargin: "-1px 0px 0px 0px",
       }
     );
 
     observer.observe(cachedRef);
 
-    // unmount
     return function () {
       observer.unobserve(cachedRef);
     };

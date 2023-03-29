@@ -318,7 +318,7 @@ const Editor = () => {
         {/* <div className="mt-4 mb-3">Datum i vrijeme eventa:</div>
           <div className="flex flex-col gap-4">
             <DateTimePicker
-              inputFormat="dd/MM/yyyy HH:mm"
+              inputFormat="DD/MM/YYYY HH:mm"
               value={eventDate}
               toolbarTitle="Odaberite datum"
               label="Odaberite datum"
@@ -333,7 +333,7 @@ const Editor = () => {
         <div className="mt-4 mb-3">Datumi eventa:</div>
         <div className="flex flex-col gap-4">
           <DateTimePicker
-            inputFormat="dd/MM/yyyy HH:mm"
+            inputFormat="DD/MM/YYYY HH:mm"
             value={eventDate}
             toolbarTitle="Dodaj datum"
             label="Dodaj datum"
@@ -443,7 +443,7 @@ const Editor = () => {
             modules={{
               toolbar: false,
             }}
-            formats={["header"]}
+            formats={[]}
             value={title}
             onChange={(value) => {
               setTitle(value);

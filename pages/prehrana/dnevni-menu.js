@@ -4,13 +4,12 @@ import MenuSelect from "../../components/Prehrana/MenuSelect";
 import AutosuggestInput from "../../components/Elements/AutosuggestInput";
 import { toast } from "react-toastify";
 import Header from "../../components/Header";
-import { MdOutlineSaveAlt } from "react-icons/md";
 import DateInput from "../../components/Elements/DateInput";
 import Layout from "../../components/Layout";
-import { userGroups } from "../../lib/constants";
 import {
   useCreateMenu,
-  useMenuByDate,
+  useDeleteMenu,
+  useMenusByDate,
   useUpdateMenu,
 } from "../../features/menus";
 import { useProducts } from "../../features/products";
@@ -20,14 +19,34 @@ import useDebounce from "../../lib/useDebounce";
 import { useRestaurants } from "../../features/restaurant";
 import {
   Alert,
+  Button,
   CircularProgress,
   Collapse,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   IconButton,
   MenuItem,
+  Tab,
+  Tabs,
   TextField,
+  Tooltip,
 } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faClose } from "@fortawesome/pro-regular-svg-icons";
+import {
+  faClose,
+  faExclamationTriangle,
+} from "@fortawesome/pro-regular-svg-icons";
+import { Box } from "@mui/system";
+import { LoadingButton } from "@mui/lab";
+import clearHtmlFromString from "../../lib/clearHtmlFromString";
+import dynamic from "next/dynamic";
+const QuillTextEditor = dynamic(
+  () => import("../../components/Elements/QuillTextEditor"),
+  { ssr: false }
+);
 
 const NewDnevniMenu = () => {
   const router = useRouter();
@@ -43,44 +62,52 @@ const NewDnevniMenu = () => {
   const debouncedSearch = useDebounce(search, 300);
 
   const [selectedRestaurantId, setSelectedRestaurantId] = useState(
-    Object.keys(router.query).length ? router.query.restaurantId : 0
+    Object.keys(router.query).length ? +router.query.restaurantId : ""
   );
 
   const { data: products, isFetching: isLoadingProducts } = useProducts({
     productsPerPage: 8,
     search: debouncedSearch,
   });
-  const {
-    data: menu,
-    isLoading,
-    refetch: refetchMenu,
-  } = useMenuByDate(
-    { date, restaurantId: selectedRestaurantId },
-    {
-      onSuccess: (menuRes) => {
-        setMenuProducts(menuRes.products);
-      },
-    }
-  );
+
   const { data: restaurants, isLoading: isLoadingRestaurants } =
     useRestaurants();
 
   useEffect(() => {
-    setMenuProducts(menu?.products);
-  }, [date]);
-
-  useEffect(() => {
-    if (selectedRestaurantId !== 0) {
-      refetchMenu();
-    }
-  }, [selectedRestaurantId]);
-
-  useEffect(() => {
     if (restaurants) {
-      if (selectedRestaurantId !== 0) return;
-      setSelectedRestaurantId(restaurants[0].id);
+      setSelectedRestaurantId(restaurants[0]?.id);
     }
   }, [restaurants]);
+
+  const { data: menus, isLoading } = useMenusByDate(
+    {
+      date: date,
+      restaurantId: selectedRestaurantId,
+    },
+    {
+      enabled: !!restaurants,
+    }
+  );
+  const [activeMenu, setActiveMenu] = useState(
+    Object.keys(router.query).length ? +router.query.activeMenu : null
+  );
+  const [menuStatus, setMenuStatus] = useState("draft");
+  const [menuTitle, setMenuTitle] = useState("");
+
+  useEffect(() => {
+    if (menus) {
+      setActiveMenu(menus[0]?.id);
+    }
+  }, [menus]);
+
+  useEffect(() => {
+    if (activeMenu) {
+      const currentMenu = menus.find((item) => item.id === activeMenu);
+      setMenuProducts(currentMenu?.products);
+      setMenuStatus(currentMenu?.status || "draft");
+      setMenuTitle(currentMenu?.title);
+    }
+  }, [menus, activeMenu]);
 
   const [alertOpened, setAlertOpened] = useState(false);
 
@@ -132,6 +159,7 @@ const NewDnevniMenu = () => {
 
   const { mutate: createMenu, isLoading: isCreating } = useCreateMenu();
   const { mutate: updateMenu, isLoading: isUpdating } = useUpdateMenu();
+  const { mutate: deleteMenu, isLoading: isDeleting } = useDeleteMenu();
 
   const handleSaveMenu = async () => {
     if (!date) {
@@ -144,33 +172,54 @@ const NewDnevniMenu = () => {
       return;
     }
 
-    if (menu?.id) {
-      updateMenu({
-        id: menu.id,
-        products: menuProducts,
-        restaurantId: selectedRestaurantId,
-      });
-    } else {
-      createMenu({
-        menu_date: date,
-        products: menuProducts,
-        restaurantId: selectedRestaurantId,
-      });
+    if (!activeMenu) {
+      toast.error("Odaberite menu");
+      return;
     }
+
+    updateMenu({
+      id: activeMenu,
+      menu_date: date,
+      products: menuProducts,
+      restaurantId: selectedRestaurantId,
+      status: menuStatus,
+      title: menuTitle,
+    });
+  };
+
+  const [deleteMenuDialog, setDeleteMenuDialog] = useState(false);
+  const [addMenuDialog, setAddMenuDialog] = useState(false);
+  const [dialogTitle, setDialogTitle] = useState("");
+
+  const handleDeleteMenu = () => {
+    deleteMenu(activeMenu, {
+      onSuccess: () => {
+        setDeleteMenuDialog(false);
+        setActiveMenu(menus[0]?.id);
+      },
+    });
+  };
+  const handleCreateMenu = () => {
+    createMenu(
+      {
+        menu_date: date,
+        restaurantId: selectedRestaurantId,
+        title: dialogTitle,
+      },
+      {
+        onSuccess: (newMenu) => {
+          setAddMenuDialog(false);
+          setDialogTitle("");
+          setActiveMenu(newMenu.id);
+        },
+      }
+    );
   };
 
   return (
     <Layout>
-      <Header
-        title="Dnevni menu"
-        text="Spremi"
-        icon={<MdOutlineSaveAlt />}
-        loading={isCreating || isUpdating}
-        disabled={isCreating || isUpdating}
-        onClick={handleSaveMenu}
-        primary
-        responsive
-      />
+      <Header title="Dnevni menu" />
+
       <div className="px-5 md:px-10 py-6 mx-auto">
         <div className="mb-4 flex flex-col items-start">
           <Collapse in={alertOpened} className="w-full">
@@ -218,7 +267,7 @@ const NewDnevniMenu = () => {
           )}
         </div>
         <StickyElement
-          className="transition-shadow duration-500 rounded-lg bg-background"
+          className="transition-shadow duration-500 rounded-b-lg bg-background"
           stickyClassName="shadow-lg"
         >
           <AutosuggestInput
@@ -232,13 +281,99 @@ const NewDnevniMenu = () => {
           />
         </StickyElement>
         <div className="mt-8 flex flex-col-reverse items-start justify-between sm:flex-row md:items-center">
-          <div className="flex items-center">
+          <div className="flex items-center justify-between w-full">
             <div className="flex items-center mt-8 sm:mt-0">
               <div className="mr-2">Odaberite datum:</div>
-              <DateInput value={date} onChange={(value) => setDate(value)} />
+              <DateInput
+                value={date}
+                onChange={(value) => {
+                  setDate(value);
+                  setActiveMenu(null);
+                }}
+              />
+            </div>
+            <div className="row items-center">
+              <Tooltip title="Dodaj menu na odabrani datum" arrow>
+                <Button
+                  variant="outlined"
+                  onClick={() => setAddMenuDialog(true)}
+                >
+                  Dodaj menu
+                </Button>
+              </Tooltip>
             </div>
           </div>
         </div>
+        {!!menus && menus.length > 0 && !!activeMenu && (
+          <>
+            <Box sx={{ borderBottom: 1, borderColor: "divider", marginTop: 4 }}>
+              <Tabs
+                value={activeMenu}
+                onChange={(event, newValue) => setActiveMenu(newValue)}
+              >
+                {menus.map((menu) => (
+                  <Tab
+                    key={menu.id}
+                    label={clearHtmlFromString(menu.title)}
+                    value={menu.id}
+                    icon={
+                      menu.status !== "publish" ? (
+                        <FontAwesomeIcon
+                          icon={faExclamationTriangle}
+                          className="text-error"
+                        />
+                      ) : null
+                    }
+                    iconPosition="start"
+                  />
+                ))}
+              </Tabs>
+            </Box>
+            <QuillTextEditor
+              value={menuTitle}
+              onChange={setMenuTitle}
+              formats={[]}
+              containerClassName="mr-2 mt-4"
+              className="[&>div>div]:!min-h-fit [&>div>div]:line-clamp-1"
+              placeholder="Naziv"
+              useToolbar={false}
+            />
+            <div className="mt-4 flex items-center justify-between">
+              <TextField
+                value={menuStatus}
+                onChange={(e) => setMenuStatus(e.target.value)}
+                className="!w-[150px] !mr-4"
+                select
+                size="small"
+                label="Status menija"
+              >
+                <MenuItem value="draft">Skica</MenuItem>
+                <MenuItem value="publish">Objavljeno</MenuItem>
+              </TextField>
+              <div>
+                <LoadingButton
+                  onClick={handleSaveMenu}
+                  loading={isCreating || isUpdating}
+                  variant="contained"
+                  className="!bg-primary"
+                >
+                  Spremi
+                </LoadingButton>
+                <Tooltip title="Dodaj menu na odabrani datum" arrow>
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    className="!ml-2"
+                    onClick={() => setDeleteMenuDialog(true)}
+                  >
+                    Obriši
+                  </Button>
+                </Tooltip>
+              </div>
+            </div>
+          </>
+        )}
+
         <div className="mt-10">
           {isLoading ? (
             <Loader className="w-10 h-10 mx-auto mt-12 border-primary" />
@@ -252,6 +387,72 @@ const NewDnevniMenu = () => {
           )}
         </div>
       </div>
+
+      <Dialog
+        open={deleteMenuDialog}
+        onClose={() => setDeleteMenuDialog(false)}
+      >
+        <DialogTitle>Brisanje menija</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Ovime se briše menu. Radnja se ne može poništiti.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setDeleteMenuDialog(false)}
+            className="!text-black"
+          >
+            Odustani
+          </Button>
+          <LoadingButton
+            color="error"
+            onClick={handleDeleteMenu}
+            loading={isDeleting}
+          >
+            Obriši
+          </LoadingButton>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={addMenuDialog}
+        onClose={() => {
+          setAddMenuDialog(false);
+          setDialogTitle("");
+        }}
+      >
+        <DialogTitle>Dodaj novi menu</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Dodaje novi menu na odabrani datum. Neće odmah biti vidljiv na
+            stranici.
+          </DialogContentText>
+          <QuillTextEditor
+            value={dialogTitle}
+            onChange={setDialogTitle}
+            formats={[]}
+            containerClassName="mt-2"
+            className="[&>div>div]:!min-h-fit [&>div>div]:line-clamp-1"
+            placeholder="Naslov"
+            useToolbar={false}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setAddMenuDialog(false);
+              setDialogTitle("");
+            }}
+            className="!text-black"
+          >
+            Odustani
+          </Button>
+          <LoadingButton onClick={handleCreateMenu} loading={isCreating}>
+            Dodaj
+          </LoadingButton>
+        </DialogActions>
+      </Dialog>
     </Layout>
   );
 };

@@ -21,6 +21,7 @@ import {
   faTrash,
   faPen,
   faMagnifyingGlass,
+  faExclamationTriangle,
 } from "@fortawesome/pro-regular-svg-icons";
 import Link from "next/link";
 import dayjs from "dayjs";
@@ -30,6 +31,7 @@ import PreviewDialog from "../../components/Prehrana/Menus/PreviewDialog";
 import { useMenus } from "../../features/menus";
 import useDebounce from "../../lib/useDebounce";
 import { useRestaurants } from "../../features/restaurant";
+import clearHtmlFromString from "../../lib/clearHtmlFromString";
 
 const MenuList = () => {
   const [page, setPage] = useState(1);
@@ -92,6 +94,11 @@ const MenuList = () => {
   });
 
   const headCells = [
+    {
+      id: "title",
+      sort: true,
+      label: "Naziv",
+    },
     {
       id: "menu_date",
       sort: true,
@@ -224,6 +231,7 @@ const MenuList = () => {
                       date: menus?.filter(
                         (menu) => menu.id === selectedMenus[0]
                       )[0]?.date,
+                      activeMenu: selectedMenus[0],
                       restaurantId: selectedRestaurantId,
                     },
                   }}
@@ -239,6 +247,17 @@ const MenuList = () => {
           )}
           rowCells={(row) => (
             <>
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  {row.status !== "publish" && (
+                    <FontAwesomeIcon
+                      icon={faExclamationTriangle}
+                      className="text-error"
+                    />
+                  )}
+                  {clearHtmlFromString(row.title)}
+                </div>
+              </TableCell>
               <TableCell>
                 <strong>
                   {row.date

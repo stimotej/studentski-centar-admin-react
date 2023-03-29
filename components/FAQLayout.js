@@ -145,6 +145,7 @@ const FAQLayout = ({ faqPageCategoryId, mediaCategoryId, from }) => {
                   <QuillTextEditor
                     value={faq.title}
                     className="[&>div>div>p]:hover:cursor-pointer"
+                    formats={[]}
                     includeStyles={false}
                     readOnly
                   />
@@ -206,8 +207,10 @@ const FAQLayout = ({ faqPageCategoryId, mediaCategoryId, from }) => {
           <QuillTextEditor
             value={question}
             onChange={setQuestion}
+            formats={[]}
             className="[&>div>div]:!min-h-fit"
             useToolbar={false}
+            placeholder="Pitanje"
           />
           <QuillTextEditor
             containerClassName="mt-2"

@@ -10,7 +10,6 @@ import {
   IconButton,
   TextField,
 } from "@mui/material";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import LoadingButton from "@mui/lab/LoadingButton";
 import { useEffect, useState } from "react";
@@ -67,9 +66,8 @@ const ChangeDateDialog = ({
             <div className="flex items-center flex-wrap gap-3">
               <span className="mr-4">Odaberite datum:</span>
               <DatePicker
-                disableFuture
                 openTo="day"
-                inputFormat="dd/MM/yyyy"
+                inputFormat="DD/MM/YYYY"
                 views={["day", "month", "year"]}
                 value={date}
                 onChange={handleSelectDate}
