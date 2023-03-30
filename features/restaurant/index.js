@@ -18,6 +18,7 @@ export const useRestaurants = (options) => {
         {
           params: {
             categories: restaurantCategoryId,
+            orderby: "order",
             order: "asc",
             timestamp: new Date().getTime(),
             status: ["publish", "draft"],
@@ -29,6 +30,9 @@ export const useRestaurants = (options) => {
     },
     {
       select: (data) => data.map((restaurant) => formatRestaurant(restaurant)),
+      onError: (error) => {
+        console.log(error.response.data);
+      },
       ...options,
     }
   );

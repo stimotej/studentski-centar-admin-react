@@ -46,6 +46,7 @@ const Home = () => {
     isError: isCategoriesError,
   } = useAdminCategories({
     parent: adminSmjestajCategory,
+    orderby: "description",
   });
 
   const {
@@ -85,7 +86,7 @@ const Home = () => {
     if (posts) {
       const dormitory = posts.find((d) => d.id === page) || posts?.[0];
       const categoryId =
-        categories.find((c) => dormitory.categories.includes(c.id))?.id ||
+        categories?.find((c) => dormitory.categories.includes(c.id))?.id ||
         categories?.[0]?.id;
       if (!dormitory) return;
       setPage(dormitory.id);

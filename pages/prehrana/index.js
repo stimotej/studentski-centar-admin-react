@@ -12,19 +12,13 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  ListItemIcon,
-  ListItemText,
-  MenuItem,
   MenuList,
   Paper,
-  Tooltip,
 } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faPlus,
-  faTriangleExclamation,
-} from "@fortawesome/pro-regular-svg-icons";
+import { faPlus } from "@fortawesome/pro-regular-svg-icons";
 import { LoadingButton } from "@mui/lab";
+import DraggableMenuItems from "../../components/Prehrana/DraggableMenuItems";
 const QuillTextEditor = dynamic(
   () => import("../../components/Elements/QuillTextEditor"),
   { ssr: false }
@@ -100,34 +94,11 @@ const Home = () => {
                     Nema restorana za prikaz
                   </div>
                 ) : (
-                  restaurants?.map((restaurant) => (
-                    <MenuItem
-                      key={restaurant.id}
-                      selected={page === restaurant.id}
-                      onClick={() => setPage(restaurant.id)}
-                    >
-                      {restaurant.status === "draft" && (
-                        <Tooltip title="Još nije vidljivo na stranici." arrow>
-                          <ListItemIcon>
-                            <FontAwesomeIcon
-                              icon={faTriangleExclamation}
-                              className="text-error"
-                            />
-                          </ListItemIcon>
-                        </Tooltip>
-                      )}
-                      <ListItemText className="line-clamp-1">
-                        <QuillTextEditor
-                          value={restaurant.title}
-                          useToolbar={false}
-                          formats={[]}
-                          className="[&>div>div>p]:hover:cursor-pointer [&>div>div]:line-clamp-1"
-                          readOnly
-                          includeStyles={false}
-                        />
-                      </ListItemText>
-                    </MenuItem>
-                  ))
+                  <DraggableMenuItems
+                    items={restaurants}
+                    value={page}
+                    onChange={setPage}
+                  />
                 )}
               </MenuList>
             </Paper>

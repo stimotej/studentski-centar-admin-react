@@ -10,7 +10,7 @@ import { toast } from "react-toastify";
 import { ItemTypesDnD } from "../../lib/constants";
 import MediaSelectDialog from "../MediaSelectDialog";
 
-function replaceElements(arrayState, dragIndex, hoverIndex) {
+export function replaceElements(arrayState, dragIndex, hoverIndex) {
   const array = [...arrayState];
   const dragItem = array[dragIndex];
   const hoverItem = array[hoverIndex];

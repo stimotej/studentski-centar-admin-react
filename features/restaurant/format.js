@@ -9,6 +9,7 @@ const formatRestaurant = (restaurant) => ({
   radnoVrijeme: restaurant.meta.radno_vrijeme,
   lokacija: restaurant.meta.lokacija,
   category_id: restaurant.meta.kategorija_proizvoda,
+  order: restaurant.meta.order,
 });
 
 export default formatRestaurant;
