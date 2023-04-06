@@ -4,7 +4,7 @@ import MediaSelectDialog from "../MediaSelectDialog";
 import clsx from "clsx";
 
 const SelectMediaInput = forwardRef(function SelectMediaInput(
-  { defaultValue, onChange, className, mediaCategoryId, imgAlt },
+  { defaultValue, onChange, onChangeSrc, className, mediaCategoryId, imgAlt },
   ref
 ) {
   const [mediaDialog, setMediaDialog] = useState(false);
@@ -19,6 +19,7 @@ const SelectMediaInput = forwardRef(function SelectMediaInput(
   const handleSelectMedia = (value) => {
     setFile(value);
     onChange && onChange(value.id);
+    onChangeSrc && onChangeSrc(value.src);
   };
 
   return (

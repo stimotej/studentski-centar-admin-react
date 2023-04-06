@@ -32,7 +32,7 @@ const MenuPdf = ({ restaurant, title, date, products }) => {
   ];
 
   return (
-    <Document title="Obrazac za prijavu poslodavaca">
+    <Document title={title}>
       {meals.map((meal) => {
         if (products[meal.field_name]) {
           return (

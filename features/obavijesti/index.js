@@ -100,13 +100,14 @@ export const useCreateObavijest = () => {
           content: obavijest?.content,
           featured_media: obavijest?.imageId,
           status: obavijest?.status,
-          categories: [obavijest?.category],
+          categories: obavijest?.categories,
           meta: {
             start_showing: obavijest?.startShowing,
             end_showing: obavijest?.endShowing,
             show_always: obavijest?.showAlways,
             event_date: obavijest?.eventDate,
             documents: obavijest?.documents,
+            featured: obavijest?.featured,
           },
         }
       );
@@ -139,13 +140,14 @@ export const useUpdateObavijest = () => {
           content: obavijest?.content,
           featured_media: obavijest?.imageId,
           status: obavijest?.status,
-          categories: [obavijest?.category],
+          categories: obavijest?.categories,
           meta: {
             start_showing: obavijest?.startShowing,
             end_showing: obavijest?.endShowing,
             show_always: obavijest?.showAlways,
             event_date: obavijest?.eventDate,
             documents: obavijest?.documents,
+            featured: obavijest?.featured,
           },
         }
       );

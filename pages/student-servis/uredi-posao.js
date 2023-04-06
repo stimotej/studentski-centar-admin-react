@@ -2,6 +2,7 @@ import { LoadingButton } from "@mui/lab";
 import { MobileDatePicker } from "@mui/x-date-pickers";
 import {
   Autocomplete,
+  Button,
   Checkbox,
   createFilterOptions,
   FormControlLabel,
@@ -22,10 +23,15 @@ import {
   useSkills,
   useUpdateJob,
 } from "../../features/jobs";
-import { jobTypesCategoryId } from "../../lib/constants";
+import {
+  jobTypesCategoryId,
+  studentskiServisCategoryId,
+} from "../../lib/constants";
 import { useAdminCategories } from "../../features/posts";
 import dynamic from "next/dynamic";
 import { toast } from "react-toastify";
+import MediaSelectDialog from "../../components/MediaSelectDialog";
+import SelectMediaInput from "../../components/Elements/SelectMediaInput";
 const QuillTextEditor = dynamic(
   () => import("../../components/Elements/QuillTextEditor"),
   { ssr: false }
@@ -46,6 +52,9 @@ const UrediPosao = () => {
   const [fromHome, setFromHome] = useState(false);
 
   const [files, setFiles] = useState([]);
+  const [image, setImage] = useState("");
+
+  const [mediaDialog, setMediaDialog] = useState(false);
 
   const formOptions = {
     mode: "onChange",
@@ -115,6 +124,7 @@ const UrediPosao = () => {
             ...data,
             city: fromHome ? "FROM_HOME" : data.city,
             categories: data.type,
+            image,
             documents:
               files.length > 0 &&
               files.map((file) => ({
@@ -140,6 +150,7 @@ const UrediPosao = () => {
           categories: data.type,
           allowed_sc: false,
           featured: false,
+          image,
           documents:
             files.length > 0 &&
             files.map((file) => ({
@@ -507,6 +518,21 @@ const UrediPosao = () => {
               <span className="text-sm text-error pl-2 mt-1">
                 {errors.other_description.message}
               </span>
+            )}
+          </div>
+
+          {/* SLIKA */}
+          <div>
+            <h3>Slika</h3>
+            <SelectMediaInput
+              defaultValue={image}
+              onChangeSrc={setImage}
+              mediaCategoryId={studentskiServisCategoryId}
+            />
+            {!!image && (
+              <Button className="!mt-1" onClick={() => setImage("")}>
+                Obriši odabir
+              </Button>
             )}
           </div>
 

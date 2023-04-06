@@ -13,7 +13,7 @@ const QuillTextEditor = dynamic(() => import("./Elements/QuillTextEditor"), {
 });
 import StoredPostNote from "./Obavijesti/Editor/StoredPostNote";
 import Layout from "./Layout";
-import { obavijestiCategoryId } from "../lib/constants";
+import { obavijestiCategoryId, sliderCategoryId } from "../lib/constants";
 import Loader from "./Elements/Loader";
 import {
   Checkbox,
@@ -26,7 +26,6 @@ import {
   RadioGroup,
   TextField,
 } from "@mui/material";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { MobileDatePicker } from "@mui/x-date-pickers/MobileDatePicker";
 import Select from "@mui/material/Select";
@@ -59,6 +58,8 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
       `${from}_editor_start_showing`,
       `${from}_editor_end_showing`,
       `${from}_editor_show_always`,
+      `${from}_editor_featured`,
+      `${from}_editor_slider`,
       `${from}_editor_event_date`,
       `${from}_editor_files`,
     ],
@@ -94,6 +95,8 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
   const [startShowing, setStartShowing] = useState(null);
   const [endShowing, setEndShowing] = useState(null);
   const [showAlways, setShowAlways] = useState(false);
+  const [featured, setFeatured] = useState(false);
+  const [addToSlider, setAddToSlider] = useState(false);
   const [eventDate, setEventDate] = useState(null);
 
   const [image, setImage] = useState(null);
@@ -114,12 +117,18 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
       setTitle(obavijest.title || "");
       setContent(obavijest.content || "");
       setDescription(obavijest.description || "");
-      setCategory(parseInt(obavijest.categories) || null);
+      setCategory(
+        parseInt(
+          obavijest.categories.filter((cat) => cat !== sliderCategoryId)[0]
+        ) || null
+      );
       setStatus(obavijest.status || "publish");
       setImageId(obavijest.imageId || "");
       setStartShowing(obavijest.start_showing || null);
       setEndShowing(obavijest.end_showing || null);
       setShowAlways(!!obavijest.show_always);
+      setFeatured(!!obavijest.featured);
+      setAddToSlider(!!obavijest.categories.includes(sliderCategoryId));
       setEventDate(obavijest.event_date || null);
       setFiles(obavijest.documents || []);
     } else {
@@ -147,6 +156,12 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
       setShowAlways(
         window.localStorage.getItem(`${from}_editor_show_always`) === "true"
       );
+      setFeatured(
+        window.localStorage.getItem(`${from}_editor_featured`) === "true"
+      );
+      setAddToSlider(
+        window.localStorage.getItem(`${from}_editor_slider`) === "true"
+      );
       setEventDate(
         window.localStorage.getItem(`${from}_editor_event_date`) || null
       );
@@ -172,6 +187,8 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
     setStartShowing(null);
     setEndShowing(null);
     setShowAlways(false);
+    setFeatured(false);
+    setAddToSlider(false);
     setEventDate(null);
     setFiles([]);
   };
@@ -184,16 +201,25 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
     useUpdateObavijest();
 
   const handlePost = async () => {
+    console.log("cats", [
+      categoryId || category,
+      ...(addToSlider ? [sliderCategoryId] : []),
+    ]);
+
     const newPost = {
       title: title,
       content: content,
       description: description,
-      category: categoryId || category,
+      categories: [
+        category || categoryId,
+        ...(addToSlider ? [sliderCategoryId] : []),
+      ],
       status: status,
       imageId: imageId || 0,
       startShowing: startShowing,
       endShowing: endShowing,
       showAlways: showAlways,
+      featured: featured,
       eventDate: eventDate,
       documents:
         files.length > 0 &&
@@ -307,6 +333,7 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
           className="[&>div>div]:!min-h-[100px]"
           useToolbar={false}
         />
+
         {!categoryId ? (
           <FormControl fullWidth className="!mt-4">
             <InputLabel id="category-select">Kategorija</InputLabel>
@@ -386,6 +413,40 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
             label="Uvijek prikazuj"
           />
         </div>
+        <div className="mt-4">Istakni obavijest:</div>
+        <FormControlLabel
+          className="mt-1"
+          control={
+            <Checkbox
+              checked={featured}
+              onChange={(e) => {
+                setFeatured(e.target.checked);
+                !obavijestId &&
+                  window.localStorage.setItem(
+                    `${from}_editor_featured`,
+                    e.target.checked
+                  );
+              }}
+            />
+          }
+          label="Istaknuta obavijest"
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={addToSlider}
+              onChange={(e) => {
+                setAddToSlider(e.target.checked);
+                !obavijestId &&
+                  window.localStorage.setItem(
+                    `${from}_editor_slider`,
+                    e.target.checked
+                  );
+              }}
+            />
+          }
+          label="Dodaj na slider"
+        />
         <div className="mt-4 mb-3">Dodaj na kalendar:</div>
         <div className="flex flex-col gap-4">
           <DateTimePicker

@@ -19,6 +19,7 @@ const formatJob = (job) => ({
   description: job.meta.description,
   whyme: job.meta.whyme,
   other_description: job.meta.other_description,
+  image: job.meta.image,
   skills: job.meta.skills,
   labels: job.meta.labels,
   contact_student: job.meta.contact_student,
