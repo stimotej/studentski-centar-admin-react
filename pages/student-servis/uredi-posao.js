@@ -1,15 +1,6 @@
 import { LoadingButton } from "@mui/lab";
 import { MobileDatePicker } from "@mui/x-date-pickers";
-import {
-  Autocomplete,
-  Button,
-  Checkbox,
-  createFilterOptions,
-  FormControlLabel,
-  InputAdornment,
-  MenuItem,
-  TextField,
-} from "@mui/material";
+import { Autocomplete, Button, MenuItem, TextField } from "@mui/material";
 import clsx from "clsx";
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
@@ -17,7 +8,6 @@ import { MdArrowBack } from "react-icons/md";
 import Layout from "../../components/Layout";
 import { Controller, useForm } from "react-hook-form";
 import {
-  useCompanies,
   useCreateJob,
   useJob,
   useSkills,
@@ -30,8 +20,9 @@ import {
 import { useAdminCategories } from "../../features/posts";
 import dynamic from "next/dynamic";
 import { toast } from "react-toastify";
-import MediaSelectDialog from "../../components/MediaSelectDialog";
 import SelectMediaInput from "../../components/Elements/SelectMediaInput";
+import MediaSelectDialog from "../../components/MediaSelectDialog";
+import DisplayFiles from "../../components/Elements/DisplayFiles";
 const QuillTextEditor = dynamic(
   () => import("../../components/Elements/QuillTextEditor"),
   { ssr: false }
@@ -42,7 +33,6 @@ const UrediPosao = () => {
   const jobId = router.query?.id;
 
   const { data: skills, isLoading: loadingSkills } = useSkills();
-  const { data: companies, isLoading: loadingCompanies } = useCompanies();
 
   const { data: categories, isLoading: isLoadingCategories } =
     useAdminCategories({
@@ -53,8 +43,6 @@ const UrediPosao = () => {
 
   const [files, setFiles] = useState([]);
   const [image, setImage] = useState("");
-
-  const [mediaDialog, setMediaDialog] = useState(false);
 
   const formOptions = {
     mode: "onChange",
@@ -67,15 +55,15 @@ const UrediPosao = () => {
       whyme: "",
       other_description: "",
       type: 0,
-      skills: [],
-      labels: [],
+      skills: "",
+      labels: "",
       city: "",
       positions: 1,
-      work_start: null,
-      work_end: null,
+      work_start: "",
+      work_end: "",
       work_hours: "",
-      payment_rate: 0,
-      payment_other: 0,
+      payment_rate: "",
+      payment_other: "",
       active_until: null,
       contact_student: "",
       contact_sc: "",
@@ -103,6 +91,7 @@ const UrediPosao = () => {
       });
       setFromHome(job.city === "FROM_HOME");
       setFiles(job.documents || []);
+      setImage(job.image || "");
     }
   }, [job]);
 
@@ -122,6 +111,8 @@ const UrediPosao = () => {
           id: jobId,
           job: {
             ...data,
+            skills: data.skills ? data.skills.split(",") : [],
+            labels: data.labels ? data.labels.split(",") : [],
             city: fromHome ? "FROM_HOME" : data.city,
             categories: data.type,
             image,
@@ -146,6 +137,8 @@ const UrediPosao = () => {
       createJob(
         {
           ...data,
+          skills: data.skills ? data.skills.split(",") : [],
+          labels: data.labels ? data.labels.split(",") : [],
           city: fromHome ? "FROM_HOME" : data.city,
           categories: data.type,
           allowed_sc: false,
@@ -170,8 +163,22 @@ const UrediPosao = () => {
     }
   };
 
+  const [mediaDialog, setMediaDialog] = useState(false);
+
+  const handleSelectMedia = (media) => {
+    setFiles((files) => [...files, media]);
+  };
+
   return (
     <Layout>
+      <MediaSelectDialog
+        opened={!!mediaDialog}
+        onClose={() => setMediaDialog(false)}
+        onSelect={handleSelectMedia}
+        categoryId={studentskiServisCategoryId}
+        mediaType="application"
+      />
+
       <div className="px-5 md:w-2/3 lg:w-1/2 mx-auto">
         <button
           onClick={() => router.back()}
@@ -207,32 +214,11 @@ const UrediPosao = () => {
             control={control}
             name="company_name"
             render={({ field }) => (
-              <Autocomplete
+              <TextField
                 {...field}
-                onChange={undefined}
-                onInputChange={(_, value) => field.onChange(value)}
-                getOptionLabel={(option) => option || ""}
-                filterOptions={createFilterOptions({
-                  limit: 20,
-                })}
-                freeSolo
-                options={companies?.map((company) => company.short_name) ?? []}
-                loading={loadingCompanies}
-                renderOption={(props, option) => (
-                  <li {...props} key={option + Math.random().toString()}>
-                    {option}
-                  </li>
-                )}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Naručitelj (poslodavac)"
-                    error={!!errors.company_name}
-                    helperText={
-                      errors.company_name && errors.company_name.message
-                    }
-                  />
-                )}
+                label="Naručitelj (poslodavac)"
+                error={!!errors.company_name}
+                helperText={errors.company_name && errors.company_name.message}
               />
             )}
           />
@@ -304,53 +290,34 @@ const UrediPosao = () => {
                 />
               )}
             />
-            <FormControlLabel
-              className="!ml-1 mt-1 w-fit"
-              control={<Checkbox />}
-              checked={fromHome}
-              onChange={(e) => setFromHome(e.target.checked)}
-              label="Rad na daljinu"
-            />
           </div>
 
           {/* POČETAK I KRAJ RADA */}
           <div className="flex gap-4">
-            <div className="flex-1 flex flex-col">
+            <div className="flex flex-col flex-1">
               <Controller
                 control={control}
                 name="work_start"
                 render={({ field }) => (
-                  <MobileDatePicker
+                  <TextField
                     {...field}
                     label="Početak rada"
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        error={!!errors.work_start}
-                        helperText={
-                          errors.work_start && errors.work_start.message
-                        }
-                      />
-                    )}
+                    error={!!errors.work_start}
+                    helperText={errors.work_start && errors.work_start.message}
                   />
                 )}
               />
             </div>
-            <div className="flex-1 flex flex-col">
+            <div className="flex flex-col flex-1">
               <Controller
                 control={control}
                 name="work_end"
                 render={({ field }) => (
-                  <MobileDatePicker
+                  <TextField
                     {...field}
                     label="Očekivano trajanje posla"
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        error={!!errors.work_end}
-                        helperText={errors.work_end && errors.work_end.message}
-                      />
-                    )}
+                    error={!!errors.work_end}
+                    helperText={errors.work_end && errors.work_end.message}
                   />
                 )}
               />
@@ -358,25 +325,43 @@ const UrediPosao = () => {
           </div>
 
           {/* SATNICA */}
-          <Controller
-            control={control}
-            name="payment_rate"
-            render={({ field }) => (
-              <TextField
-                {...field}
-                fullWidth
-                type="number"
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">€</InputAdornment>
-                  ),
-                }}
-                label={"Neto cijena sata ili količina posla (za redoviti rad)"}
-                error={!!errors.payment_rate}
-                helperText={errors.payment_rate && errors.payment_rate.message}
+          <div className="flex flex-wrap gap-4">
+            <div className="flex flex-col flex-1">
+              <Controller
+                control={control}
+                name="payment_rate"
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    fullWidth
+                    label={
+                      "Neto cijena sata ili količina posla (za redoviti rad)"
+                    }
+                    error={!!errors.payment_rate}
+                    helperText={
+                      errors.payment_rate && errors.payment_rate.message
+                    }
+                  />
+                )}
               />
-            )}
-          />
+            </div>
+            <div className="flex flex-col flex-1">
+              <Controller
+                control={control}
+                name="positions"
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label="Potreban broj izvođača (studenata/ica)"
+                    type={"number"}
+                    inputProps={{ min: 1 }}
+                    error={!!errors.positions}
+                    helperText={errors.positions && errors.positions.message}
+                  />
+                )}
+              />
+            </div>
+          </div>
 
           {/* DRUGE NAKNADE */}
           <Controller
@@ -386,12 +371,6 @@ const UrediPosao = () => {
               <TextField
                 {...field}
                 fullWidth
-                type="number"
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">€</InputAdornment>
-                  ),
-                }}
                 label={"Druge naknade (putni troškovi, hrana, smještaj i dr.)"}
                 error={!!errors.payment_other}
                 helperText={
@@ -401,42 +380,18 @@ const UrediPosao = () => {
             )}
           />
 
-          <div className="flex flex-wrap gap-4">
-            <div className="flex flex-col flex-1">
-              <Controller
-                control={control}
-                name="work_hours"
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label="Radno vrijeme"
-                    error={!!errors.work_hours}
-                    helperText={errors.work_hours && errors.work_hours.message}
-                  />
-                )}
+          <Controller
+            control={control}
+            name="work_hours"
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Radno vrijeme"
+                error={!!errors.work_hours}
+                helperText={errors.work_hours && errors.work_hours.message}
               />
-            </div>
-
-            {/* BROJ OTVORENIH POZICIJA */}
-            <div className="flex-1">
-              <div className="flex flex-col flex-1">
-                <Controller
-                  control={control}
-                  name="positions"
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      label="Potreban broj izvođača (studenata/ica)"
-                      type={"number"}
-                      inputProps={{ min: 1 }}
-                      error={!!errors.positions}
-                      helperText={errors.positions && errors.positions.message}
-                    />
-                  )}
-                />
-              </div>
-            </div>
-          </div>
+            )}
+          />
 
           {/* TRAJANJE PRIJAVA */}
           <Controller
@@ -466,12 +421,7 @@ const UrediPosao = () => {
               control={control}
               name="description"
               render={({ field }) => (
-                <QuillTextEditor
-                  {...field}
-                  placeholder="Unesi opis posla..."
-                  files={files}
-                  setFiles={setFiles}
-                />
+                <QuillTextEditor {...field} placeholder="Unesi opis posla..." />
               )}
             />
             {!!errors.description && (
@@ -536,32 +486,29 @@ const UrediPosao = () => {
             )}
           </div>
 
+          {/* DATOTEKE */}
+          <div>
+            <h3>Datoteke</h3>
+            <button
+              className="mt-2 w-full p-4 bg-secondary rounded-lg border border-black/20 hover:border-black text-black/60"
+              onClick={() => setMediaDialog(true)}
+            >
+              Odaberi datoteku
+            </button>
+            <DisplayFiles files={files} setFiles={setFiles} className="mt-2" />
+          </div>
+
           {/* SKILLS */}
           <Controller
             control={control}
             name="skills"
             render={({ field }) => (
-              <Autocomplete
+              <TextField
                 {...field}
-                onChange={(_, value) => field.onChange(value)}
-                multiple
-                options={skills ?? []}
-                loading={loadingSkills}
-                filterSelectedOptions
-                freeSolo
-                renderOption={(props, option) => (
-                  <li {...props} key={option + Math.random().toString()}>
-                    {option}
-                  </li>
-                )}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Obavezna znanja"
-                    placeholder="Unesi znanje"
-                    helperText="Unesite znanje i pritisnite tipku Enter za dodavanje"
-                  />
-                )}
+                label="Obavezna znanja"
+                error={!!errors.skills}
+                placeholder="Rukovanje alatom, rad na računalu..."
+                helperText="Unesite znanja odvojena zarezom"
               />
             )}
           />
@@ -571,27 +518,12 @@ const UrediPosao = () => {
             control={control}
             name="labels"
             render={({ field }) => (
-              <Autocomplete
+              <TextField
                 {...field}
-                onChange={(_, value) => field.onChange(value)}
-                multiple
-                options={skills ?? []}
-                loading={loadingSkills}
-                filterSelectedOptions
-                freeSolo
-                renderOption={(props, option) => (
-                  <li {...props} key={option + Math.random().toString()}>
-                    {option}
-                  </li>
-                )}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Poželjne vještine"
-                    placeholder="Unesi vještinu"
-                    helperText="Unesite znanje i pritisnite tipku Enter za dodavanje"
-                  />
-                )}
+                label="Poželjne vještine"
+                error={!!errors.labels}
+                placeholder="Spretnost, kreativnost, rad u timu..."
+                helperText="Unesite vještine odvojene zarezom"
               />
             )}
           />
