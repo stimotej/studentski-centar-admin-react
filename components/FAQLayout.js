@@ -25,12 +25,39 @@ import {
   useUpdatePost,
 } from "../features/posts";
 import { LoadingButton } from "@mui/lab";
-import { useRouter } from "next/router";
 const QuillTextEditor = dynamic(() => import("./Elements/QuillTextEditor"), {
   ssr: false,
 });
 
-const FAQLayout = ({ faqPageCategoryId, mediaCategoryId, from }) => {
+const FAQLayout = ({ faqPageCategoryId, mediaCategoryId }) => {
+  const [addFAQModal, setAddFAQModal] = useState(false);
+
+  return (
+    <Layout>
+      <Header
+        title="Često postavljana pitanja"
+        text="Dodaj pitanje"
+        icon={<FontAwesomeIcon icon={faPlus} />}
+        onClick={() => setAddFAQModal(true)}
+      />
+      <div className="px-5 md:px-10 pb-6">
+        <FAQList
+          faqPageCategoryId={faqPageCategoryId}
+          mediaCategoryId={mediaCategoryId}
+          addFAQModal={addFAQModal}
+          setAddFAQModal={setAddFAQModal}
+        />
+      </div>
+    </Layout>
+  );
+};
+
+export const FAQList = ({
+  faqPageCategoryId,
+  mediaCategoryId,
+  addFAQModal,
+  setAddFAQModal,
+}) => {
   const {
     data: faqList,
     isLoading: isLoadingFaq,
@@ -41,6 +68,7 @@ const FAQLayout = ({ faqPageCategoryId, mediaCategoryId, from }) => {
     categories: faqPageCategoryId,
   });
 
+  const [deleteFaqDialog, setDeleteFaqDialog] = useState(false);
   const [mediaDialogOpened, setMediaDialogOpened] = useState(false);
 
   const [image, setImage] = useState(null);
@@ -49,9 +77,6 @@ const FAQLayout = ({ faqPageCategoryId, mediaCategoryId, from }) => {
   const [faqId, setFaqId] = useState("");
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
-  const [addFAQModal, setAddFAQModal] = useState(false);
-
-  const [deleteFaqDialog, setDeleteFaqDialog] = useState(false);
 
   const { mutate: createFAQPost, isLoading: isCreatingFaq } = useCreatePost();
   const { mutate: updateFAQPost, isLoading: isUpdatingFaq } = useUpdatePost();
@@ -107,73 +132,65 @@ const FAQLayout = ({ faqPageCategoryId, mediaCategoryId, from }) => {
   };
 
   return (
-    <Layout>
-      <Header
-        title="Često postavljana pitanja"
-        text="Dodaj pitanje"
-        icon={<FontAwesomeIcon icon={faPlus} />}
-        onClick={() => setAddFAQModal(true)}
-      />
-      <div className="px-5 md:px-10 pb-6">
-        {isLoadingFaq ? (
-          <div className="flex items-center justify-center mt-6">
-            <CircularProgress size={32} />
-          </div>
-        ) : isFaqError ? (
-          <div className="flex flex-col items-start text-error my-2">
-            Greška kod učitavanja često postavljanih pitanja
-            <LoadingButton
-              variant="outlined"
-              className="mt-4"
-              onClick={() => refetchFaq()}
-              loading={isRefetchingFaq}
-            >
-              Pokušaj ponovno
-            </LoadingButton>
-          </div>
-        ) : faqList.length <= 0 ? (
-          <div className="text-gray-500 mt-4">
-            Nema često postavljanih pitanja za prikaz
-          </div>
-        ) : (
-          faqList?.map((faq, index) => (
-            <Fragment key={index}>
-              <Accordion>
-                <AccordionSummary
-                  expandIcon={<FontAwesomeIcon icon={faChevronDown} />}
-                >
-                  <QuillTextEditor
-                    value={faq.title}
-                    className="[&>div>div>p]:hover:cursor-pointer"
-                    formats={[]}
-                    includeStyles={false}
-                    readOnly
-                  />
-                </AccordionSummary>
-                <AccordionDetails>
-                  <QuillTextEditor
-                    value={faq.content}
-                    containerClassName="bg-white border-none"
-                    className="[&>div>div]:p-0 [&>div>div]:pb-4 [&>div>div]:!min-h-fit"
-                    readOnly
-                  />
-                  <div className="flex gap-2 mt-2">
-                    <Button onClick={() => handleOpenEditFAQDialog(faq)}>
-                      Uredi
-                    </Button>
-                    <Button
-                      color="error"
-                      onClick={() => setDeleteFaqDialog(faq.id)}
-                    >
-                      Obriši
-                    </Button>
-                  </div>
-                </AccordionDetails>
-              </Accordion>
-            </Fragment>
-          ))
-        )}
-      </div>
+    <>
+      {isLoadingFaq ? (
+        <div className="flex items-center justify-center mt-6">
+          <CircularProgress size={32} />
+        </div>
+      ) : isFaqError ? (
+        <div className="flex flex-col items-start text-error my-2">
+          Greška kod učitavanja često postavljanih pitanja
+          <LoadingButton
+            variant="outlined"
+            className="mt-4"
+            onClick={() => refetchFaq()}
+            loading={isRefetchingFaq}
+          >
+            Pokušaj ponovno
+          </LoadingButton>
+        </div>
+      ) : faqList.length <= 0 ? (
+        <div className="text-gray-500 mt-4">
+          Nema često postavljanih pitanja za prikaz
+        </div>
+      ) : (
+        faqList?.map((faq, index) => (
+          <Fragment key={index}>
+            <Accordion>
+              <AccordionSummary
+                expandIcon={<FontAwesomeIcon icon={faChevronDown} />}
+              >
+                <QuillTextEditor
+                  value={faq.title}
+                  className="[&>div>div>p]:hover:cursor-pointer"
+                  formats={[]}
+                  includeStyles={false}
+                  readOnly
+                />
+              </AccordionSummary>
+              <AccordionDetails>
+                <QuillTextEditor
+                  value={faq.content}
+                  containerClassName="bg-white border-none"
+                  className="[&>div>div]:p-0 [&>div>div]:pb-4 [&>div>div]:!min-h-fit"
+                  readOnly
+                />
+                <div className="flex gap-2 mt-2">
+                  <Button onClick={() => handleOpenEditFAQDialog(faq)}>
+                    Uredi
+                  </Button>
+                  <Button
+                    color="error"
+                    onClick={() => setDeleteFaqDialog(faq.id)}
+                  >
+                    Obriši
+                  </Button>
+                </div>
+              </AccordionDetails>
+            </Accordion>
+          </Fragment>
+        ))
+      )}
       <Dialog
         open={!!addFAQModal}
         maxWidth="md"
@@ -281,7 +298,7 @@ const FAQLayout = ({ faqPageCategoryId, mediaCategoryId, from }) => {
           </LoadingButton>
         </DialogActions>
       </Dialog>
-    </Layout>
+    </>
   );
 };
 
