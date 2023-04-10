@@ -1,7 +1,8 @@
 import dayjs from "dayjs";
 import Image from "next/image";
-import { MdOutlineImage } from "react-icons/md";
+import clearHtmlFromString from "../../../lib/clearHtmlFromString";
 import dynamic from "next/dynamic";
+import clsx from "clsx";
 const QuillTextEditor = dynamic(
   () => import("../../Elements/QuillTextEditor"),
   {
@@ -19,35 +20,38 @@ const Item = ({
 }) => {
   return (
     <div
-      className={`flex items-center rounded-lg p-2 cursor-pointer hover:bg-white hover:shadow-lg transition-shadow ${
+      className={`flex rounded-lg p-2 cursor-pointer hover:bg-white hover:shadow-lg transition-shadow ${
         active ? "shadow-lg bg-white mb-0 lg:mb-4" : "mb-4"
       } ${isEvent && "!items-start"} ${className}`}
       onClick={onClick}
     >
-      {obavijest.image ? (
-        <Image
-          src={obavijest.image}
-          alt={obavijest.title}
-          width={112}
-          height={112}
-          className="rounded-lg object-cover w-28 h-28 mr-4"
-        />
-      ) : (
-        <div className="w-28 mr-4">
-          <MdOutlineImage className="w-24 h-24 text-black/50 mx-auto" />
-        </div>
-      )}
+      <Image
+        src={obavijest.image || "/zaposlenici/placeholder.png"}
+        alt={obavijest.title}
+        width={112}
+        height={112}
+        className="rounded-lg object-cover w-28 h-28 mr-4 mt-2"
+      />
       <div className="flex-1 flex flex-col break-all">
         {isEvent && (
           <p className="text-sm text-gray-500">
-            {dayjs(obavijest.date).format("DD.MM.YYYY HH:mm[h]")}
+            {dayjs(obavijest.date).format("DD.MM.YYYY [u] HH:mm[h]")}
           </p>
         )}
         <div className="flex items-center gap-3">
           <QuillTextEditor
-            value={obavijest.title}
+            value={
+              clearHtmlFromString(obavijest.title)
+                ? obavijest.title
+                : "Nema naslova"
+            }
             containerClassName="!bg-transparent border-none"
-            className="[&>div>div]:p-0 [&>div>div]:!min-h-fit [&>div>div]:line-clamp-2 [&>div>div>p]:text-lg [&>div>div>p]:font-semibold [&>div>div>p]:hover:cursor-pointer"
+            className={clsx(
+              "[&>div>div]:p-0 [&>div>div]:!min-h-fit [&>div>div]:line-clamp-1 [&>div>div>p]:text-lg [&>div>div>p]:font-semibold [&>div>div>p]:hover:cursor-pointer",
+              clearHtmlFromString(obavijest.title)
+                ? "text-gray-900"
+                : "text-error"
+            )}
             readOnly
           />
           {obavijest.status === "draft" && (
@@ -79,9 +83,18 @@ const Item = ({
         )}
         <p className="text-sm font-light my-2">
           <QuillTextEditor
-            value={obavijest.description}
+            value={
+              clearHtmlFromString(obavijest.description)
+                ? obavijest.description
+                : "Nema opisa obavijesti"
+            }
             containerClassName="!bg-transparent border-none"
-            className="[&>div>div]:p-0 [&>div>div]:!min-h-fit [&>div>div]:line-clamp-4 [&>div>div>p]:font-light [&>div>div>p]:text-sm [&>div>div>p]:hover:cursor-pointer"
+            className={clsx(
+              "[&>div>div]:p-0 [&>div>div]:!min-h-fit [&>div>div]:line-clamp-2 [&>div>div>p]:font-light [&>div>div>p]:text-sm [&>div>div>p]:hover:cursor-pointer",
+              clearHtmlFromString(obavijest.description)
+                ? "text-gray-600"
+                : "text-error [&>div>div>p]:!font-normal"
+            )}
             readOnly
           />
         </p>
@@ -92,14 +105,14 @@ const Item = ({
               {dayjs(obavijest.date).format("DD.MM.YYYY HH:mm[h]")}
             </p>
             <div className="text-sm">
-              {obavijest.show_always || !obavijest.end_showing ? (
-                <span className="text-orange-500">
-                  Obavijest se uvijek prikazuje
-                </span>
-              ) : dayjs().isBefore(obavijest.start_showing) ? (
+              {dayjs().isBefore(obavijest.start_showing) ? (
                 <span className="text-red-500">{`Obavijest se prikazuje od: ${dayjs(
                   obavijest.start_showing
                 ).format("DD.MM.YYYY")}`}</span>
+              ) : obavijest.end_showing === "Never" ? (
+                <span className="text-orange-500">
+                  Obavijest se uvijek prikazuje
+                </span>
               ) : dayjs().isAfter(obavijest.end_showing) ? (
                 <span className="text-red-700">Obavijest se ne prikazuje</span>
               ) : (

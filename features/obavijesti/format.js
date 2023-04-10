@@ -9,7 +9,7 @@ const formatObavijest = (obavijest) => ({
     ?.replace("\n", ""),
   content: obavijest?.content?.rendered,
   categories: obavijest?.categories,
-  category: obavijest?.category_name,
+  category: obavijest?.category,
   link: obavijest?.link,
   date: obavijest?.date,
   status: obavijest?.status,

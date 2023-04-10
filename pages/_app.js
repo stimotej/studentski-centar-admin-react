@@ -30,8 +30,6 @@ function MyApp({ Component, pageProps }) {
     const token = window.localStorage.getItem("access_token");
     axios.defaults.headers.post["Content-Type"] = "application/json";
     axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    axios.defaults.params = {};
-    axios.defaults.params["JWT"] = token;
   }, []);
 
   return (

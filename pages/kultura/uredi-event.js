@@ -23,12 +23,11 @@ import {
   RadioGroup,
   TextField,
 } from "@mui/material";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import Autocomplete from "@mui/material/Autocomplete";
 import dayjs from "dayjs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFilePdf, faXmark } from "@fortawesome/pro-regular-svg-icons";
+import { faXmark } from "@fortawesome/pro-regular-svg-icons";
 import MediaSelectDialog from "../../components/MediaSelectDialog";
 import {
   useCreateEvent,
@@ -37,6 +36,7 @@ import {
 } from "../../features/events";
 import MyDialog from "../../components/Elements/MyDialog";
 import getIconByMimeType from "../../lib/getIconbyMimeType";
+import clearHtmlFromString from "../../lib/clearHtmlFromString";
 
 const storedPostKeys = [
   "event_title",
@@ -72,21 +72,20 @@ const Editor = () => {
   const [storedPostNote, setStoredPostNote] = useState(false);
 
   const router = useRouter();
+  const eventId = router.query.id;
 
   useEffect(() => {
     let storedPostExists = false;
     storedPostKeys.forEach((key) => {
       let storedPost = window.localStorage.getItem(key);
-      if (storedPost?.length) storedPostExists = true;
-      if (key === "event_content" && storedPost === "<p><br></p>")
-        storedPostExists = false;
-      if (key === "event_title" && storedPost === "<p><br></p>")
-        storedPostExists = false;
-      if (key === "event_status" && storedPost === "publish")
-        storedPostExists = false;
+      if (
+        clearHtmlFromString(storedPost || "") ||
+        (key === "event_status" && storedPost === "publish")
+      )
+        storedPostExists = true;
     });
     if (storedPostExists && !eventId) setStoredPostNote(true);
-  }, []);
+  }, [eventId]);
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -102,8 +101,6 @@ const Editor = () => {
   const [image, setImage] = useState(null);
 
   const [files, setFiles] = useState([]);
-
-  const eventId = router.query.id;
 
   const { data: event } = useEvent(eventId, {
     enabled: !!eventId,

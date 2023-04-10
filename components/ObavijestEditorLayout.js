@@ -40,11 +40,15 @@ import MyDialog from "./Elements/MyDialog";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/pro-regular-svg-icons";
 import getIconByMimeType from "../lib/getIconbyMimeType";
+import dayjs from "dayjs";
+import clearHtmlFromString from "../lib/clearHtmlFromString";
 
 const ObavijestEditorLayout = ({ categoryId, from }) => {
   const [storedPostNote, setStoredPostNote] = useState(false);
 
   const router = useRouter();
+
+  const obavijestId = router.query.id;
 
   const storedPostKeys = useMemo(
     () => [
@@ -57,7 +61,6 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
       `${from}_editor_status`,
       `${from}_editor_start_showing`,
       `${from}_editor_end_showing`,
-      `${from}_editor_show_always`,
       `${from}_editor_featured`,
       `${from}_editor_slider`,
       `${from}_editor_event_date`,
@@ -70,16 +73,14 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
     let storedPostExists = false;
     storedPostKeys.forEach((key) => {
       let storedPost = window.localStorage.getItem(key);
-      if (storedPost?.length) storedPostExists = true;
-      if (key === `${from}_editor_content` && storedPost === "<p><br></p>")
-        storedPostExists = false;
-      if (key === `${from}_editor_title` && storedPost === "<p><br></p>")
-        storedPostExists = false;
-      if (key === `${from}_editor_status` && storedPost === "publish")
-        storedPostExists = false;
+      if (
+        clearHtmlFromString(storedPost || "") ||
+        (key === `${from}_editor_status` && storedPost === "publish")
+      )
+        storedPostExists = true;
     });
-    if (storedPostExists && !categoryId) setStoredPostNote(true);
-  }, [storedPostKeys, from, categoryId]);
+    if (storedPostExists && !obavijestId) setStoredPostNote(true);
+  }, [storedPostKeys, from, obavijestId]);
 
   const { data: categories } = useCategories({
     enabled: !categoryId,
@@ -94,7 +95,6 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
 
   const [startShowing, setStartShowing] = useState(null);
   const [endShowing, setEndShowing] = useState(null);
-  const [showAlways, setShowAlways] = useState(false);
   const [featured, setFeatured] = useState(false);
   const [addToSlider, setAddToSlider] = useState(false);
   const [eventDate, setEventDate] = useState(null);
@@ -102,8 +102,6 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
   const [image, setImage] = useState(null);
 
   const [files, setFiles] = useState([]);
-
-  const obavijestId = router.query.id;
 
   const { data: obavijest } = useObavijest(obavijestId, {
     enabled: !!obavijestId,
@@ -125,8 +123,9 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
       setStatus(obavijest.status || "publish");
       setImageId(obavijest.imageId || "");
       setStartShowing(obavijest.start_showing || null);
-      setEndShowing(obavijest.end_showing || null);
-      setShowAlways(!!obavijest.show_always);
+      setEndShowing(
+        obavijest.end_showing === "Never" ? null : obavijest.end_showing
+      );
       setFeatured(!!obavijest.featured);
       setAddToSlider(!!obavijest.categories.includes(sliderCategoryId));
       setEventDate(obavijest.event_date || null);
@@ -152,9 +151,6 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
       );
       setEndShowing(
         window.localStorage.getItem(`${from}_editor_end_showing`) || null
-      );
-      setShowAlways(
-        window.localStorage.getItem(`${from}_editor_show_always`) === "true"
       );
       setFeatured(
         window.localStorage.getItem(`${from}_editor_featured`) === "true"
@@ -186,7 +182,6 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
     setStatus("publish");
     setStartShowing(null);
     setEndShowing(null);
-    setShowAlways(false);
     setFeatured(false);
     setAddToSlider(false);
     setEventDate(null);
@@ -201,11 +196,6 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
     useUpdateObavijest();
 
   const handlePost = async () => {
-    console.log("cats", [
-      categoryId || category,
-      ...(addToSlider ? [sliderCategoryId] : []),
-    ]);
-
     const newPost = {
       title: title,
       content: content,
@@ -216,9 +206,10 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
       ],
       status: status,
       imageId: imageId || 0,
-      startShowing: startShowing,
-      endShowing: endShowing,
-      showAlways: showAlways,
+      startShowing: startShowing
+        ? dayjs(startShowing).format("YYYY-MM-DD")
+        : dayjs().subtract(1, "day"),
+      endShowing: endShowing ? dayjs(endShowing).format("YYYY-MM-DD") : "Never",
       featured: featured,
       eventDate: eventDate,
       documents:
@@ -366,7 +357,6 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
             value={startShowing}
             toolbarTitle="Odaberite datum"
             label="Početak"
-            disabled={showAlways}
             onChange={(value) => {
               setStartShowing(value);
               !obavijestId &&
@@ -384,7 +374,6 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
             toolbarTitle="Odaberite datum"
             className="!mt-4"
             label="Kraj"
-            disabled={showAlways}
             onChange={(value) => {
               setEndShowing(value);
               !obavijestId &&
@@ -394,23 +383,6 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
                 );
             }}
             renderInput={(params) => <TextField {...params} />}
-          />
-          <FormControlLabel
-            className="mt-1"
-            control={
-              <Checkbox
-                checked={showAlways}
-                onChange={(e) => {
-                  setShowAlways(e.target.checked);
-                  !obavijestId &&
-                    window.localStorage.setItem(
-                      `${from}_editor_show_always`,
-                      e.target.checked
-                    );
-                }}
-              />
-            }
-            label="Uvijek prikazuj"
           />
         </div>
         <div className="mt-4">Istakni obavijest:</div>
