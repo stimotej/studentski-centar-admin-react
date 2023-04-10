@@ -258,7 +258,7 @@ const MenuList = () => {
                       className="text-error"
                     />
                   )}
-                  {clearHtmlFromString(row.title)}
+                  {clearHtmlFromString(row.title || "")}
                 </div>
               </TableCell>
               <TableCell>
@@ -299,7 +299,7 @@ const MenuList = () => {
                   <PDFDownloadLink
                     document={
                       <MenuPdf
-                        title={clearHtmlFromString(row.title)}
+                        title={clearHtmlFromString(row.title || "")}
                         restaurant={clearHtmlFromString(
                           restaurants?.find(
                             (item) => item.id === selectedRestaurantId

@@ -4,7 +4,6 @@ import { toast } from "react-toastify";
 import { adminPostsCategory } from "../../lib/constants";
 import formatPost from "./format";
 import postsKeys from "./queries";
-import clearHtmlFromString from "../../lib/clearHtmlFromString";
 
 export const usePosts = (filters, options) => {
   return useQuery(

@@ -14,7 +14,7 @@ const QuillEditor = dynamic(
 );
 import StoredPostNote from "../../components/Obavijesti/Editor/StoredPostNote";
 import Layout from "../../components/Layout";
-import { eventsCategoryId, userGroups } from "../../lib/constants";
+import { eventsCategoryId } from "../../lib/constants";
 import Loader from "../../components/Elements/Loader";
 import {
   FormControlLabel,

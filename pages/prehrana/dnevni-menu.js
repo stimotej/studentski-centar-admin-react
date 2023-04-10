@@ -332,7 +332,7 @@ const NewDnevniMenu = () => {
                 {menus.map((menu) => (
                   <Tab
                     key={menu.id}
-                    label={clearHtmlFromString(menu.title)}
+                    label={clearHtmlFromString(menu.title || "")}
                     value={menu.id}
                     icon={
                       menu.status !== "publish" ? (
