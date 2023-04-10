@@ -81,25 +81,25 @@ const Item = ({
             )}
           </div>
         )}
-        <p className="text-sm font-light my-2">
-          <QuillTextEditor
-            value={
-              clearHtmlFromString(obavijest.description || "")
-                ? obavijest.description
-                : "Nema opisa obavijesti"
-            }
-            containerClassName="!bg-transparent border-none"
-            className={clsx(
-              "[&>div>div]:p-0 [&>div>div]:!min-h-fit [&>div>div]:line-clamp-2 [&>div>div>p]:font-light [&>div>div>p]:text-sm [&>div>div>p]:hover:cursor-pointer",
-              clearHtmlFromString(obavijest.description || "")
-                ? "text-gray-600"
-                : "text-error [&>div>div>p]:!font-normal"
-            )}
-            readOnly
-          />
-        </p>
         {!isEvent && (
           <>
+            <p className="text-sm font-light my-2">
+              <QuillTextEditor
+                value={
+                  clearHtmlFromString(obavijest.description || "")
+                    ? obavijest.description
+                    : "Nema opisa obavijesti"
+                }
+                containerClassName="!bg-transparent border-none"
+                className={clsx(
+                  "[&>div>div]:p-0 [&>div>div]:!min-h-fit [&>div>div]:line-clamp-2 [&>div>div>p]:font-light [&>div>div>p]:text-sm [&>div>div>p]:hover:cursor-pointer",
+                  clearHtmlFromString(obavijest.description || "")
+                    ? "text-gray-600"
+                    : "text-error [&>div>div>p]:!font-normal"
+                )}
+                readOnly
+              />
+            </p>
             <p className="text-sm">
               {showCategory ? `${obavijest.category} | ` : null}
               {dayjs(obavijest.date).format("DD.MM.YYYY HH:mm[h]")}
