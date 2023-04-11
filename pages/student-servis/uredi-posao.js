@@ -1,18 +1,13 @@
 import { LoadingButton } from "@mui/lab";
 import { MobileDatePicker } from "@mui/x-date-pickers";
-import { Autocomplete, Button, MenuItem, TextField } from "@mui/material";
+import { Button, MenuItem, TextField } from "@mui/material";
 import clsx from "clsx";
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
 import { MdArrowBack } from "react-icons/md";
 import Layout from "../../components/Layout";
 import { Controller, useForm } from "react-hook-form";
-import {
-  useCreateJob,
-  useJob,
-  useSkills,
-  useUpdateJob,
-} from "../../features/jobs";
+import { useCreateJob, useJob, useUpdateJob } from "../../features/jobs";
 import {
   jobTypesCategoryId,
   studentskiServisCategoryId,
@@ -31,8 +26,6 @@ const QuillTextEditor = dynamic(
 const UrediPosao = () => {
   const router = useRouter();
   const jobId = router.query?.id;
-
-  const { data: skills, isLoading: loadingSkills } = useSkills();
 
   const { data: categories, isLoading: isLoadingCategories } =
     useAdminCategories({
@@ -111,8 +104,6 @@ const UrediPosao = () => {
           id: jobId,
           job: {
             ...data,
-            skills: data.skills ? data.skills.split(",") : [],
-            labels: data.labels ? data.labels.split(",") : [],
             city: fromHome ? "FROM_HOME" : data.city,
             categories: data.type,
             image,
@@ -137,8 +128,6 @@ const UrediPosao = () => {
       createJob(
         {
           ...data,
-          skills: data.skills ? data.skills.split(",") : [],
-          labels: data.labels ? data.labels.split(",") : [],
           city: fromHome ? "FROM_HOME" : data.city,
           categories: data.type,
           allowed_sc: false,
@@ -507,8 +496,7 @@ const UrediPosao = () => {
                 {...field}
                 label="Obavezna znanja"
                 error={!!errors.skills}
-                placeholder="Rukovanje alatom, rad na računalu..."
-                helperText="Unesite znanja odvojena zarezom"
+                helperText={errors.skills && errors.skills.message}
               />
             )}
           />
@@ -522,8 +510,7 @@ const UrediPosao = () => {
                 {...field}
                 label="Poželjne vještine"
                 error={!!errors.labels}
-                placeholder="Spretnost, kreativnost, rad u timu..."
-                helperText="Unesite vještine odvojene zarezom"
+                helperText={errors.labels && errors.labels.message}
               />
             )}
           />
