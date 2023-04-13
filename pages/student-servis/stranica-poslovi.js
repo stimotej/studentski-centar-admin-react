@@ -23,9 +23,15 @@ import {
   useAdminCategories,
   useCreateCategory,
   useDeleteCategory,
+  usePost,
   useUpdateCategory,
+  useUpdatePost,
 } from "../../features/posts";
-import { jobsPageId, jobTypesCategoryId } from "../../lib/constants";
+import {
+  jobsObrasciPostId,
+  jobsPageId,
+  jobTypesCategoryId,
+} from "../../lib/constants";
 import dynamic from "next/dynamic";
 import { usePage, useUpdatePage } from "../../features/page";
 const QuillTextEditor = dynamic(
@@ -52,8 +58,19 @@ const StranicaPage = () => {
     isRefetching: isRefetchingPage,
   } = usePage(jobsPageId);
 
+  const {
+    data: obrasciPost,
+    isLoading: isLoadingObrasciPost,
+    isError: isObrasciPostError,
+    refetch: refetchObrasciPost,
+    isRefetching: isRefetchingObrasciPost,
+  } = usePost(jobsObrasciPostId);
+
   const [pageTitle, setPageTitle] = useState(pageData?.title || "");
   const [pageExcerpt, setPageExcerpt] = useState(pageData?.excerpt || "");
+
+  const [files, setFiles] = useState([]);
+  const [obrasciContent, setObrasciContent] = useState(pageData?.excerpt || "");
 
   const [addCategoryDialog, setAddCategoryDialog] = useState(false);
   const [deleteCategoryDialog, setDeleteCategoryDialog] = useState(false);
@@ -77,6 +94,31 @@ const StranicaPage = () => {
       setPageExcerpt(pageData.excerpt.rendered);
     }
   }, [pageData]);
+
+  useEffect(() => {
+    if (obrasciPost) {
+      setObrasciContent(obrasciPost.content);
+      setFiles(obrasciPost.documents || []);
+    }
+  }, [obrasciPost]);
+
+  const { mutate: updatePost, isLoading: isUpdatingPost } = useUpdatePost();
+
+  const handleSaveObrasciPost = () => {
+    updatePost({
+      id: jobsObrasciPostId,
+      content: obrasciContent,
+      documents:
+        files.length > 0 &&
+        files.map((file) => ({
+          id: file.id,
+          title: file.title,
+          media_type: file.mediaType,
+          mime_type: file.mimeType,
+          source_url: file.src,
+        })),
+    });
+  };
 
   const handleSelectCategory = (categoryId) => {
     const category = categories.find((c) => c.id === categoryId);
@@ -184,6 +226,48 @@ const StranicaPage = () => {
             </LoadingButton>
           </>
         )}
+
+        <h3 className="text-lg font-semibold mb-3 text-primary mt-10">
+          Obrasci
+        </h3>
+        {isLoadingObrasciPost ? (
+          <div className="flex items-center justify-center py-2">
+            <CircularProgress size={24} />
+          </div>
+        ) : isObrasciPostError ? (
+          <div className="flex flex-col text-error my-2 px-4">
+            Greška kod učitavanja
+            <LoadingButton
+              variant="outlined"
+              className="!mt-4 !w-fit"
+              onClick={() => refetchObrasciPost()}
+              loading={isRefetchingObrasciPost}
+            >
+              Pokušaj ponovno
+            </LoadingButton>
+          </div>
+        ) : (
+          <>
+            <QuillTextEditor
+              value={obrasciContent}
+              onChange={setObrasciContent}
+              containerClassName="mt-4"
+              className="[&>div>div]:!min-h-[120px]"
+              placeholder="Unesi sadržaj..."
+              files={files}
+              setFiles={setFiles}
+            />
+            <LoadingButton
+              variant="contained"
+              className="!bg-primary !mt-4"
+              onClick={handleSaveObrasciPost}
+              loading={isUpdatingPost}
+            >
+              Spremi
+            </LoadingButton>
+          </>
+        )}
+
         <h3 className="text-lg font-semibold mt-10 mb-3 text-primary">
           Vrste poslova
         </h3>
