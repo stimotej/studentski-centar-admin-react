@@ -1,5 +1,6 @@
 const formatJob = (job) => ({
   id: job.id,
+  slug: job.slug,
   allowed_sc: job.meta.allowed_sc,
   featured_sc: job.meta.featured,
   company_name: job.meta.company_name,

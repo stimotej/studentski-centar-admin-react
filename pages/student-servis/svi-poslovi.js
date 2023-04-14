@@ -110,9 +110,7 @@ const SviPoslovi = () => {
     updateJob(
       { id: jobId, job: { featured: !isFeatured } },
       {
-        onError: (err) => {
-          console.error("err", err.reponse);
-        },
+        onError: (err) => {},
       }
     );
   };
@@ -262,9 +260,7 @@ const SviPoslovi = () => {
                       color="primary"
                       onClick={(e) => {
                         e.stopPropagation();
-                        window.open(
-                          `http://161.53.174.14/poslovi/posao/?id=${row.id}`
-                        );
+                        window.open(`http://161.53.174.14/poslovi/${row.slug}`);
                       }}
                     >
                       <FontAwesomeIcon

@@ -1,5 +1,6 @@
 const formatEvent = (event) => ({
   id: event.id,
+  slug: event.slug,
   title: event.title.rendered,
   image: event.image_url,
   imageId: event.featured_media,

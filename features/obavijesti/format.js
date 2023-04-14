@@ -1,5 +1,6 @@
 const formatObavijest = (obavijest) => ({
   id: obavijest?.id,
+  slug: obavijest?.slug,
   title: obavijest?.title?.rendered,
   image: obavijest?.image_url,
   imageId: obavijest?.featured_media,

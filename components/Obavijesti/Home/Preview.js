@@ -90,7 +90,11 @@ const Preview = ({
           icon={<MdOpenInNew />}
           link
           openInNewTab
-          to={obavijest?.link}
+          to={
+            isEvent
+              ? `http://161.53.174.14/kultura/eventi/${obavijest?.slug}`
+              : `http://161.53.174.14/obavijesti/${obavijest?.slug}`
+          }
           className="!ml-4"
         />
         <Button
