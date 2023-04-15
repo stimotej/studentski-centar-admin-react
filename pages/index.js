@@ -43,6 +43,12 @@ const LoginSelect = () => {
             text="Upravljanje obavijestima sporta"
             link="/sport/login"
           />
+          <LoginCard
+            theme="theme-pocetna"
+            title="Početna stranica"
+            text="Upravljanje sadržajem početne stranice"
+            link="/pocetna-stranica/login"
+          />
         </div>
         {/* <span className="font-light mb-5 px-6 text-center">
         Za sva pitanja, prijedloge za izmjenu, uočavanje grešaka u radu stustava

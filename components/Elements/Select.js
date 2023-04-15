@@ -1,14 +1,7 @@
 import { useState } from "react";
 import { MdExpandMore } from "react-icons/md";
 
-const Select = ({
-  items,
-  value,
-  onChange,
-  textBefore,
-  className,
-  iconClassName,
-}) => {
+const Select = ({ items, value, onChange, className, iconClassName }) => {
   const [active, setActive] = useState(false);
 
   return (

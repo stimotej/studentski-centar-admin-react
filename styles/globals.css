@@ -30,6 +30,9 @@
   .theme-student-servis {
     --color-primary: 86, 131, 154;
   }
+  .theme-pocetna-stranica {
+    --color-primary: 43, 118, 223;
+  }
   .theme-sport {
     --color-primary: 0, 150, 136;
   }

@@ -140,6 +140,8 @@ const Layout = ({ children }) => {
           ? themeKultura
           : category === "student-servis"
           ? themePoslovi
+          : category === "pocetna-stranica"
+          ? themeObavijesti
           : category === "smjestaj"
           ? themeSmjestaj
           : category === "sport"

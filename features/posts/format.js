@@ -1,5 +1,6 @@
 const formatPost = (post) => ({
   id: post.id,
+  slug: post.slug,
   title: post.title.rendered,
   excerpt: post.excerpt.rendered
     .replace("<p>", "")
