@@ -159,18 +159,6 @@ const PocetnaStranica = () => {
     );
   };
 
-  const handleCopyLink = async () => {
-    if (!slug) return;
-    try {
-      await navigator.clipboard.writeText(
-        `http://www.sczg.unizg.hr/informacije/${slug}`
-      );
-      toast.success("Poveznica je kopirana");
-    } catch (error) {
-      toast.error("Greška prilikom kopiranja linka");
-    }
-  };
-
   return (
     <Layout>
       <Header title="Početna stranica" />
@@ -267,14 +255,14 @@ const PocetnaStranica = () => {
               <>
                 <div className="w-full">
                   {page !== pocetnaOpceInformacijePost && !!slug && (
-                    <Button
-                      variant="outlined"
-                      className="mb-6"
-                      startIcon={<MdCopyAll size={16} />}
-                      onClick={handleCopyLink}
-                    >
-                      Kopiraj poveznicu
-                    </Button>
+                    <>
+                      <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
+                        Poveznica na stranicu
+                      </h4>
+                      <div className="py-2 px-4 bg-gray-100 rounded-lg w-fit mb-6">
+                        http://www.sczg.unizg.hr/informacije/{slug}
+                      </div>
+                    </>
                   )}
                   <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
                     Naslov
