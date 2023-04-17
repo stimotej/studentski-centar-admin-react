@@ -11,9 +11,9 @@ const formatPost = (post) => ({
     ? post.meta.documents?.map((document) => ({
         id: document.id,
         title: document.title,
-        mediaType: document.media_type,
-        mimeType: document.mime_type,
-        src: document.source_url,
+        media_type: document.mediaType || document.media_type,
+        mime_type: document.mimeType || document.mime_type,
+        source_url: document.src || document.source_url,
       }))
     : [],
   imageId: post.featured_media,

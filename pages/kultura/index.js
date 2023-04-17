@@ -14,12 +14,15 @@ import { Fragment } from "react";
 import { LoadingButton } from "@mui/lab";
 import MyDialog from "../../components/Elements/MyDialog";
 import axios from "axios";
+import { Tab, Tabs } from "@mui/material";
 
 const Home = () => {
   const [event, setEvent] = useState(null);
 
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("date|desc");
+
+  const [tab, setTab] = useState("events");
 
   const debouncedSearch = useDebounce(search, 300);
 
@@ -34,6 +37,7 @@ const Home = () => {
     orderby: sort?.split("|")?.[0],
     order: sort?.split("|")?.[1],
     search: debouncedSearch,
+    is_course: tab === "courses" ? true : false,
   });
 
   const [deleteDialog, setDeleteDialog] = useState(null);
@@ -112,16 +116,30 @@ const Home = () => {
             sort={sort}
             setSort={setSort}
           />
+          <Tabs
+            value={tab}
+            onChange={(e, val) => setTab(val)}
+            className="!mt-8"
+          >
+            <Tab label="Eventi" value="events" />
+            <Tab label="Tečajevi/radionice" value="courses" />
+          </Tabs>
           {isLoading ? (
-            <Loader className="w-10 h-10 mx-auto mt-12 border-primary" />
+            <Loader className="w-10 h-10 mx-auto mt-8 border-primary" />
           ) : isError ? (
-            <div className="text-error mt-10">
-              Greška kod učitavanja evenata
+            <div className="text-error mt-6">
+              {tab === "courses"
+                ? "Greška kod učitavanja tečajeva/radionica"
+                : "Greška kod učitavanja evenata"}
             </div>
           ) : events?.pages?.[0]?.length <= 0 ? (
-            <div className="text-gray-500 mt-10">Nema evenata za prikaz</div>
+            <div className="text-gray-500 mt-6">
+              {tab === "courses"
+                ? "Nema tečajeva/radionica za prikaz"
+                : "Nema evenata za prikaz"}
+            </div>
           ) : (
-            <div className="mt-10">
+            <div className="mt-6">
               {events?.pages?.map((group, index) => (
                 <Fragment key={index}>
                   <ObavijestSelect

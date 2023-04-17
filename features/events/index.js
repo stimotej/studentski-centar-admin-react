@@ -24,6 +24,7 @@ export const useEvents = (filters, options) => {
             orderby: filters?.orderby,
             order: filters?.order,
             search: filters?.search,
+            is_course: filters?.is_course,
             per_page: eventsPerPage,
             page: pageParam,
             timestamp: new Date().getTime(),
@@ -82,6 +83,8 @@ export const useCreateEvent = (displayToasts = true) => {
             location: event?.location,
             type: event?.type,
             documents: event?.documents,
+            show_on_slider: event?.show_on_slider,
+            is_course: event?.is_course,
           },
         }
       );
@@ -131,6 +134,8 @@ export const useUpdateEvent = () => {
             location: event?.location,
             type: event?.type,
             documents: event?.documents,
+            show_on_slider: event?.show_on_slider,
+            is_course: event?.is_course,
           },
         }
       );

@@ -41,6 +41,7 @@ const QuillTextEditor = ({
   formats,
   files,
   setFiles = () => {},
+  mediaCategoryId,
 }) => {
   const [mediaDialog, setMediaDialog] = useState(null);
 
@@ -205,7 +206,7 @@ const QuillTextEditor = ({
         opened={!!mediaDialog}
         onClose={() => setMediaDialog(false)}
         onSelect={handleSelectMedia}
-        categoryId={studentskiServisCategoryId}
+        categoryId={mediaCategoryId || studentskiServisCategoryId}
         mediaType={mediaDialog?.type}
       />
     </>

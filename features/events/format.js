@@ -14,6 +14,8 @@ const formatEvent = (event) => ({
   dates: event.meta.dates,
   location: event.meta.location,
   type: event.meta.type,
+  show_on_slider: event.meta.show_on_slider,
+  is_course: event.meta.is_course,
   documents: event.meta.documents,
 });
 

@@ -97,6 +97,7 @@ const SmjestajPage = () => {
   const [excerpt, setExcerpt] = useState("");
   const [content, setContent] = useState("");
   const [imageGroups, setImageGroups] = useState([]);
+  const [files, setFiles] = useState([]);
 
   useEffect(() => {
     if (posts) {
@@ -106,12 +107,14 @@ const SmjestajPage = () => {
         setTitle("");
         setExcerpt("");
         setContent("");
+        setFiles([]);
         return;
       }
       setPage(post.id);
       setTitle(post.title);
       setExcerpt(post.excerpt);
       setContent(post.content);
+      setFiles(post.documents || []);
     }
   }, [posts, page]);
 
@@ -180,6 +183,15 @@ const SmjestajPage = () => {
           excerpt: excerpt,
           content: content,
           status: "publish",
+          documents:
+            files.length > 0 &&
+            files.map((file) => ({
+              id: file.id,
+              title: file.title,
+              media_type: file.mediaType || file.media_type,
+              mime_type: file.mimeType || file.mime_type,
+              source_url: file.src || file.source_url,
+            })),
         },
         {
           onError: (err) => {
@@ -344,6 +356,9 @@ const SmjestajPage = () => {
                       value={content}
                       onChange={setContent}
                       placeholder="Unesi sadržaj..."
+                      files={files}
+                      setFiles={setFiles}
+                      mediaCategoryId={sportCategoryId}
                     />
                   </>
                 )}

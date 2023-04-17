@@ -29,14 +29,19 @@ const QuillTextEditor = dynamic(() => import("./Elements/QuillTextEditor"), {
   ssr: false,
 });
 
-const FAQLayout = ({ faqPageCategoryId, mediaCategoryId }) => {
+const FAQLayout = ({
+  faqPageCategoryId,
+  mediaCategoryId,
+  title,
+  actionText,
+}) => {
   const [addFAQModal, setAddFAQModal] = useState(false);
 
   return (
     <Layout>
       <Header
-        title="Često postavljana pitanja"
-        text="Dodaj pitanje"
+        title={title || "Često postavljana pitanja"}
+        text={actionText || "Dodaj pitanje"}
         icon={<FontAwesomeIcon icon={faPlus} />}
         onClick={() => setAddFAQModal(true)}
       />

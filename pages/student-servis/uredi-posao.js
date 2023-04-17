@@ -106,15 +106,16 @@ const UrediPosao = () => {
             ...data,
             city: fromHome ? "FROM_HOME" : data.city,
             categories: data.type,
+            content: `${data.long_island_id} | ${data.company_name}`,
             image,
             documents:
               files.length > 0 &&
               files.map((file) => ({
                 id: file.id,
                 title: file.title,
-                media_type: file.mediaType,
-                mime_type: file.mimeType,
-                source_url: file.src,
+                media_type: file.mediaType || file.media_type,
+                mime_type: file.mimeType || file.mime_type,
+                source_url: file.src || file.source_url,
               })),
           },
         },
@@ -132,15 +133,16 @@ const UrediPosao = () => {
           categories: data.type,
           allowed_sc: false,
           featured: false,
+          content: `${data.long_island_id} | ${data.company_name}`,
           image,
           documents:
             files.length > 0 &&
             files.map((file) => ({
               id: file.id,
               title: file.title,
-              media_type: file.mediaType,
-              mime_type: file.mimeType,
-              source_url: file.src,
+              media_type: file.mediaType || file.media_type,
+              mime_type: file.mimeType || file.mime_type,
+              source_url: file.src || file.source_url,
             })),
         },
         {

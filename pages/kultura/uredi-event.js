@@ -17,6 +17,7 @@ import Layout from "../../components/Layout";
 import { eventsCategoryId } from "../../lib/constants";
 import Loader from "../../components/Elements/Loader";
 import {
+  Checkbox,
   FormControlLabel,
   IconButton,
   Radio,
@@ -47,6 +48,8 @@ const storedPostKeys = [
   "event_location",
   "event_dates",
   "event_type",
+  "event_slider",
+  "event_course",
   "event_files",
 ];
 
@@ -98,6 +101,8 @@ const Editor = () => {
   const [eventDate, setEventDate] = useState(null);
   const [eventDates, setEventDates] = useState([]);
 
+  const [addToSlider, setAddToSlider] = useState(false);
+
   const [image, setImage] = useState(null);
 
   const [files, setFiles] = useState([]);
@@ -116,6 +121,7 @@ const Editor = () => {
       setEventDates(event.dates || []);
       setEventLocation(event.location || "");
       setEventType(event.type || "");
+      setAddToSlider(event.show_on_slider || false);
       setFiles(event.documents || []);
     } else {
       setTitle(window.localStorage.getItem("event_title") || "");
@@ -128,6 +134,7 @@ const Editor = () => {
         window.localStorage.getItem("event_dates")?.split(",") || []
       );
       setEventType(window.localStorage.getItem("event_type") || "");
+      setAddToSlider(window.localStorage.getItem("event_slider") || false);
       setFiles(JSON.parse(window.localStorage.getItem("event_files")) || []);
     }
   }, [event]);
@@ -146,6 +153,7 @@ const Editor = () => {
     setEventLocation("");
     setEventDates([]);
     setEventType("");
+    setAddToSlider(false);
     setFiles([]);
   };
 
@@ -161,13 +169,16 @@ const Editor = () => {
       dates: eventDates.map((date) => dayjs(date).toISOString()),
       location: eventLocation,
       type: eventType,
+      show_on_slider: addToSlider,
+      is_course: eventType === "Tečaj" || eventType === "Radionica",
       documents:
         files.length > 0 &&
         files.map((file) => ({
           id: file.id,
           title: file.title,
-          mime_type: file.mimeType,
-          source_url: file.src,
+          media_type: file.mediaType || file.media_type,
+          mime_type: file.mimeType || file.mime_type,
+          source_url: file.src || file.source_url,
         })),
     };
 
@@ -276,7 +287,15 @@ const Editor = () => {
           freeSolo
           options={eventLocations}
           renderInput={(params) => <TextField {...params} label="Lokacija" />}
-          value={eventLocation}
+          value={eventLocation || ""}
+          onChangeCapture={(e, val) => {
+            setEventLocation(val !== null ? val : "");
+            !eventId &&
+              window.localStorage.setItem(
+                "event_location",
+                val !== null ? val : ""
+              );
+          }}
           onChange={(e, val) => {
             setEventLocation(val !== null ? val : "");
             !eventId &&
@@ -302,7 +321,15 @@ const Editor = () => {
           freeSolo
           options={eventTypes}
           renderInput={(params) => <TextField {...params} label="Program" />}
-          value={eventType}
+          value={eventType || ""}
+          onChangeCapture={(e, val) => {
+            setEventType(val !== null ? val : "");
+            !eventId &&
+              window.localStorage.setItem(
+                "event_type",
+                val !== null ? val : ""
+              );
+          }}
           onChange={(e, val) => {
             setEventType(val !== null ? val : "");
             !eventId &&
@@ -312,6 +339,28 @@ const Editor = () => {
               );
           }}
         />
+
+        {(eventType === "Tečaj" || eventType === "Radionica") && (
+          <div className="text-sm text-light bg-gray-100 p-2 rounded-lg mt-4">
+            Tečajevi i radionice se prikazuju odvojeno od ostalih evenata.
+          </div>
+        )}
+
+        <div className="mt-4">Istakni event:</div>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={addToSlider}
+              onChange={(e) => {
+                setAddToSlider(e.target.checked);
+                !eventId &&
+                  window.localStorage.setItem("event_slider", e.target.checked);
+              }}
+            />
+          }
+          label="Dodaj na slider"
+        />
+
         {/* <div className="mt-4 mb-3">Datum i vrijeme eventa:</div>
           <div className="flex flex-col gap-4">
             <DateTimePicker

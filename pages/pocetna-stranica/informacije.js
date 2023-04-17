@@ -10,6 +10,8 @@ const FAQPage = () => {
     <FAQLayout
       faqPageCategoryId={faqPocetnaCategoryId}
       mediaCategoryId={pocetnaStranicaCategoryId}
+      title="Informacije"
+      actionText="Dodaj informaciju"
       from="pocetna-stranica"
     />
   );
