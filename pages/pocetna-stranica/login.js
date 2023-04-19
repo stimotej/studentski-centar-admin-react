@@ -7,7 +7,7 @@ const login = () => {
       <Head>
         <title>Login | Početna stranica</title>
       </Head>
-      <Login from="pocetna-stranica" />
+      <Login from="pocetna-stranica" title="Početna stranica" />
     </>
   );
 };

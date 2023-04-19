@@ -6,11 +6,13 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  IconButton,
   ListItemIcon,
   ListItemText,
   MenuItem,
   MenuList,
   Paper,
+  TextField,
   Tooltip,
 } from "@mui/material";
 import React from "react";
@@ -25,6 +27,7 @@ const QuillTextEditor = dynamic(
 import {
   adminPocetnaCategory,
   pagesPocetnaAdminCategoryId,
+  pocetnaOglasZaPopunuRadnihMjestaPost,
   pocetnaOpceInformacijePost,
   pocetnaStranicaCategoryId,
 } from "../../lib/constants";
@@ -40,9 +43,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faPlus,
   faTriangleExclamation,
+  faXmark,
 } from "@fortawesome/pro-regular-svg-icons";
-import { MdCopyAll } from "react-icons/md";
-import { toast } from "react-toastify";
+import MediaSelectDialog from "../../components/MediaSelectDialog";
+import getIconByMimeType from "../../lib/getIconbyMimeType";
 
 const PocetnaStranica = () => {
   const {
@@ -52,7 +56,7 @@ const PocetnaStranica = () => {
     isRefetching: isRefetchingPosts,
     refetch: refetchPosts,
   } = usePosts({
-    include: pocetnaOpceInformacijePost,
+    include: [pocetnaOpceInformacijePost, pocetnaOglasZaPopunuRadnihMjestaPost],
   });
 
   const {
@@ -80,10 +84,12 @@ const PocetnaStranica = () => {
 
   useEffect(() => {
     if (posts) {
-      const post =
-        page === pocetnaOpceInformacijePost
-          ? posts?.[0]
-          : pages.find((post) => post.id === page);
+      const post = [
+        pocetnaOpceInformacijePost,
+        pocetnaOglasZaPopunuRadnihMjestaPost,
+      ].includes(page)
+        ? posts?.find((post) => post.id === page)
+        : pages?.find((post) => post.id === page);
       if (!post) return;
       setSlug(post.slug);
       setTitle(post.title);
@@ -94,10 +100,12 @@ const PocetnaStranica = () => {
   }, [posts, pages, page]);
 
   const handleSelectPage = (postId) => {
-    const post =
-      postId === pocetnaOpceInformacijePost
-        ? posts?.[0]
-        : pages.find((post) => post.id === postId);
+    const post = [
+      pocetnaOpceInformacijePost,
+      pocetnaOglasZaPopunuRadnihMjestaPost,
+    ].includes(postId)
+      ? posts?.find((post) => post.id === postId)
+      : pages?.find((post) => post.id === postId);
     if (!post) return;
     setPage(postId);
     setSlug(post.slug);
@@ -160,6 +168,12 @@ const PocetnaStranica = () => {
     );
   };
 
+  const [mediaDialog, setMediaDialog] = useState(false);
+
+  const handleSelectMedia = (media) => {
+    setFiles((files) => [...files, media]);
+  };
+
   return (
     <Layout>
       <Header title="Početna stranica" />
@@ -167,12 +181,37 @@ const PocetnaStranica = () => {
         <div className="flex flex-col">
           <Paper className="md:!min-w-[260px] md:!max-w-[400px]">
             <MenuList>
-              <MenuItem
-                onClick={() => handleSelectPage(pocetnaOpceInformacijePost)}
-                selected={page === pocetnaOpceInformacijePost}
-              >
-                Opće informacije
-              </MenuItem>
+              {isLoadingPosts ? (
+                <div className="w-full flex items-center justify-center">
+                  <CircularProgress size={32} />
+                </div>
+              ) : isPostsError ? (
+                <div className="w-full flex flex-col gap-6 items-center justify-center text-center">
+                  <span className="text-error">Greška kod dohvaćanja</span>
+                  <LoadingButton
+                    loading={isRefetchingPosts}
+                    onClick={refetchPosts}
+                    variant="outlined"
+                  >
+                    Pokušaj ponovno
+                  </LoadingButton>
+                </div>
+              ) : (
+                posts.map((post) => (
+                  <MenuItem
+                    key={post.id}
+                    onClick={() => handleSelectPage(post.id)}
+                    selected={page === post.id}
+                  >
+                    <QuillTextEditor
+                      value={post.title}
+                      containerClassName="!bg-transparent border-none"
+                      className="[&>div>div]:p-0 [&>div>div]:!min-h-fit [&>div>div]:line-clamp-1 [&>div>div>p]:hover:cursor-pointer"
+                      readOnly
+                    />
+                  </MenuItem>
+                ))
+              )}
             </MenuList>
           </Paper>
           <h3 className="mt-8 mb-2">Stranice</h3>
@@ -237,73 +276,118 @@ const PocetnaStranica = () => {
         </div>
         <div className="w-full">
           <div className="flex flex-col items-start gap-4 w-full">
-            {isLoadingPosts && page === pocetnaOpceInformacijePost ? (
-              <div className="w-full flex items-center justify-center">
-                <CircularProgress size={32} />
-              </div>
-            ) : isPostsError && page === pocetnaOpceInformacijePost ? (
-              <div className="w-full flex flex-col gap-6 items-center justify-center text-center">
-                <span className="text-error">Greška kod dohvaćanja</span>
-                <LoadingButton
-                  loading={isRefetchingPosts}
-                  onClick={refetchPosts}
-                  variant="outlined"
-                >
-                  Pokušaj ponovno
-                </LoadingButton>
-              </div>
-            ) : (
-              <>
-                <div className="w-full">
-                  {page !== pocetnaOpceInformacijePost && !!slug && (
-                    <>
-                      <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
-                        Poveznica na stranicu
-                      </h4>
-                      <div className="py-2 px-4 bg-gray-100 rounded-lg w-fit mb-6">
-                        http://www.sczg.unizg.hr/informacije/{slug}
-                      </div>
-                    </>
-                  )}
-                  <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
-                    Naslov
-                  </h4>
-                  <QuillTextEditor
-                    value={title}
-                    onChange={setTitle}
-                    formats={["bold"]}
-                    className="[&>div>div]:!min-h-fit [&>div>div]:line-clamp-1"
-                    placeholder="Unesi naslov..."
-                    useToolbar={false}
-                  />
-                </div>
-                {page === pocetnaOpceInformacijePost && (
-                  <div className="w-full">
+            <div className="w-full">
+              {![
+                pocetnaOpceInformacijePost,
+                pocetnaOglasZaPopunuRadnihMjestaPost,
+              ].includes(page) &&
+                !!slug && (
+                  <>
                     <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
-                      Kratki opis
+                      Poveznica na stranicu
                     </h4>
-                    <QuillTextEditor
-                      value={excerpt}
-                      onChange={setExcerpt}
-                      className="[&>div>div]:!min-h-[100px]"
-                      placeholder="Unesi kratki opis..."
-                    />
-                  </div>
+                    <div className="py-2 px-4 bg-gray-100 rounded-lg w-fit mb-6">
+                      http://www.sczg.unizg.hr/informacije/{slug}
+                    </div>
+                  </>
                 )}
-                <div className="w-full">
-                  <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
-                    Sadržaj
-                  </h4>
-                  <QuillTextEditor
-                    value={content}
-                    onChange={setContent}
-                    files={files}
-                    mediaCategoryId={pocetnaStranicaCategoryId}
-                    setFiles={setFiles}
-                    placeholder="Unesi sadržaj..."
-                  />
+              <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
+                Naslov
+              </h4>
+              <QuillTextEditor
+                value={title}
+                onChange={setTitle}
+                formats={["bold"]}
+                className="[&>div>div]:!min-h-fit [&>div>div]:line-clamp-1"
+                placeholder="Unesi naslov..."
+                useToolbar={false}
+              />
+            </div>
+            {page === pocetnaOpceInformacijePost && (
+              <div className="w-full">
+                <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
+                  Kratki opis
+                </h4>
+                <QuillTextEditor
+                  value={excerpt}
+                  onChange={setExcerpt}
+                  className="[&>div>div]:!min-h-[100px]"
+                  placeholder="Unesi kratki opis..."
+                />
+              </div>
+            )}
+            {page !== pocetnaOglasZaPopunuRadnihMjestaPost && (
+              <div className="w-full">
+                <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
+                  Sadržaj
+                </h4>
+                <QuillTextEditor
+                  value={content}
+                  onChange={setContent}
+                  files={files}
+                  mediaCategoryId={pocetnaStranicaCategoryId}
+                  setFiles={setFiles}
+                  placeholder="Unesi sadržaj..."
+                />
+              </div>
+            )}
+            {page === pocetnaOglasZaPopunuRadnihMjestaPost && (
+              <div className="w-full">
+                <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
+                  OGLASI
+                </h4>
+                <button
+                  className="w-full p-4 bg-secondary rounded-lg border border-black/20 hover:border-black text-black/60"
+                  onClick={() => setMediaDialog(true)}
+                >
+                  Odaberi datoteku
+                </button>
+                <div className={"flex flex-col gap-2 mt-2"}>
+                  {files.map((file, index) => (
+                    <div key={index} className="p-2 border rounded-lg">
+                      <TextField
+                        label="Naziv"
+                        fullWidth
+                        value={files[index].title}
+                        onChange={(e) => {
+                          const newFiles = [...files];
+                          newFiles[index].title = e.target.value;
+                          setFiles(newFiles);
+                        }}
+                      />
+                      <a
+                        href={file.src || file.source_url}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="flex !my-2 py-3 items-center justify-between gap-2 border border-gray-400 p-1 rounded-lg"
+                      >
+                        <div className="flex items-center gap-2">
+                          <FontAwesomeIcon
+                            icon={getIconByMimeType(
+                              file.mimeType || file.mime_type
+                            )}
+                            className="text-lg text-gray-800 ml-2"
+                          />
+                          <div className="flex-1 line-clamp-1 break-all">
+                            {(file.src || file.source_url).split("/").pop()}
+                          </div>
+                        </div>
+                      </a>
+                      <Button
+                        variant="text"
+                        color="error"
+                        onClick={() => {
+                          const newFiles = [...files];
+                          newFiles.splice(index, 1);
+                          setFiles(newFiles);
+                        }}
+                      >
+                        Obriši
+                      </Button>
+                    </div>
+                  ))}
                 </div>
-              </>
+              </div>
             )}
           </div>
           <div className="flex !gap-4 mt-6">
@@ -389,6 +473,14 @@ const PocetnaStranica = () => {
           </LoadingButton>
         </DialogActions>
       </Dialog>
+
+      <MediaSelectDialog
+        opened={!!mediaDialog}
+        onClose={() => setMediaDialog(false)}
+        onSelect={handleSelectMedia}
+        categoryId={pocetnaStranicaCategoryId}
+        mediaType="application"
+      />
     </Layout>
   );
 };

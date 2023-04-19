@@ -44,7 +44,7 @@ const LoginSelect = () => {
             link="/sport/login"
           />
           <LoginCard
-            theme="theme-pocetna"
+            theme="theme-pocetna-stranica"
             title="Početna stranica"
             text="Upravljanje sadržajem početne stranice"
             link="/pocetna-stranica/login"
