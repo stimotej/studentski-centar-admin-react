@@ -337,9 +337,9 @@ const PocetnaStranica = () => {
                   className="w-full p-4 bg-secondary rounded-lg border border-black/20 hover:border-black text-black/60"
                   onClick={() => setMediaDialog(true)}
                 >
-                  Odaberi datoteku
+                  Odaberi datoteku za dodavanje oglasa
                 </button>
-                <div className={"flex flex-col gap-2 mt-2"}>
+                <div className={"flex flex-col gap-2 mt-4"}>
                   {files.map((file, index) => (
                     <div key={index} className="p-2 border rounded-lg">
                       <TextField
@@ -396,13 +396,18 @@ const PocetnaStranica = () => {
             >
               Spremi
             </LoadingButton>
-            <LoadingButton
-              variant="outlined"
-              color="error"
-              onClick={() => setDeletePostDialog(true)}
-            >
-              Obriši
-            </LoadingButton>
+            {![
+              pocetnaOpceInformacijePost,
+              pocetnaOglasZaPopunuRadnihMjestaPost,
+            ].includes(page) && (
+              <LoadingButton
+                variant="outlined"
+                color="error"
+                onClick={() => setDeletePostDialog(true)}
+              >
+                Obriši
+              </LoadingButton>
+            )}
           </div>
         </div>
       </div>
