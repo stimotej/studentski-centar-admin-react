@@ -349,6 +349,7 @@ const SmjestajPage = () => {
                       value={excerpt}
                       onChange={setExcerpt}
                       placeholder="Unesi opis..."
+                      mediaCategoryId={sportCategoryId}
                     />
 
                     <h3 className="font-semibold mt-4 mb-2">Sadržaj</h3>

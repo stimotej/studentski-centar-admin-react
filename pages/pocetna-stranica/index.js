@@ -6,7 +6,6 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  IconButton,
   ListItemIcon,
   ListItemText,
   MenuItem,
@@ -15,8 +14,7 @@ import {
   TextField,
   Tooltip,
 } from "@mui/material";
-import React from "react";
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Header from "../../components/Header";
 import Layout from "../../components/Layout";
 import dynamic from "next/dynamic";
@@ -38,12 +36,10 @@ import {
   useUpdatePost,
 } from "../../features/posts";
 import { LoadingButton } from "@mui/lab";
-import { useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faPlus,
   faTriangleExclamation,
-  faXmark,
 } from "@fortawesome/pro-regular-svg-icons";
 import MediaSelectDialog from "../../components/MediaSelectDialog";
 import getIconByMimeType from "../../lib/getIconbyMimeType";
@@ -313,6 +309,7 @@ const PocetnaStranica = () => {
                   onChange={setExcerpt}
                   className="[&>div>div]:!min-h-[100px]"
                   placeholder="Unesi kratki opis..."
+                  mediaCategoryId={pocetnaStranicaCategoryId}
                 />
               </div>
             )}
@@ -350,7 +347,7 @@ const PocetnaStranica = () => {
                         fullWidth
                         value={files[index].title}
                         onChange={(e) => {
-                          const newFiles = [...files];
+                          const newFiles = JSON.parse(JSON.stringify(files));
                           newFiles[index].title = e.target.value;
                           setFiles(newFiles);
                         }}
@@ -377,7 +374,7 @@ const PocetnaStranica = () => {
                         variant="text"
                         color="error"
                         onClick={() => {
-                          const newFiles = [...files];
+                          const newFiles = JSON.parse(JSON.stringify(files));
                           newFiles.splice(index, 1);
                           setFiles(newFiles);
                         }}

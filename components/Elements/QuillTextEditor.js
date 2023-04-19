@@ -67,7 +67,6 @@ const QuillTextEditor = ({
   };
 
   const addDocumentToolbar = () => {
-    console.log("dd");
     setMediaDialog({ type: "application", action: "document" });
   };
 

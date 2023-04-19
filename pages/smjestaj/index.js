@@ -299,6 +299,7 @@ const Home = () => {
               value={excerpt}
               onChange={setExcerpt}
               placeholder="Unesi opis..."
+              mediaCategoryId={smjestajCategoryId}
             />
 
             {categories?.find((post) => post.id === category)?.slug ===
@@ -309,6 +310,7 @@ const Home = () => {
                   value={sadrzaj}
                   onChange={setSadrzaj}
                   placeholder="Unesi sadržaj..."
+                  mediaCategoryId={smjestajCategoryId}
                 />
 
                 <h3 className="font-semibold mt-4 mb-2">Kontakt</h3>
@@ -316,6 +318,7 @@ const Home = () => {
                   value={kontakt}
                   onChange={setKontakt}
                   placeholder="Unesi kontakt..."
+                  mediaCategoryId={smjestajCategoryId}
                 />
 
                 <h3 className="font-semibold mt-4 mb-2">
@@ -325,6 +328,7 @@ const Home = () => {
                   value={radnoVrijemeBlagajni}
                   onChange={setRadnoVrijemeBlagajni}
                   placeholder="Unesi radno vrijeme blagajni..."
+                  mediaCategoryId={smjestajCategoryId}
                 />
 
                 <h3 className="font-semibold mt-4 mb-2">Grupe slika</h3>
@@ -344,6 +348,7 @@ const Home = () => {
                   value={content}
                   onChange={setContent}
                   placeholder="Unesi sadržaj..."
+                  mediaCategoryId={smjestajCategoryId}
                 />
               </>
             )}

@@ -162,6 +162,7 @@ const PrikazRestorana = ({ restaurant, page, setPage }) => {
         onChange={setDescription}
         className="[&>div>div]:!min-h-[120px]"
         placeholder="Unesi ponudu..."
+        mediaCategoryId={prehranaCategoryId}
       />
 
       <h3 className="font-semibold mb-2 mt-4 ">Informacije</h3>
@@ -268,6 +269,7 @@ const PrikazRestorana = ({ restaurant, page, setPage }) => {
         onChange={setWorkingHours}
         containerClassName="mt-4"
         placeholder="Unesi radno vrijeme..."
+        mediaCategoryId={prehranaCategoryId}
       />
 
       <h3 className="font-semibold mt-4 mb-2">Lokacija</h3>

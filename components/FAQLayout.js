@@ -238,6 +238,7 @@ export const FAQList = ({
             containerClassName="mt-2"
             value={answer}
             onChange={setAnswer}
+            mediaCategoryId={mediaCategoryId}
             // files={files}
             // setFiles={setFiles}
             placeholder="Odgovor"

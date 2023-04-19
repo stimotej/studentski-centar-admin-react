@@ -10,7 +10,6 @@ const MediaPage = () => {
       from="pocetna-stranica"
       categoryId={pocetnaStranicaCategoryId}
       mediaUncategorizedFolder={mediaUncategorizedFolderPocetnaStranica}
-      includeBanners
     />
   );
 };
