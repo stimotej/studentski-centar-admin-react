@@ -114,6 +114,7 @@ export const useCreateJob = () => {
           title: job.title,
           excerpt: job.description,
           categories: job.categories,
+          content: job.content,
           status: "publish",
           meta: job,
         }
@@ -169,6 +170,7 @@ export const useUpdateJob = () => {
           title: job.title,
           slug: job.title,
           excerpt: job.description,
+          content: job.content,
           categories: job.categories,
           meta: job,
         }
