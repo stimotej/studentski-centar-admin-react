@@ -27,6 +27,7 @@ const formatPost = (post) => ({
   kontakt: post.meta.kontakt,
   lokacija: post.meta.lokacija,
   image_groups: post.meta.image_groups,
+  link: post.meta.link,
 });
 
 export default formatPost;

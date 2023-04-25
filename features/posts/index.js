@@ -207,6 +207,7 @@ export const useUpdatePost = () => {
       radno_vrijeme_blagajni,
       lokacija,
       image_groups,
+      link,
     }) => {
       const response = await axios.post(
         `http://161.53.174.14/wp-json/wp/v2/posts/${id}`,
@@ -216,6 +217,7 @@ export const useUpdatePost = () => {
           content,
           status,
           featured_media: featuredMedia,
+          slug: title,
           meta: {
             documents,
             sadrzaj,
@@ -223,6 +225,7 @@ export const useUpdatePost = () => {
             radno_vrijeme_blagajni,
             lokacija,
             image_groups,
+            link,
           },
         }
       );

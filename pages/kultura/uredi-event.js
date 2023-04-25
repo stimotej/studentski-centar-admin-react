@@ -61,6 +61,11 @@ const eventLocations = [
   "MM centar",
   "Kino SC",
   "SKUC",
+  "Kino forum",
+  "Dvorana PAUK",
+  "SD Cvjetno naselje",
+  "SD Stjepan Radić",
+  "SD Lašćina",
 ];
 const eventTypes = [
   "Predstava",

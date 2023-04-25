@@ -279,7 +279,7 @@ const Home = () => {
                 <SelectMediaInput
                   defaultValue={posts?.find((d) => d.id === page)?.image}
                   onChange={setImage}
-                  className="w-1/2 !bg-transparent border-gray-200"
+                  className="md:!w-1/2 !w-full !bg-transparent border-gray-200"
                   mediaCategoryId={smjestajCategoryId}
                 />
               </>
