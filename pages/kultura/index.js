@@ -92,7 +92,7 @@ const Home = () => {
       setTitle(post.title);
       setExcerpt(post.excerpt);
       setContent(post.content);
-      setLink(clearHtmlFromString(post.link || ""));
+      setLink(post.link);
       setSlug(post.slug);
     }
   }, [posts, categories]);
@@ -143,7 +143,7 @@ const Home = () => {
         title: title,
         excerpt: excerpt || "<p></p>",
         content: content,
-        link: link,
+        link: clearHtmlFromString(link || ""),
         status: "publish",
         ...(image ? { featuredMedia: image } : {}),
       },
