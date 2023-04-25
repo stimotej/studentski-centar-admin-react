@@ -33,6 +33,7 @@ import {
   useUpdatePost,
 } from "../../features/posts";
 import dynamic from "next/dynamic";
+import clearHtmlFromString from "../../lib/clearHtmlFromString";
 const QuillTextEditor = dynamic(
   () => import("../../components/Elements/QuillTextEditor"),
   { ssr: false }
@@ -91,7 +92,7 @@ const Home = () => {
       setTitle(post.title);
       setExcerpt(post.excerpt);
       setContent(post.content);
-      setLink(post.link);
+      setLink(clearHtmlFromString(post.link || ""));
       setSlug(post.slug);
     }
   }, [posts, categories]);
