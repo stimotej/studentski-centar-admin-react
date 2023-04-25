@@ -264,7 +264,7 @@ export default function MyTable({
     if ((page + 1) * rowsPerPage > rows?.length && !totalNumberOfItems) {
       setPage(Math.max(0, Math.ceil(rows?.length / rowsPerPage) - 1));
     }
-  }, [rows]);
+  }, [rows, rowsPerPage, page, totalNumberOfItems]);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);

@@ -178,7 +178,6 @@ const SviPoslovi = () => {
           }}
           customSort
           onChangeSort={(field, order) => {
-            console.log("sort", [field, order].join("|"));
             setSort([field, order].join("|"));
           }}
           // containerClassName="mt-6"

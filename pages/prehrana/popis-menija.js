@@ -22,6 +22,7 @@ import {
   faMagnifyingGlass,
   faExclamationTriangle,
   faFilePdf,
+  faXmark,
 } from "@fortawesome/pro-regular-svg-icons";
 import Link from "next/link";
 import dayjs from "dayjs";

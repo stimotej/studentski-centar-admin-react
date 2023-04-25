@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import axios from "axios";
-import { useRef, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import formatMenu from "./format";
 import menuKeys from "./queries";
@@ -10,10 +10,10 @@ export const useMenus = (filters, options) => {
   const queryClient = useQueryClient();
 
   const menusPerPage = 10;
-  const totalItems = useRef(0);
-  const totalPages = useRef(0);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
-  const fetchProducts = async (newFilters) => {
+  const fetchMenus = async (newFilters) => {
     const response = await axios.get(
       "http://161.53.174.14/wp-json/wp/v2/menus",
       {
@@ -22,20 +22,20 @@ export const useMenus = (filters, options) => {
           order: newFilters?.order,
           search: newFilters?.search,
           per_page: menusPerPage,
-          page: newFilters?.page,
+          page: newFilters?.search ? undefined : newFilters?.page,
           restaurant: newFilters?.restaurantId,
           status: ["publish", "draft"],
         },
       }
     );
-    totalItems.current = response.headers?.["x-wp-total"];
-    totalPages.current = response.headers?.["x-wp-totalpages"];
+    setTotalItems(+(response.headers?.["x-wp-total"] || "0"));
+    setTotalPages(+(response.headers?.["x-wp-totalpages"] || "0"));
     return response.data;
   };
 
   const queryData = useQuery(
     menuKeys.menusFiltered(filters),
-    async () => fetchProducts(filters),
+    async () => fetchMenus(filters),
     {
       select: (data) => data.map((product) => formatMenu(product)),
       keepPreviousData: true,
@@ -45,17 +45,23 @@ export const useMenus = (filters, options) => {
   );
 
   useEffect(() => {
-    if (!queryData.isPreviousData && filters?.page < totalPages.current)
+    if (!queryData.isPreviousData && filters?.page < totalPages)
       queryClient.prefetchQuery(
         menuKeys.menusFiltered({ ...filters, page: filters?.page + 1 }),
-        () => fetchProducts({ ...filters, page: filters?.page + 1 })
+        () => fetchMenus({ ...filters, page: filters?.page + 1 })
       );
-  }, [queryData.data, queryData.isPreviousData, filters, queryClient]);
+  }, [
+    queryData.data,
+    queryData.isPreviousData,
+    filters,
+    queryClient,
+    totalPages,
+  ]);
 
   return {
     ...queryData,
     itemsPerPage: menusPerPage,
-    totalNumberOfItems: totalItems.current,
+    totalNumberOfItems: totalItems,
   };
 };
 

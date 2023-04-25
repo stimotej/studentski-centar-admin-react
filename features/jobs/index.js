@@ -2,15 +2,15 @@ import axios from "axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import formatJob from "./format";
 import jobKeys from "./queries";
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
 export const useJobs = (filters, options) => {
   const queryClient = useQueryClient();
 
   const jobsPerPage = 10;
-  const totalItems = useRef(0);
-  const totalPages = useRef(0);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
   const fetchJobs = async (newFilters) => {
     const userId = window.localStorage.getItem("user_id");
@@ -23,13 +23,13 @@ export const useJobs = (filters, options) => {
           order: newFilters?.order,
           search: newFilters?.search,
           per_page: jobsPerPage,
-          page: newFilters?.page,
+          page: newFilters?.search ? undefined : newFilters?.page,
           // author: userId,
         },
       }
     );
-    totalItems.current = +(response.headers?.["x-wp-total"] || "0");
-    totalPages.current = +(response.headers?.["x-wp-totalpages"] || "0");
+    setTotalItems(+(response.headers?.["x-wp-total"] || "0"));
+    setTotalPages(+(response.headers?.["x-wp-totalpages"] || "0"));
     return response.data;
   };
 
@@ -40,25 +40,32 @@ export const useJobs = (filters, options) => {
       select: (jobs) => jobs.map((job) => formatJob(job)),
       keepPreviousData: true,
       staleTime: 5000,
+      retry: false,
       ...options,
     }
   );
 
   useEffect(() => {
     if (filters.page) {
-      if (!queryData.isPreviousData && filters?.page < totalPages.current)
+      if (!queryData.isPreviousData && filters?.page < totalPages)
         queryClient.prefetchQuery(
           jobKeys.jobsFiltered({ ...filters, page: filters?.page + 1 }),
           () => fetchJobs({ ...filters, page: (filters?.page || 0) + 1 })
         );
     }
-  }, [queryData.data, queryData.isPreviousData, filters, queryClient]);
+  }, [
+    queryData.data,
+    queryData.isPreviousData,
+    filters,
+    queryClient,
+    totalPages,
+  ]);
 
   return {
     ...queryData,
     itemsPerPage: jobsPerPage,
-    totalNumberOfItems: totalItems.current,
-    totalNumberOfPages: totalPages.current,
+    totalNumberOfItems: totalItems,
+    totalNumberOfPages: totalPages,
   };
 };
 
