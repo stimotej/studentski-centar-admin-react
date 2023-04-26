@@ -115,7 +115,7 @@ const Poslovi = () => {
       {
         title: dialogTitle,
         categories:
-          addPostDialog === "informacija"
+          addPostDialog === "info"
             ? [adminStudentServisCategory, adminInfoStudentServisCategory]
             : [adminStudentServisCategory, poslovniceCategoryId],
         status: "draft",
@@ -238,9 +238,9 @@ const Poslovi = () => {
                   </Paper>
                   {category.slug !== "page-part" && (
                     <LoadingButton
-                      className="mt-2"
+                      className="!mt-2"
                       startIcon={<FontAwesomeIcon icon={faPlus} />}
-                      onClick={() => setAddPostDialog("informacija")}
+                      onClick={() => setAddPostDialog(category.slug)}
                     >
                       Dodaj novo
                     </LoadingButton>
