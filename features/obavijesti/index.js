@@ -5,7 +5,10 @@ import {
   useInfiniteQuery,
 } from "@tanstack/react-query";
 import axios from "axios";
-import { obavijestiCategoryId } from "../../lib/constants";
+import {
+  obavijestiCategoryId,
+  pocetnaStranicaCategoryId,
+} from "../../lib/constants";
 import formatObavijest from "./format";
 import obavijestiKeys from "./queries";
 import { toast } from "react-toastify";
@@ -30,6 +33,7 @@ export const useObavijesti = (filters, options) => {
             page: pageParam,
             timestamp: new Date().getTime(),
             status: ["publish", "draft"],
+            categories_exclude: [pocetnaStranicaCategoryId],
           },
         }
       );
@@ -76,6 +80,7 @@ export const useCategories = (options) => {
         {
           params: {
             parent: obavijestiCategoryId,
+            exclude: [pocetnaStranicaCategoryId],
           },
         }
       );
