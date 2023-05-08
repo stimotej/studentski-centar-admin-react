@@ -20,8 +20,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp } from "@fortawesome/pro-solid-svg-icons";
 import { useEffect } from "react";
 import clsx from "clsx";
-import { Collapse } from "@mui/material";
-import { LoadingButton } from "@mui/lab";
+import { Collapse, Tooltip } from "@mui/material";
+import {
+  faChevronLeft,
+  faChevronRight,
+  faChevronsLeft,
+  faChevronsRight,
+} from "@fortawesome/pro-regular-svg-icons";
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -482,9 +487,71 @@ export default function MyTable({
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
+          ActionsComponent={TablePaginationActions}
           // onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Paper>
+    </Box>
+  );
+}
+
+function TablePaginationActions(props) {
+  const { count, page, rowsPerPage, onPageChange } = props;
+
+  const handleFirstPageButtonClick = (event) => {
+    onPageChange(event, 0);
+  };
+
+  const handleBackButtonClick = (event) => {
+    onPageChange(event, page - 1);
+  };
+
+  const handleNextButtonClick = (event) => {
+    onPageChange(event, page + 1);
+  };
+
+  const handleLastPageButtonClick = (event) => {
+    onPageChange(event, Math.max(0, Math.ceil(count / rowsPerPage) - 1));
+  };
+
+  return (
+    <Box sx={{ flexShrink: 0, ml: 2.5, display: "flex", gap: 1 }}>
+      <Tooltip title="Prva stranica" arrow>
+        <IconButton
+          onClick={handleFirstPageButtonClick}
+          disabled={page === 0}
+          aria-label="first page"
+        >
+          <FontAwesomeIcon icon={faChevronsLeft} size="xs" />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="Prethodna stranica" arrow>
+        <IconButton
+          onClick={handleBackButtonClick}
+          disabled={page === 0}
+          aria-label="previous page"
+        >
+          <FontAwesomeIcon icon={faChevronLeft} size="xs" />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="Sljedeća stranica" arrow>
+        <IconButton
+          onClick={handleNextButtonClick}
+          disabled={page >= Math.ceil(count / rowsPerPage) - 1}
+          aria-label="next page"
+        >
+          <FontAwesomeIcon icon={faChevronRight} size="xs" />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="Zadnja stranica" arrow>
+        <IconButton
+          onClick={handleLastPageButtonClick}
+          disabled={page >= Math.ceil(count / rowsPerPage) - 1}
+          aria-label="last page"
+        >
+          <FontAwesomeIcon icon={faChevronsRight} size="xs" />
+        </IconButton>
+      </Tooltip>
     </Box>
   );
 }
