@@ -6,21 +6,6 @@ const MenuSelect = ({ menuProducts, value, onSelect, handleRemoveItem }) => {
 
   return (
     <div className="w-full flex flex-col">
-      <Title text="Doručak" />
-      <div className="flex flex-col md:flex-row mb-8">
-        {menuNames.map((menuName, index) => (
-          <MenuSelectItem
-            key={index}
-            text={menuName.split("_").join(" ")}
-            onSelect={() => onSelect(`dorucak-${menuName}`)}
-            active={`dorucak-${menuName}` === value}
-            products={menuProducts?.["dorucak"]?.[menuName]}
-            handleRemoveItem={handleRemoveItem}
-            value={`dorucak-${menuName}`}
-          />
-        ))}
-      </div>
-
       <Title text="Ručak" />
       <div className="flex flex-col md:flex-row mb-8">
         {menuNames.map((menuName, index) => (

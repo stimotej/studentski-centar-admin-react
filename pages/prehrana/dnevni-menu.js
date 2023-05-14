@@ -62,7 +62,7 @@ const NewDnevniMenu = () => {
   const debouncedSearch = useDebounce(search, 300);
 
   const [selectedRestaurantId, setSelectedRestaurantId] = useState(
-    Object.keys(router.query).length ? +router.query.restaurantId : ""
+    Object.keys(router.query).length ? +router.query.restaurantId : 0
   );
 
   const { data: products, isFetching: isLoadingProducts } = useProducts({
@@ -75,7 +75,9 @@ const NewDnevniMenu = () => {
 
   useEffect(() => {
     if (restaurants) {
-      setSelectedRestaurantId(restaurants[0]?.id);
+      if (selectedRestaurantId !== 0) return;
+      const storedRestaurant = localStorage.getItem("selected-restaurant");
+      setSelectedRestaurantId(storedRestaurant || restaurants[0]?.id);
     }
   }, [restaurants]);
 
@@ -271,6 +273,7 @@ const NewDnevniMenu = () => {
               value={selectedRestaurantId}
               onChange={(e) => {
                 setSelectedRestaurantId(e.target.value);
+                localStorage.setItem("selected-restaurant", e.target.value);
               }}
               helperText="Odaberi restoran za koji slažeš menu"
             >

@@ -39,17 +39,6 @@ const PreviewDialog = ({ showMenuPreviewDialog, setShowMenuPreviewDialog }) => {
 
       <DialogContent>
         <MenuPreviewTable
-          title="Doručak"
-          menu={menu}
-          fields={[
-            "dorucak-menu",
-            "dorucak-vege_menu",
-            "dorucak-izbor",
-            "dorucak-prilozi",
-          ]}
-        />
-
-        <MenuPreviewTable
           className="mt-5"
           title="Ručak"
           menu={menu}

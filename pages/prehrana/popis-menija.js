@@ -79,7 +79,8 @@ const MenuList = () => {
   useEffect(() => {
     if (restaurants) {
       if (selectedRestaurantId !== 0) return;
-      setSelectedRestaurantId(restaurants[0].id);
+      const storedRestaurant = localStorage.getItem("selected-restaurant");
+      setSelectedRestaurantId(storedRestaurant || restaurants[0]?.id);
     }
   }, [restaurants]);
 
@@ -153,6 +154,7 @@ const MenuList = () => {
               value={selectedRestaurantId}
               onChange={(e) => {
                 setSelectedRestaurantId(e.target.value);
+                localStorage.setItem("selected-restaurant", e.target.value);
               }}
               helperText="Odaberi restoran za koji želiš pregledati menije"
             >
