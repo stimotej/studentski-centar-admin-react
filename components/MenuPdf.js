@@ -1,13 +1,13 @@
-import React from "react";
 import {
+  Document,
+  Font,
   Page,
+  StyleSheet,
   Text,
   View,
-  Document,
-  StyleSheet,
-  Font,
 } from "@react-pdf/renderer";
 import dayjs from "dayjs";
+import React from "react";
 
 Font.register({
   family: "Roboto",
@@ -43,9 +43,7 @@ const MenuPdf = ({ restaurant, title, date, products }) => {
               style={styles.page}
             >
               <View style={styles.textRow}>
-                <Text style={styles.restaurantTitle}>
-                  Restoran {restaurant}
-                </Text>
+                <Text style={styles.restaurantTitle}>{restaurant}</Text>
                 <Text>
                   <Text style={{ fontWeight: 700 }}>{title}</Text> -{" "}
                   {dayjs(date).format("DD.MM.YYYY")}
@@ -56,8 +54,7 @@ const MenuPdf = ({ restaurant, title, date, products }) => {
                   style={{
                     fontSize: 18,
                     fontWeight: 700,
-                    marginTop: 18,
-                    marginBottom: 24,
+                    marginBottom: 16,
                     color: "#1ca5ff",
                   }}
                 >
@@ -85,17 +82,22 @@ const MenuPdf = ({ restaurant, title, date, products }) => {
                                 borderBottom:
                                   index !== products.length - 1 ? 1 : 0,
                                 borderColor: "#e5e7eb",
+                                fontSize: 12,
                                 lineHeight: 1.3,
                               }}
                             >
                               {product.title}
                               {!!product.price && (
                                 <Text style={styles.lightText}>
-                                  {" "}
-                                  | {product.price}€ |{" "}
+                                  {" | "}
+                                  {!!product.allergens &&
+                                    `${product.allergens} | `}
+                                  {!!product.weight && `${product.weight}g | `}
+                                  {product.price}€ (
                                   <Text style={styles.lightText}>
                                     {(+product.price * 7.5345).toFixed(2)}kn
                                   </Text>
+                                  )
                                 </Text>
                               )}
                             </Text>

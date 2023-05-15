@@ -305,7 +305,7 @@ const MenuList = () => {
                         title={clearHtmlFromString(row.title || "")}
                         restaurant={clearHtmlFromString(
                           restaurants?.find(
-                            (item) => item.id === selectedRestaurantId
+                            (item) => item.id === row.restaurantId
                           )?.title || ""
                         )}
                         date={row.date}
@@ -313,9 +313,8 @@ const MenuList = () => {
                       />
                     }
                     fileName={`${clearHtmlFromString(
-                      restaurants?.find(
-                        (item) => item.id === selectedRestaurantId
-                      )?.title || ""
+                      restaurants?.find((item) => item.id === row.restaurantId)
+                        ?.title || ""
                     )}_${row.slug}_${dayjs().format("DD_MM_YYYY")}.pdf`}
                     onClick={(e) => e.stopPropagation()}
                   >
