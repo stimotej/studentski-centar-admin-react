@@ -37,12 +37,14 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faClose,
+  faEdit,
   faExclamationTriangle,
 } from "@fortawesome/pro-regular-svg-icons";
 import { Box } from "@mui/system";
 import { LoadingButton } from "@mui/lab";
 import clearHtmlFromString from "../../lib/clearHtmlFromString";
 import dynamic from "next/dynamic";
+import LinijeDialog from "../../components/Prehrana/LinijeDialog";
 const QuillTextEditor = dynamic(
   () => import("../../components/Elements/QuillTextEditor"),
   { ssr: false }
@@ -123,6 +125,8 @@ const NewDnevniMenu = () => {
   const [menuProducts, setMenuProducts] = useState(null);
 
   const [selectedMenu, setSelectedMenu] = useState("dorucak-menu");
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [copiedProduct, setCopiedProduct] = useState(null);
 
   const addSelectedProduct = (product) => {
     const menuName = selectedMenu.split("-")[0];
@@ -174,6 +178,82 @@ const NewDnevniMenu = () => {
     activeMenu.splice(index, 1);
     setMenuProducts(menuCopy);
   };
+
+  const handleMoveItem = (dragIndex, hoverIndex, menuName, mealName) => {
+    let menuCopy = { ...menuProducts };
+    let activeMenu = menuCopy[mealName][menuName];
+    const dragProduct = activeMenu[dragIndex];
+    activeMenu.splice(dragIndex, 1);
+    activeMenu.splice(hoverIndex, 0, dragProduct);
+    setMenuProducts(menuCopy);
+  };
+
+  const handleChangeMenu = (
+    index,
+    currentMenuName,
+    currentMealName,
+    newMenuName,
+    newMealName,
+    itemId
+  ) => {
+    // move product to new menu and meal
+    let menuCopy = { ...menuProducts };
+
+    let currentMenu = menuCopy[currentMealName][currentMenuName];
+    const dragProduct = currentMenu[index];
+
+    if (!(newMealName in menuCopy)) {
+      menuCopy[newMealName] = {};
+    }
+    if (!(newMenuName in menuCopy[newMealName])) {
+      menuCopy[newMealName][newMenuName] = [];
+    }
+    if (menuCopy[newMealName][newMenuName].some((item) => item.id === itemId)) {
+      toast.error("Ovaj je proizvod već dodan");
+      return;
+    }
+
+    currentMenu.splice(index, 1);
+
+    let newMenu = menuCopy[newMealName][newMenuName];
+    newMenu.push(dragProduct);
+
+    setMenuProducts(menuCopy);
+  };
+
+  useEffect(() => {
+    const handleCopyPaste = (e) => {
+      if (e.ctrlKey && e.code === "KeyC") {
+        if (selectedProduct) {
+          setCopiedProduct(selectedProduct);
+        }
+      }
+      if (e.ctrlKey && e.code === "KeyV") {
+        if (copiedProduct) {
+          addSelectedProduct({
+            ...copiedProduct,
+            name: copiedProduct.title,
+          });
+        }
+      }
+      if (e.ctrlKey && e.code === "KeyX") {
+        if (selectedProduct) {
+          setCopiedProduct(selectedProduct);
+          handleRemoveItem(selectedMenu, selectedProduct.id);
+        }
+      }
+      if (e.key === "Escape") {
+        if (selectedProduct) {
+          handleRemoveItem(selectedMenu, selectedProduct.id);
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleCopyPaste);
+    return () => {
+      window.removeEventListener("keydown", handleCopyPaste);
+    };
+  }, [selectedProduct, selectedMenu, copiedProduct]);
 
   const { mutate: createMenu, isLoading: isCreating } = useCreateMenu();
   const { mutate: updateMenu, isLoading: isUpdating } = useUpdateMenu();
@@ -233,6 +313,8 @@ const NewDnevniMenu = () => {
       }
     );
   };
+
+  const [linijeDialogOpened, setLinijeDialogOpened] = useState(false);
 
   return (
     <Layout>
@@ -325,7 +407,7 @@ const NewDnevniMenu = () => {
             </div>
           </div>
         </div>
-        {!!menus && menus.length > 0 && !!activeMenu && (
+        {!!menus && menus.length > 0 && !!activeMenu && restaurants.length && (
           <>
             <Box sx={{ borderBottom: 1, borderColor: "divider", marginTop: 4 }}>
               <Tabs
@@ -350,15 +432,31 @@ const NewDnevniMenu = () => {
                 ))}
               </Tabs>
             </Box>
-            <QuillTextEditor
-              value={menuTitle}
-              onChange={setMenuTitle}
-              formats={[]}
-              containerClassName="mr-2 mt-4"
-              className="[&>div>div]:!min-h-fit [&>div>div]:line-clamp-1"
-              placeholder="Naziv"
-              useToolbar={false}
-            />
+            <div className="mt-4 flex items-center justify-between gap-4">
+              <TextField
+                select
+                label="Odaberi naziv linije"
+                value={menuTitle}
+                onChange={(e) => setMenuTitle(e.target.value)}
+                fullWidth
+              >
+                {restaurants
+                  ?.find((r) => r.id == selectedRestaurantId)
+                  ?.linije?.map((linija, index) => (
+                    <MenuItem key={index} value={linija}>
+                      {linija}
+                    </MenuItem>
+                  ))}
+              </TextField>
+              <Button
+                onClick={() => setLinijeDialogOpened(true)}
+                className="whitespace-nowrap"
+                size="large"
+              >
+                Uredi linije
+                <FontAwesomeIcon icon={faEdit} className="ml-2" />
+              </Button>
+            </div>
             <div className="mt-4 flex items-center justify-between">
               <TextField
                 value={menuStatus}
@@ -406,12 +504,25 @@ const NewDnevniMenu = () => {
             <MenuSelect
               menuProducts={menuProducts}
               value={selectedMenu}
-              onSelect={(value) => setSelectedMenu(value)}
+              onSelect={setSelectedMenu}
+              selectedProduct={selectedProduct}
+              onSelectProduct={setSelectedProduct}
               handleRemoveItem={handleRemoveItem}
+              handleMoveItem={handleMoveItem}
+              handleChangeMenu={handleChangeMenu}
             />
           )}
         </div>
       </div>
+
+      <LinijeDialog
+        value={
+          restaurants?.find((r) => r.id == selectedRestaurantId)?.linije || []
+        }
+        opened={linijeDialogOpened}
+        setOpened={setLinijeDialogOpened}
+        restaurantId={selectedRestaurantId}
+      />
 
       <Dialog
         open={deleteMenuDialog}
@@ -453,15 +564,31 @@ const NewDnevniMenu = () => {
             Dodaje novi menu na odabrani datum. Neće odmah biti vidljiv na
             stranici.
           </DialogContentText>
-          <QuillTextEditor
-            value={dialogTitle}
-            onChange={setDialogTitle}
-            formats={[]}
-            containerClassName="mt-2"
-            className="[&>div>div]:!min-h-fit [&>div>div]:line-clamp-1"
-            placeholder="Naslov"
-            useToolbar={false}
-          />
+          <div className="mt-4 flex items-center justify-between gap-4">
+            <TextField
+              select
+              label="Odaberi naziv linije"
+              value={dialogTitle}
+              onChange={(e) => setDialogTitle(e.target.value)}
+              fullWidth
+            >
+              {restaurants
+                ?.find((r) => r.id == selectedRestaurantId)
+                ?.linije?.map((linija, index) => (
+                  <MenuItem key={index} value={linija}>
+                    {linija}
+                  </MenuItem>
+                ))}
+            </TextField>
+            <Button
+              onClick={() => setLinijeDialogOpened(true)}
+              className="whitespace-nowrap"
+              size="large"
+            >
+              Uredi linije
+              <FontAwesomeIcon icon={faEdit} className="ml-2" />
+            </Button>
+          </div>
         </DialogContent>
         <DialogActions>
           <Button

@@ -1,7 +1,16 @@
 import MenuSelectItem from "./Item";
 import Title from "./Title";
 
-const MenuSelect = ({ menuProducts, value, onSelect, handleRemoveItem }) => {
+const MenuSelect = ({
+  menuProducts,
+  value,
+  onSelect,
+  selectedProduct,
+  onSelectProduct,
+  handleRemoveItem,
+  handleMoveItem,
+  handleChangeMenu,
+}) => {
   const menuNames = ["menu", "vege_menu", "izbor", "prilozi"];
 
   return (
@@ -11,11 +20,17 @@ const MenuSelect = ({ menuProducts, value, onSelect, handleRemoveItem }) => {
         {menuNames.map((menuName, index) => (
           <MenuSelectItem
             key={index}
+            menuName={menuName}
+            mealName="rucak"
             text={menuName.split("_").join(" ")}
             onSelect={() => onSelect(`rucak-${menuName}`)}
+            selectedProduct={selectedProduct}
+            onSelectProduct={onSelectProduct}
             active={`rucak-${menuName}` === value}
             products={menuProducts?.["rucak"]?.[menuName]}
             handleRemoveItem={handleRemoveItem}
+            handleMoveItem={handleMoveItem}
+            handleChangeMenu={handleChangeMenu}
             value={`rucak-${menuName}`}
           />
         ))}
@@ -26,11 +41,17 @@ const MenuSelect = ({ menuProducts, value, onSelect, handleRemoveItem }) => {
         {menuNames.map((menuName, index) => (
           <MenuSelectItem
             key={index}
+            menuName={menuName}
+            mealName="vecera"
             text={menuName.split("_").join(" ")}
             onSelect={() => onSelect(`vecera-${menuName}`)}
+            selectedProduct={selectedProduct}
+            onSelectProduct={onSelectProduct}
             active={`vecera-${menuName}` === value}
             products={menuProducts?.["vecera"]?.[menuName]}
             handleRemoveItem={handleRemoveItem}
+            handleMoveItem={handleMoveItem}
+            handleChangeMenu={handleChangeMenu}
             value={`vecera-${menuName}`}
           />
         ))}
