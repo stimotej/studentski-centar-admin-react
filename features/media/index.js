@@ -10,19 +10,23 @@ import mediaKeys from "./queries";
 import { toast } from "react-toastify";
 import { useRef } from "react";
 
-const croToEngString = (str) => {
-  var translate_re = /[čćđšž]/g;
-  var translate = {
+function croToEngString(input) {
+  const croChars = /[ČčĆćĐđŠšŽž]/g;
+  const engChars = {
+    Č: "C",
     č: "c",
+    Ć: "C",
     ć: "c",
+    Đ: "D",
     đ: "d",
+    Š: "S",
     š: "s",
+    Ž: "Z",
     ž: "z",
   };
-  return str.replace(translate_re, function (match) {
-    return translate[match];
-  });
-};
+
+  return input.replace(croChars, (match) => engChars[match]);
+}
 
 export const useMedia = (filters, options) => {
   const mediaPerPage = 30;
@@ -217,7 +221,7 @@ export const useCreateMedia = () => {
         body,
         {
           headers: {
-            "Content-Type": type,
+            "Content-Type": `${type}; charset=utf-8`,
             Accept: "application/json",
             "Content-Disposition":
               'attachment; filename="' + croToEngString(name) + '"',

@@ -17,7 +17,7 @@ import MediaFileInput from "./Elements/MediaFileInput";
 import Loader from "./Elements/Loader";
 import Header from "./Header";
 import Layout from "./Layout";
-import { ItemTypesDnD, userGroups } from "../lib/constants";
+import { ItemTypesDnD } from "../lib/constants";
 import MyDialog from "./Elements/MyDialog";
 import {
   useMedia,
@@ -119,8 +119,6 @@ const MediaLayout = ({
 
   const [size, setSize] = useState("medium");
 
-  const router = useRouter();
-
   const { mutate: createMedia, isLoading: isCreating } = useCreateMedia();
   const { mutate: updateMedia, isLoading: isUpdating } = useUpdateMedia();
   const { mutate: deleteMedia, isLoading: isDeleting } = useDeleteMedia();
@@ -137,6 +135,7 @@ const MediaLayout = ({
           categoryId,
         },
         {
+          onError: (error) => console.log(error.response.data),
           onSuccess: () => {
             setSelectedFile(null);
             setAddNewDialog(false);
