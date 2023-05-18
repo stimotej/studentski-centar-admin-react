@@ -25,7 +25,9 @@ function croToEngString(input) {
     ž: "z",
   };
 
-  return input.replace(croChars, (match) => engChars[match]);
+  return input
+    .replace(croChars, (match) => engChars[match])
+    .replace(/[^\x00-\x7F]/g, "");
 }
 
 export const useMedia = (filters, options) => {
