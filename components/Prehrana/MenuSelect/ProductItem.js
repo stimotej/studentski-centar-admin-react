@@ -82,15 +82,19 @@ const ProductItem = ({
   return (
     <button
       ref={ref}
-      onClick={() => onSelectProduct({ ...product, menuName, mealName })}
+      onClick={(e) => onSelectProduct(e, { ...product, menuName, mealName })}
       data-handlerid={handlerId}
       className={`flex items-center gap-1 text-left shadow justify-between py-2 px-3 text-black rounded-md mt-2 ${
         opacity ? "opacity-100" : "opacity-0"
       } ${
-        selectedProduct?.id === product.id &&
-        selectedProduct?.menuName === menuName &&
-        selectedProduct?.mealName === mealName
-          ? "ring-1 ring-offset-1 ring-primary"
+        // !!selectedProduct &&
+        selectedProduct?.some(
+          (item) =>
+            item.id == product.id &&
+            item.menuName == menuName &&
+            item.mealName == mealName
+        )
+          ? "ring-2 ring-offset-1 ring-black"
           : ""
       } ${
         product?.stock === "outofstock"

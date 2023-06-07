@@ -28,6 +28,7 @@ import {
   DialogContentText,
   DialogTitle,
   IconButton,
+  Menu,
   MenuItem,
   Tab,
   Tabs,
@@ -43,12 +44,7 @@ import {
 import { Box } from "@mui/system";
 import { LoadingButton } from "@mui/lab";
 import clearHtmlFromString from "../../lib/clearHtmlFromString";
-import dynamic from "next/dynamic";
 import LinijeDialog from "../../components/Prehrana/LinijeDialog";
-const QuillTextEditor = dynamic(
-  () => import("../../components/Elements/QuillTextEditor"),
-  { ssr: false }
-);
 
 const NewDnevniMenu = () => {
   const router = useRouter();
@@ -125,8 +121,7 @@ const NewDnevniMenu = () => {
   const [menuProducts, setMenuProducts] = useState(null);
 
   const [selectedMenu, setSelectedMenu] = useState("dorucak-menu");
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [copiedProduct, setCopiedProduct] = useState(null);
+  const [selectedProducts, setSelectedProducts] = useState([]);
 
   const addSelectedProduct = (product) => {
     const menuName = selectedMenu.split("-")[0];
@@ -140,7 +135,7 @@ const NewDnevniMenu = () => {
       menuCopy[menuName][mealName] = [];
     }
     if (menuCopy[menuName][mealName].some((item) => item.id === product.id)) {
-      toast.error("Ovaj je proizvod već dodan");
+      toast.error(`Proizvod '${product.name}' je već dodan u meni.`);
       return;
     }
     menuCopy[menuName][mealName].push({
@@ -196,7 +191,6 @@ const NewDnevniMenu = () => {
     newMealName,
     itemId
   ) => {
-    // move product to new menu and meal
     let menuCopy = { ...menuProducts };
 
     let currentMenu = menuCopy[currentMealName][currentMenuName];
@@ -221,30 +215,50 @@ const NewDnevniMenu = () => {
     setMenuProducts(menuCopy);
   };
 
+  const [contextMenu, setContextMenu] = React.useState(null);
+
+  const handleCopy = () => {
+    if (selectedProducts) {
+      localStorage.setItem("copiedProduct", JSON.stringify(selectedProducts));
+    }
+    setContextMenu(null);
+  };
+
+  const handlePaste = () => {
+    const copiedProducts = JSON.parse(localStorage.getItem("copiedProduct"));
+    if (copiedProducts) {
+      copiedProducts.forEach((copiedProduct) => {
+        addSelectedProduct({
+          ...copiedProduct,
+          name: copiedProduct.title,
+        });
+      });
+    }
+    setContextMenu(null);
+  };
+
+  const handleCut = () => {
+    if (selectedProducts) {
+      localStorage.setItem("copiedProduct", JSON.stringify(selectedProducts));
+      handleRemoveItem(selectedMenu, selectedProducts.id);
+    }
+    setContextMenu(null);
+  };
+
   useEffect(() => {
     const handleCopyPaste = (e) => {
       if (e.ctrlKey && e.code === "KeyC") {
-        if (selectedProduct) {
-          setCopiedProduct(selectedProduct);
-        }
+        handleCopy();
       }
       if (e.ctrlKey && e.code === "KeyV") {
-        if (copiedProduct) {
-          addSelectedProduct({
-            ...copiedProduct,
-            name: copiedProduct.title,
-          });
-        }
+        handlePaste();
       }
       if (e.ctrlKey && e.code === "KeyX") {
-        if (selectedProduct) {
-          setCopiedProduct(selectedProduct);
-          handleRemoveItem(selectedMenu, selectedProduct.id);
-        }
+        handleCut();
       }
       if (e.key === "Escape") {
-        if (selectedProduct) {
-          handleRemoveItem(selectedMenu, selectedProduct.id);
+        if (selectedProducts) {
+          handleRemoveItem(selectedMenu, selectedProducts.id);
         }
       }
     };
@@ -253,7 +267,23 @@ const NewDnevniMenu = () => {
     return () => {
       window.removeEventListener("keydown", handleCopyPaste);
     };
-  }, [selectedProduct, selectedMenu, copiedProduct]);
+  }, [selectedProducts, selectedMenu]);
+
+  const handleSelectProduct = (e, product) => {
+    if (e.shiftKey) {
+      const filterProducts = (item) =>
+        item.id == product.id &&
+        item.menuName == product.menuName &&
+        item.mealName == product.mealName;
+
+      if (selectedProducts.some(filterProducts)) {
+        const index = selectedProducts.findIndex(filterProducts);
+        const newSelectedProducts = [...selectedProducts];
+        newSelectedProducts.splice(index, 1);
+        setSelectedProducts(newSelectedProducts);
+      } else setSelectedProducts([...selectedProducts, product]);
+    } else setSelectedProducts([product]);
+  };
 
   const { mutate: createMenu, isLoading: isCreating } = useCreateMenu();
   const { mutate: updateMenu, isLoading: isUpdating } = useUpdateMenu();
@@ -478,22 +508,33 @@ const NewDnevniMenu = () => {
                 >
                   Spremi
                 </LoadingButton>
-                <Tooltip title="Dodaj menu na odabrani datum" arrow>
-                  <Button
-                    variant="outlined"
-                    color="error"
-                    className="!ml-2"
-                    onClick={() => setDeleteMenuDialog(true)}
-                  >
-                    Obriši
-                  </Button>
-                </Tooltip>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  className="!ml-2"
+                  onClick={() => setDeleteMenuDialog(true)}
+                >
+                  Obriši
+                </Button>
               </div>
             </div>
           </>
         )}
 
-        <div className="mt-10">
+        <div
+          className="mt-10"
+          onContextMenu={(e) => {
+            e.preventDefault();
+            setContextMenu(
+              contextMenu === null
+                ? {
+                    mouseX: e.clientX + 2,
+                    mouseY: e.clientY - 6,
+                  }
+                : null
+            );
+          }}
+        >
           {isLoading ? (
             <Loader className="w-10 h-10 mx-auto mt-12 border-primary" />
           ) : !activeMenu ? (
@@ -505,8 +546,8 @@ const NewDnevniMenu = () => {
               menuProducts={menuProducts}
               value={selectedMenu}
               onSelect={setSelectedMenu}
-              selectedProduct={selectedProduct}
-              onSelectProduct={setSelectedProduct}
+              selectedProduct={selectedProducts}
+              onSelectProduct={handleSelectProduct}
               handleRemoveItem={handleRemoveItem}
               handleMoveItem={handleMoveItem}
               handleChangeMenu={handleChangeMenu}
@@ -605,6 +646,35 @@ const NewDnevniMenu = () => {
           </LoadingButton>
         </DialogActions>
       </Dialog>
+
+      <Menu
+        open={contextMenu !== null}
+        onClose={() => setContextMenu(null)}
+        anchorReference="anchorPosition"
+        anchorPosition={
+          contextMenu !== null
+            ? { top: contextMenu.mouseY, left: contextMenu.mouseX }
+            : undefined
+        }
+      >
+        {selectedProducts.length > 0 && (
+          <MenuItem onClick={handleCopy}>Kopiraj</MenuItem>
+        )}
+        <MenuItem onClick={handlePaste}>Zalijepi</MenuItem>
+        {selectedProducts.length > 0 && (
+          <>
+            <MenuItem onClick={handleCut}>Izreži</MenuItem>
+            <MenuItem
+              onClick={() => {
+                setSelectedProducts([]);
+                setContextMenu(null);
+              }}
+            >
+              Ukloni odabir
+            </MenuItem>
+          </>
+        )}
+      </Menu>
     </Layout>
   );
 };
