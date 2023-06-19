@@ -1,15 +1,21 @@
 import Header from "../../components/Header";
 import Layout from "../../components/Layout";
 import React, { useEffect, useState } from "react";
-import { adminSmjestajCategory, smjestajCategoryId } from "../../lib/constants";
+import {
+  adminSmjestajCategory,
+  infoSmjestajNatjecajCategory,
+  smjestajCategoryId,
+} from "../../lib/constants";
 import {
   Button,
+  Checkbox,
   CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
+  FormControlLabel,
   ListItemIcon,
   ListItemText,
   MenuItem,
@@ -81,6 +87,7 @@ const Home = () => {
   const [radnoVrijemeBlagajni, setRadnoVrijemeBlagajni] = useState("");
   const [lokacija, setLokacija] = useState("");
   const [imageGroups, setImageGroups] = useState([]);
+  const [status, setStatus] = useState(false);
 
   useEffect(() => {
     if (posts) {
@@ -100,6 +107,7 @@ const Home = () => {
       setKontakt(dormitory.kontakt);
       setLokacija(dormitory.lokacija);
       setImageGroups(dormitory.image_groups || []);
+      setStatus(dormitory.status == "publish");
     }
   }, [posts, categories]);
 
@@ -117,6 +125,7 @@ const Home = () => {
     setRadnoVrijemeBlagajni(dormitory.radno_vrijeme_blagajni);
     setLokacija(dormitory.lokacija);
     setImageGroups(dormitory.image_groups || []);
+    setStatus(dormitory.status == "publish");
   };
 
   const { mutate: createPost, isLoading: isCreating } = useCreatePost();
@@ -156,13 +165,15 @@ const Home = () => {
         radno_vrijeme_blagajni: radnoVrijemeBlagajni,
         lokacija: lokacija !== dormitory.lokacija ? lokacija : undefined,
         image_groups: imageGroups,
-        status: "publish",
+        status: dormitory?.categories?.includes(infoSmjestajNatjecajCategory)
+          ? status
+            ? "publish"
+            : "draft"
+          : "publish",
         ...(image ? { featuredMedia: image } : {}),
       },
       {
-        onError: (err) => {
-          console.log("err", err.response.data);
-        },
+        onError: (err) => {},
       }
     );
   };
@@ -257,16 +268,18 @@ const Home = () => {
                       )}
                     </MenuList>
                   </Paper>
-                  <LoadingButton
-                    className="!mt-2"
-                    startIcon={<FontAwesomeIcon icon={faPlus} />}
-                    onClick={() => {
-                      setAddPostDialog(true);
-                      setCategory(category.id);
-                    }}
-                  >
-                    Dodaj novi
-                  </LoadingButton>
+                  {category.id != infoSmjestajNatjecajCategory ? (
+                    <LoadingButton
+                      className="!mt-2"
+                      startIcon={<FontAwesomeIcon icon={faPlus} />}
+                      onClick={() => {
+                        setAddPostDialog(true);
+                        setCategory(category.id);
+                      }}
+                    >
+                      Dodaj novi
+                    </LoadingButton>
+                  ) : null}
                 </div>
               ))
             )}
@@ -352,6 +365,18 @@ const Home = () => {
                 />
               </>
             )}
+            {category == infoSmjestajNatjecajCategory ? (
+              <FormControlLabel
+                label="Prikaži na stranici"
+                sx={{ mt: 2 }}
+                control={
+                  <Checkbox
+                    checked={status}
+                    onChange={(e) => setStatus(e.target.checked)}
+                  />
+                }
+              />
+            ) : null}
 
             <div className="flex gap-2 items-center mt-6">
               <LoadingButton
@@ -362,13 +387,15 @@ const Home = () => {
               >
                 Spremi
               </LoadingButton>
-              <LoadingButton
-                variant="outlined"
-                color="error"
-                onClick={() => setDeletePostDialog(true)}
-              >
-                Obriši
-              </LoadingButton>
+              {category != infoSmjestajNatjecajCategory ? (
+                <LoadingButton
+                  variant="outlined"
+                  color="error"
+                  onClick={() => setDeletePostDialog(true)}
+                >
+                  Obriši
+                </LoadingButton>
+              ) : null}
             </div>
           </div>
         </div>
