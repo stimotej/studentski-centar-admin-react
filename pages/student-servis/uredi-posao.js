@@ -106,7 +106,9 @@ const UrediPosao = () => {
             ...data,
             city: fromHome ? "FROM_HOME" : data.city,
             categories: data.type,
-            content: `${data.long_island_id} | ${data.company_name}`,
+            content: `${data.long_island_id} | ${data.company_name} | ${
+              fromHome ? "Rad od doma" : data.city
+            }`,
             image,
             documents:
               files.length > 0 &&
@@ -133,7 +135,9 @@ const UrediPosao = () => {
           categories: data.type,
           allowed_sc: false,
           featured: false,
-          content: `${data.long_island_id} | ${data.company_name}`,
+          content: `${data.long_island_id} | ${data.company_name} | ${
+            fromHome ? "Rad od doma" : data.city
+          }`,
           image,
           documents:
             files.length > 0 &&
