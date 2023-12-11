@@ -76,6 +76,7 @@ const eventTypes = [
   "Radionica",
   "Predavanje",
   "Promocija",
+  "Festivali",
 ];
 
 const Editor = () => {
