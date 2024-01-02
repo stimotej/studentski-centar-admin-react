@@ -66,6 +66,7 @@ const eventLocations = [
   "SD Cvjetno naselje",
   "SD Stjepan Radić",
   "SD Lašćina",
+  "Centar za kulturu Trešnjevka",
 ];
 const eventTypes = [
   "Predstava",
