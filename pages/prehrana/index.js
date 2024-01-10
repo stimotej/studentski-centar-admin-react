@@ -79,6 +79,7 @@ const Home = () => {
     createRestaurant(
       {
         title: dialogTitle,
+        order: restaurants.length + 1,
       },
       {
         onSuccess: (data) => {

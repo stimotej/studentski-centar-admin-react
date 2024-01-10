@@ -68,7 +68,7 @@ export const useCreateRestaurant = () => {
   const queryClient = useQueryClient();
 
   return useMutation(
-    async ({ title, status }) => {
+    async ({ title, status, order }) => {
       const response = await axios.post(
         `http://161.53.174.14/wp-json/wp/v2/posts`,
         {
@@ -77,6 +77,9 @@ export const useCreateRestaurant = () => {
           categories: [restaurantCategoryId],
           featured_media: restaurantDefaultMediaId,
           status: "draft",
+          meta: {
+            order,
+          },
         }
       );
       return formatRestaurant(response.data);

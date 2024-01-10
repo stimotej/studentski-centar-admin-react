@@ -26,7 +26,6 @@ const DraggableMenuItems = ({ items, value, onChange }) => {
   }, [items]);
 
   const handleMoveCard = (dragIndex, hoverIndex) => {
-    console.log("handleMoveCard", dragIndex, hoverIndex);
     setInnerItems(replaceElements(innerItems, dragIndex, hoverIndex));
   };
 

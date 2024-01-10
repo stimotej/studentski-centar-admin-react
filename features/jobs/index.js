@@ -24,7 +24,6 @@ export const useJobs = (filters, options) => {
           search: newFilters?.search,
           per_page: jobsPerPage,
           page: newFilters?.search ? undefined : newFilters?.page,
-          exclude: [18820],
         },
       }
     );
