@@ -67,6 +67,9 @@ const eventLocations = [
   "SD Stjepan Radić",
   "SD Lašćina",
   "Centar za kulturu Trešnjevka",
+  "HISTRIONSKI DOM",
+  "BOK fest",
+  "GK Zorin dom",
 ];
 const eventTypes = [
   "Predstava",
