@@ -15,7 +15,7 @@ export const useMenus = (filters, options) => {
 
   const fetchMenus = async (newFilters) => {
     const response = await axios.get(
-      "http://161.53.174.14/wp-json/wp/v2/menus",
+      "https://www.sczg.unizg.hr/wp-json/wp/v2/menus",
       {
         params: {
           orderby: newFilters?.orderby,
@@ -70,7 +70,7 @@ export const useMenusByDate = ({ date, restaurantId }, options) => {
     menuKeys.menuByDate({ date, restaurantId }),
     async () => {
       const response = await axios.get(
-        "http://161.53.174.14/wp-json/wp/v2/menus",
+        "https://www.sczg.unizg.hr/wp-json/wp/v2/menus",
         {
           params: {
             menu_date: date,
@@ -97,7 +97,7 @@ export const useCreateMenu = () => {
   return useMutation(
     async (menu) => {
       const response = await axios.post(
-        "http://161.53.174.14/wp-json/wp/v2/menus",
+        "https://www.sczg.unizg.hr/wp-json/wp/v2/menus",
         {
           title: menu.title,
           status: "draft",
@@ -130,7 +130,7 @@ export const useUpdateMenu = (displayToasts = true) => {
   return useMutation(
     async (menu) => {
       const response = await axios.post(
-        "http://161.53.174.14/wp-json/wp/v2/menus/" + menu.id,
+        "https://www.sczg.unizg.hr/wp-json/wp/v2/menus/" + menu.id,
         {
           title: menu?.title,
           slug: menu?.title,
@@ -167,7 +167,7 @@ export const useDeleteMenu = (displayToasts = true) => {
   return useMutation(
     async (id) => {
       const response = await axios.delete(
-        "http://161.53.174.14/wp-json/wp/v2/menus/" + id,
+        "https://www.sczg.unizg.hr/wp-json/wp/v2/menus/" + id,
         {
           params: {
             force: true,

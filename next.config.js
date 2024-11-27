@@ -5,7 +5,9 @@ module.exports = withFonts({
   basePath: "/zaposlenici",
   assetPrefix: "/zaposlenici/",
   images: {
-    domains: ["unaprijedi.com", "161.53.174.14"],
+    loader: "custom",
+    loaderFile: "./lib/imageLoader.js",
+    domains: ["unaprijedi.com", "161.53.174.14", "www.sczg.unizg.hr"],
   },
   webpack: (config, options) => {
     config.plugins.push(

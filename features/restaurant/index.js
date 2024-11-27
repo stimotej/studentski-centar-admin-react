@@ -14,7 +14,7 @@ export const useRestaurants = (options) => {
     restaurantKeys.restaurants,
     async () => {
       const response = await axios.get(
-        "http://161.53.174.14/wp-json/wp/v2/posts",
+        "https://www.sczg.unizg.hr/wp-json/wp/v2/posts",
         {
           params: {
             categories: restaurantCategoryId,
@@ -46,7 +46,7 @@ export const useRestaurant = (options) => {
       var currentUserId = jwt.decode(token).id;
 
       const response = await axios.get(
-        "http://161.53.174.14/wp-json/wp/v2/posts",
+        "https://www.sczg.unizg.hr/wp-json/wp/v2/posts",
         {
           params: {
             author: currentUserId,
@@ -70,7 +70,7 @@ export const useCreateRestaurant = () => {
   return useMutation(
     async ({ title, status, order }) => {
       const response = await axios.post(
-        `http://161.53.174.14/wp-json/wp/v2/posts`,
+        `https://www.sczg.unizg.hr/wp-json/wp/v2/posts`,
         {
           title,
           status,
@@ -104,7 +104,7 @@ export const useUpdateRestaurant = () => {
   return useMutation(
     async (restaurant) => {
       const response = await axios.post(
-        "http://161.53.174.14/wp-json/wp/v2/posts/" + restaurant.id,
+        "https://www.sczg.unizg.hr/wp-json/wp/v2/posts/" + restaurant.id,
         {
           title: restaurant?.title,
           featured_media: restaurant?.imageId,
@@ -141,7 +141,7 @@ export const useDeleteRestaurant = () => {
   return useMutation(
     async ({ id }) => {
       const response = await axios.delete(
-        `http://161.53.174.14/wp-json/wp/v2/posts/${id}`,
+        `https://www.sczg.unizg.hr/wp-json/wp/v2/posts/${id}`,
         {
           params: {
             force: true,

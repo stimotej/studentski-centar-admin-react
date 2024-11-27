@@ -16,7 +16,7 @@ export const useJobs = (filters, options) => {
     const userId = window.localStorage.getItem("user_id");
 
     const response = await axios.get(
-      "http://161.53.174.14/wp-json/wp/v2/jobs",
+      "https://www.sczg.unizg.hr/wp-json/wp/v2/jobs",
       {
         params: {
           orderby: newFilters?.orderby,
@@ -73,7 +73,7 @@ export const useJob = (id, options) => {
     jobKeys.job(id),
     async () => {
       const response = await axios.get(
-        "http://161.53.174.14/wp-json/wp/v2/jobs/" + id
+        "https://www.sczg.unizg.hr/wp-json/wp/v2/jobs/" + id
       );
       return formatJob(response.data);
     },
@@ -115,7 +115,7 @@ export const useCreateJob = () => {
   return useMutation(
     async (job) => {
       const response = await axios.post(
-        "http://161.53.174.14/wp-json/wp/v2/jobs",
+        "https://www.sczg.unizg.hr/wp-json/wp/v2/jobs",
         {
           title: job.title,
           excerpt: job.description,
@@ -147,7 +147,7 @@ export const useCreateJob = () => {
 //   return useMutation(
 //     async (job) => {
 //       const response = await axios.post(
-//         "http://161.53.174.14/wp-json/wp/v2/jobs",
+//         "https://www.sczg.unizg.hr/wp-json/wp/v2/jobs",
 //         {
 //           title: job.title,
 //           excerpt: job.description,
@@ -171,7 +171,7 @@ export const useUpdateJob = () => {
   return useMutation(
     async ({ id, job }) => {
       const response = await axios.post(
-        "http://161.53.174.14/wp-json/wp/v2/jobs/" + id,
+        "https://www.sczg.unizg.hr/wp-json/wp/v2/jobs/" + id,
         {
           title: job.title,
           slug: job.title,
@@ -200,7 +200,7 @@ export const useDeleteJob = () => {
   return useMutation(
     async (id) => {
       const response = await axios.delete(
-        "http://161.53.174.14/wp-json/wp/v2/jobs/" + id,
+        "https://www.sczg.unizg.hr/wp-json/wp/v2/jobs/" + id,
         {
           params: {
             force: true,

@@ -259,7 +259,9 @@ const SviPoslovi = () => {
                       color="primary"
                       onClick={(e) => {
                         e.stopPropagation();
-                        window.open(`http://161.53.174.14/poslovi/${row.slug}`);
+                        window.open(
+                          `https://www.sczg.unizg.hr/poslovi/${row.slug}`
+                        );
                       }}
                     >
                       <FontAwesomeIcon

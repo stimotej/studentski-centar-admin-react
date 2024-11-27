@@ -23,7 +23,8 @@ dayjs.extend(minMax);
 const queryClient = new QueryClient();
 
 // axios.defaults.baseURL = "https://unaprijedi.com/wp-json/wp/v2"
-axios.defaults.baseURL = "http://161.53.174.14/wp-json/wp/v2/";
+// axios.defaults.baseURL = "http://161.53.174.14/wp-json/wp/v2/";
+axios.defaults.baseURL = "https://www.sczg.unizg.hr/wp-json/wp/v2/";
 
 function MyApp({ Component, pageProps }) {
   useEffect(() => {

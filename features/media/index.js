@@ -38,7 +38,7 @@ export const useMedia = (filters, options) => {
     mediaKeys.mediaFiltered(filters),
     async ({ pageParam }) => {
       const response = await axios.get(
-        "http://161.53.174.14/wp-json/wp/v2/media",
+        "https://www.sczg.unizg.hr/wp-json/wp/v2/media",
         {
           params: {
             categories: filters?.categoryId,
@@ -76,7 +76,7 @@ export const useMediaFolders = (filters, options) => {
     mediaKeys.mediaFolders(filters),
     async () => {
       const response = await axios.get(
-        "http://161.53.174.14/wp-json/wp/v2/media_folder",
+        "https://www.sczg.unizg.hr/wp-json/wp/v2/media_folder",
         {
           params: {
             per_page: 100,
@@ -99,7 +99,7 @@ export const useCreateMediaFolder = () => {
   return useMutation(
     async ({ name, parent }) => {
       const response = await axios.post(
-        `http://161.53.174.14/wp-json/wp/v2/media_folder`,
+        `https://www.sczg.unizg.hr/wp-json/wp/v2/media_folder`,
         {
           name,
           parent,
@@ -129,7 +129,7 @@ export const useUpdateMediaFolder = (displayToasts = true) => {
   return useMutation(
     async ({ id, name, parent, slug }) => {
       const response = await axios.post(
-        `http://161.53.174.14/wp-json/wp/v2/media_folder/${id}`,
+        `https://www.sczg.unizg.hr/wp-json/wp/v2/media_folder/${id}`,
         {
           name,
           parent,
@@ -159,7 +159,7 @@ export const useDeleteMediaFolder = () => {
   return useMutation(
     async ({ id }) => {
       const response = await axios.delete(
-        `http://161.53.174.14/wp-json/wp/v2/media_folder/${id}`,
+        `https://www.sczg.unizg.hr/wp-json/wp/v2/media_folder/${id}`,
         {
           params: {
             force: true,
@@ -187,7 +187,7 @@ export const useMediaFolder = (id, options) => {
     mediaKeys.mediaFolder(id),
     async () => {
       const response = await axios.get(
-        `http://161.53.174.14/wp-json/wp/v2/media_folder/${id}`
+        `https://www.sczg.unizg.hr/wp-json/wp/v2/media_folder/${id}`
       );
       return response.data;
     },
@@ -202,7 +202,7 @@ export const useMediaById = (id, options) => {
     mediaKeys.oneMedia(id),
     async () => {
       const response = await axios.get(
-        "http://161.53.174.14/wp-json/wp/v2/media/" + id
+        "https://www.sczg.unizg.hr/wp-json/wp/v2/media/" + id
       );
       return response.data;
     },
@@ -219,7 +219,7 @@ export const useCreateMedia = () => {
   return useMutation(
     async ({ body, type, name, categoryId, media_folder }) => {
       const response = await axios.post(
-        "http://161.53.174.14/wp-json/wp/v2/media",
+        "https://www.sczg.unizg.hr/wp-json/wp/v2/media",
         body,
         {
           headers: {
@@ -231,7 +231,7 @@ export const useCreateMedia = () => {
         }
       );
       await axios.post(
-        "http://161.53.174.14/wp-json/wp/v2/media/" + response.data.id,
+        "https://www.sczg.unizg.hr/wp-json/wp/v2/media/" + response.data.id,
         {
           categories: categoryId,
           media_folder,
@@ -257,7 +257,7 @@ export const useUpdateMedia = (displayToasts = true) => {
   return useMutation(
     async ({ id, title, alt, isBanner, bannerUrl, folderId }) => {
       const response = await axios.post(
-        "http://161.53.174.14/wp-json/wp/v2/media/" + id,
+        "https://www.sczg.unizg.hr/wp-json/wp/v2/media/" + id,
         {
           title: title,
           alt_text: alt,
@@ -288,7 +288,7 @@ export const useDeleteMedia = () => {
   return useMutation(
     async (id) => {
       const response = await axios.delete(
-        "http://161.53.174.14/wp-json/wp/v2/media/" + id,
+        "https://www.sczg.unizg.hr/wp-json/wp/v2/media/" + id,
         {
           params: {
             force: true,

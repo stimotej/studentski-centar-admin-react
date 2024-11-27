@@ -30,7 +30,7 @@ export default async function handler(req, res) {
     );
 
     const response = await axios.post(
-      "http://161.53.174.14/wp-json/wp/v2/media",
+      "https://www.sczg.unizg.hr/wp-json/wp/v2/media",
       documentFile,
       {
         headers: {
@@ -43,7 +43,7 @@ export default async function handler(req, res) {
       }
     );
     const mediaResponse = await axios.post(
-      "http://161.53.174.14/wp-json/wp/v2/media/" + response.data.id,
+      "https://www.sczg.unizg.hr/wp-json/wp/v2/media/" + response.data.id,
       {
         categories: documentCategoryId,
         author: req.body?.user_id,

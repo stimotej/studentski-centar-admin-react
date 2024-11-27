@@ -92,8 +92,8 @@ const Preview = ({
           openInNewTab
           to={
             isEvent
-              ? `http://161.53.174.14/kultura/eventi/${obavijest?.slug}`
-              : `http://161.53.174.14/obavijesti/${obavijest?.slug}`
+              ? `https://www.sczg.unizg.hr/kultura/eventi/${obavijest?.slug}`
+              : `https://www.sczg.unizg.hr/obavijesti/${obavijest?.slug}`
           }
           className="!ml-4"
         />

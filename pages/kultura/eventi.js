@@ -57,7 +57,7 @@ const Home = () => {
     setIsDeleting(true);
     try {
       const sameEventsRes = await axios.get(
-        "http://161.53.174.14/wp-json/wp/v2/event",
+        "https://www.sczg.unizg.hr/wp-json/wp/v2/event",
         {
           params: {
             tags: event.tags?.[0],

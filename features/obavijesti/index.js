@@ -22,7 +22,7 @@ export const useObavijesti = (filters, options) => {
     obavijestiKeys.obavijestiFiltered(filters),
     async ({ pageParam }) => {
       const response = await axios.get(
-        "http://161.53.174.14/wp-json/wp/v2/obavijesti",
+        "https://www.sczg.unizg.hr/wp-json/wp/v2/obavijesti",
         {
           params: {
             categories: filters?.categoryId,
@@ -60,7 +60,7 @@ export const useObavijest = (id, options) => {
     obavijestiKeys.obavijest(id),
     async () => {
       const response = await axios.get(
-        "http://161.53.174.14/wp-json/wp/v2/obavijesti/" + id
+        "https://www.sczg.unizg.hr/wp-json/wp/v2/obavijesti/" + id
       );
       return response.data;
     },
@@ -76,7 +76,7 @@ export const useCategories = (options) => {
     obavijestiKeys.categories,
     async () => {
       const response = await axios.get(
-        "http://161.53.174.14/wp-json/wp/v2/categories",
+        "https://www.sczg.unizg.hr/wp-json/wp/v2/categories",
         {
           params: {
             parent: obavijestiCategoryId,
@@ -98,7 +98,7 @@ export const useCreateObavijest = () => {
   return useMutation(
     async (obavijest) => {
       const response = await axios.post(
-        "http://161.53.174.14/wp-json/wp/v2/obavijesti",
+        "https://www.sczg.unizg.hr/wp-json/wp/v2/obavijesti",
         {
           title: obavijest?.title,
           excerpt: obavijest?.description,
@@ -138,7 +138,7 @@ export const useUpdateObavijest = () => {
   return useMutation(
     async ({ id, obavijest }) => {
       const response = await axios.post(
-        `http://161.53.174.14/wp-json/wp/v2/obavijesti/${id}`,
+        `https://www.sczg.unizg.hr/wp-json/wp/v2/obavijesti/${id}`,
         {
           title: obavijest?.title,
           excerpt: obavijest?.description,
@@ -178,7 +178,7 @@ export const useDeleteObavijest = () => {
   return useMutation(
     async (id) => {
       const response = await axios.delete(
-        `http://161.53.174.14/wp-json/wp/v2/obavijesti/${id}`,
+        `https://www.sczg.unizg.hr/wp-json/wp/v2/obavijesti/${id}`,
         {
           params: {
             force: true,

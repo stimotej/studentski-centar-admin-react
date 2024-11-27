@@ -10,7 +10,7 @@ export const usePosts = (filters, options) => {
     postsKeys.postsFiltered(filters),
     async () => {
       const response = await axios.get(
-        "http://161.53.174.14/wp-json/wp/v2/posts",
+        "https://www.sczg.unizg.hr/wp-json/wp/v2/posts",
         {
           params: {
             order: "asc",
@@ -35,7 +35,7 @@ export const useAdminCategories = (filters, options) => {
     postsKeys.categoriesFiltered(filters),
     async () => {
       const response = await axios.get(
-        "http://161.53.174.14/wp-json/wp/v2/categories",
+        "https://www.sczg.unizg.hr/wp-json/wp/v2/categories",
         {
           params: {
             order: "asc",
@@ -59,7 +59,7 @@ export const useCreateCategory = () => {
   return useMutation(
     async ({ name, parent }) => {
       const response = await axios.post(
-        `http://161.53.174.14/wp-json/wp/v2/categories`,
+        `https://www.sczg.unizg.hr/wp-json/wp/v2/categories`,
         {
           name,
           parent,
@@ -87,7 +87,7 @@ export const useUpdateCategory = () => {
   return useMutation(
     async ({ id, name, parent, meta }) => {
       const response = await axios.post(
-        `http://161.53.174.14/wp-json/wp/v2/categories/${id}`,
+        `https://www.sczg.unizg.hr/wp-json/wp/v2/categories/${id}`,
         {
           name,
           parent,
@@ -116,7 +116,7 @@ export const useDeleteCategory = () => {
   return useMutation(
     async ({ id }) => {
       const response = await axios.delete(
-        `http://161.53.174.14/wp-json/wp/v2/categories/${id}`,
+        `https://www.sczg.unizg.hr/wp-json/wp/v2/categories/${id}`,
         {
           params: {
             force: true,
@@ -144,7 +144,7 @@ export const usePost = (id, options) => {
     postsKeys.post(id),
     async () => {
       const response = await axios.get(
-        `http://161.53.174.14/wp-json/wp/v2/posts/${id}`
+        `https://www.sczg.unizg.hr/wp-json/wp/v2/posts/${id}`
       );
       return response.data;
     },
@@ -162,7 +162,7 @@ export const useCreatePost = () => {
   return useMutation(
     async ({ title, excerpt, content, status, categories, documents }) => {
       const response = await axios.post(
-        `http://161.53.174.14/wp-json/wp/v2/posts`,
+        `https://www.sczg.unizg.hr/wp-json/wp/v2/posts`,
         {
           title,
           excerpt,
@@ -210,7 +210,7 @@ export const useUpdatePost = () => {
       link,
     }) => {
       const response = await axios.post(
-        `http://161.53.174.14/wp-json/wp/v2/posts/${id}`,
+        `https://www.sczg.unizg.hr/wp-json/wp/v2/posts/${id}`,
         {
           title,
           excerpt,
@@ -251,7 +251,7 @@ export const useDeletePost = () => {
   return useMutation(
     async ({ id }) => {
       const response = await axios.delete(
-        `http://161.53.174.14/wp-json/wp/v2/posts/${id}`,
+        `https://www.sczg.unizg.hr/wp-json/wp/v2/posts/${id}`,
         {
           params: {
             force: true,

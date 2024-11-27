@@ -14,7 +14,7 @@ export const useProducts = (filters, options) => {
 
   const fetchProducts = async (newFilters) => {
     const response = await axios.get(
-      "http://161.53.174.14/wp-json/wp/v2/proizvodi",
+      "https://www.sczg.unizg.hr/wp-json/wp/v2/proizvodi",
       {
         params: {
           orderby: newFilters?.orderby,
@@ -69,7 +69,7 @@ export const useCreateProduct = () => {
   return useMutation(
     async (product) => {
       const response = await axios.post(
-        "http://161.53.174.14/wp-json/wp/v2/proizvodi",
+        "https://www.sczg.unizg.hr/wp-json/wp/v2/proizvodi",
         {
           title: product?.name,
           status: "publish",
@@ -105,7 +105,7 @@ export const useUpdateProduct = (displayToasts = true) => {
   return useMutation(
     async (product) => {
       const response = await axios.post(
-        "http://161.53.174.14/wp-json/wp/v2/proizvodi/" + product.id,
+        "https://www.sczg.unizg.hr/wp-json/wp/v2/proizvodi/" + product.id,
         {
           title: product?.name,
           excerpt: product?.description,
@@ -142,7 +142,7 @@ export const useDeleteProduct = (displayToasts = true) => {
   return useMutation(
     async (id) => {
       const response = await axios.delete(
-        "http://161.53.174.14/wp-json/wp/v2/proizvodi/" + id,
+        "https://www.sczg.unizg.hr/wp-json/wp/v2/proizvodi/" + id,
         {
           params: {
             force: true,

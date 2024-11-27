@@ -18,7 +18,7 @@ export const useEvents = (filters, options) => {
     eventKeys.eventsFiltered(filters),
     async ({ pageParam }) => {
       const response = await axios.get(
-        "http://161.53.174.14/wp-json/wp/v2/event",
+        "https://www.sczg.unizg.hr/wp-json/wp/v2/event",
         {
           params: {
             orderby: filters?.orderby,
@@ -55,7 +55,7 @@ export const useEvent = (id, options) => {
     eventKeys.event(id),
     async () => {
       const response = await axios.get(
-        "http://161.53.174.14/wp-json/wp/v2/event/" + id
+        "https://www.sczg.unizg.hr/wp-json/wp/v2/event/" + id
       );
       return response.data;
     },
@@ -72,7 +72,7 @@ export const useCreateEvent = (displayToasts = true) => {
   return useMutation(
     async (event) => {
       const response = await axios.post(
-        "http://161.53.174.14/wp-json/wp/v2/event",
+        "https://www.sczg.unizg.hr/wp-json/wp/v2/event",
         {
           title: event?.title,
           content: event?.content,
@@ -109,7 +109,7 @@ export const useCreateEvent = (displayToasts = true) => {
 export const useCreateTag = () => {
   return useMutation(async (name) => {
     const response = await axios.post(
-      "http://161.53.174.14/wp-json/wp/v2/tags",
+      "https://www.sczg.unizg.hr/wp-json/wp/v2/tags",
       { name }
     );
     return response.data;
@@ -122,7 +122,7 @@ export const useUpdateEvent = () => {
   return useMutation(
     async ({ id, event }) => {
       const response = await axios.post(
-        `http://161.53.174.14/wp-json/wp/v2/event/${id}`,
+        `https://www.sczg.unizg.hr/wp-json/wp/v2/event/${id}`,
         {
           title: event?.title,
           excerpt: event?.description,
@@ -161,7 +161,7 @@ export const useDeleteEvent = (displayToasts = true) => {
   return useMutation(
     async (id) => {
       const response = await axios.delete(
-        `http://161.53.174.14/wp-json/wp/v2/event/${id}`,
+        `https://www.sczg.unizg.hr/wp-json/wp/v2/event/${id}`,
         {
           params: {
             force: true,
@@ -192,7 +192,7 @@ export const useCreateEventDate = () => {
   return useMutation(
     async ({ id, date }) => {
       const response = await axios.post(
-        `http://161.53.174.14/wp-json/wp/v2/event/${id}/dates`,
+        `https://www.sczg.unizg.hr/wp-json/wp/v2/event/${id}/dates`,
         {
           date,
         }
@@ -213,7 +213,7 @@ export const useUpdatePageFAQ = () => {
   return useMutation(
     async ({ id, dateId, date }) => {
       const response = await axios.put(
-        `http://161.53.174.14/wp-json/wp/v2/event/${id}/dates/${dateId}`,
+        `https://www.sczg.unizg.hr/wp-json/wp/v2/event/${id}/dates/${dateId}`,
         {
           date,
         }
@@ -234,7 +234,7 @@ export const useDeletePageFAQ = () => {
   return useMutation(
     async ({ id, dateId }) => {
       const response = await axios.delete(
-        `http://161.53.174.14/wp-json/wp/v2/event/${id}/dates/${dateId}`
+        `https://www.sczg.unizg.hr/wp-json/wp/v2/event/${id}/dates/${dateId}`
       );
       return response.data;
     },
