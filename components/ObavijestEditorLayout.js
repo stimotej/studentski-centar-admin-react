@@ -13,7 +13,11 @@ const QuillTextEditor = dynamic(() => import("./Elements/QuillTextEditor"), {
 });
 import StoredPostNote from "./Obavijesti/Editor/StoredPostNote";
 import Layout from "./Layout";
-import { obavijestiCategoryId, sliderCategoryId } from "../lib/constants";
+import {
+  obavijestiCategoryId,
+  SLIDER_EDITOR_ROLE,
+  sliderCategoryId,
+} from "../lib/constants";
 import Loader from "./Elements/Loader";
 import {
   Checkbox,
@@ -42,13 +46,21 @@ import { faXmark } from "@fortawesome/pro-regular-svg-icons";
 import getIconByMimeType from "../lib/getIconbyMimeType";
 import dayjs from "dayjs";
 import clearHtmlFromString from "../lib/clearHtmlFromString";
+import { useUser } from "../features/auth";
 
 const ObavijestEditorLayout = ({ categoryId, from }) => {
+  const { data: user } = useUser();
+
   const [storedPostNote, setStoredPostNote] = useState(false);
 
   const router = useRouter();
 
   const obavijestId = router.query.id;
+
+  const isUserSliderEditor =
+    user?.data?.roles &&
+    Array.isArray(user.data.roles) &&
+    user.data.roles.includes(SLIDER_EDITOR_ROLE);
 
   const storedPostKeys = useMemo(
     () => [
@@ -202,7 +214,7 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
       description: description,
       categories: [
         category || categoryId,
-        ...(addToSlider ? [sliderCategoryId] : []),
+        ...(addToSlider && isUserSliderEditor ? [sliderCategoryId] : []),
       ],
       status: status,
       imageId: imageId || 0,
@@ -403,22 +415,24 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
           }
           label="Istaknuta obavijest"
         />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={addToSlider}
-              onChange={(e) => {
-                setAddToSlider(e.target.checked);
-                !obavijestId &&
-                  window.localStorage.setItem(
-                    `${from}_editor_slider`,
-                    e.target.checked
-                  );
-              }}
-            />
-          }
-          label="Dodaj na slider"
-        />
+        {isUserSliderEditor && (
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={addToSlider}
+                onChange={(e) => {
+                  setAddToSlider(e.target.checked);
+                  !obavijestId &&
+                    window.localStorage.setItem(
+                      `${from}_editor_slider`,
+                      e.target.checked
+                    );
+                }}
+              />
+            }
+            label="Dodaj na slider"
+          />
+        )}
         <div className="mt-4 mb-3">Dodaj na kalendar:</div>
         <div className="flex flex-col gap-4">
           <DateTimePicker
