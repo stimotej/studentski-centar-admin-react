@@ -124,7 +124,7 @@ const SviPoslovi = () => {
   };
 
   const handleSearch = (e) => {
-    const value = e.target.value;
+    const value = e ? e.target.value : "";
 
     setSearch(value);
 
@@ -204,7 +204,7 @@ const SviPoslovi = () => {
                 searchQuery.length > 0 && (
                   <InputAdornment position="end">
                     <IconButton
-                      onClick={handleSearch}
+                      onClick={() => handleSearch(null)}
                       edge="end"
                       className="text-sm w-8 aspect-square"
                     >
