@@ -18,8 +18,7 @@ import {
 } from "@mui/material";
 import dayjs from "dayjs";
 import Link from "next/link";
-import React from "react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MdAdd } from "react-icons/md";
 import { toast } from "react-toastify";
 import MyTable from "../../components/Elements/Table";
@@ -27,7 +26,7 @@ import Header from "../../components/Header";
 import Layout from "../../components/Layout";
 import DeleteDialog from "../../components/Prehrana/jobs/DeleteDialog";
 import { useJobs, useUpdateJob } from "../../features/jobs/index";
-import useDebounce from "../../lib/useDebounce";
+import { useRouter } from "next/router";
 
 const headCells = [
   {
@@ -68,11 +67,20 @@ const headCells = [
 ];
 
 const SviPoslovi = () => {
+  const router = useRouter();
+
+  const timeoutRef = useRef(null);
+
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState("date|desc");
-  const [search, setSearch] = useState("");
 
-  const debouncedSearch = useDebounce(search, 300);
+  const [search, setSearch] = useState("");
+  const isDefaultSearchSet = useRef(false);
+  const searchQuery = router.query.q
+    ? Array.isArray(router.query.q)
+      ? router.query.q[0]
+      : router.query.q
+    : "";
 
   const {
     data: jobs,
@@ -83,7 +91,7 @@ const SviPoslovi = () => {
   } = useJobs({
     orderby: sort?.split("|")?.[0],
     order: sort?.split("|")?.[1],
-    search: debouncedSearch,
+    search: searchQuery,
     page,
   });
 
@@ -115,6 +123,51 @@ const SviPoslovi = () => {
     );
   };
 
+  const handleSearch = (e) => {
+    const value = e.target.value;
+
+    setSearch(value);
+
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    timeoutRef.current = setTimeout(() => {
+      const routerQuery = router.query;
+
+      if (value) {
+        routerQuery.q = value;
+      } else {
+        delete routerQuery.q;
+      }
+
+      router.replace(
+        {
+          pathname: "/student-servis/svi-poslovi",
+          query: routerQuery,
+        },
+        undefined,
+        { shallow: true }
+      );
+    }, 500);
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (searchQuery && !isDefaultSearchSet.current) {
+      setSearch(searchQuery);
+      isDefaultSearchSet.current = true;
+    }
+  }, [searchQuery]);
+
   return (
     <Layout>
       <Header
@@ -139,7 +192,7 @@ const SviPoslovi = () => {
             <InputBase
               type="text"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={handleSearch}
               placeholder="Pretraži poslove"
               className="pl-2 pr-3 !w-auto"
               startAdornment={
@@ -148,10 +201,10 @@ const SviPoslovi = () => {
                 </InputAdornment>
               }
               endAdornment={
-                search.length > 0 && (
+                searchQuery.length > 0 && (
                   <InputAdornment position="end">
                     <IconButton
-                      onClick={() => setSearch("")}
+                      onClick={handleSearch}
                       edge="end"
                       className="text-sm w-8 aspect-square"
                     >
@@ -228,7 +281,7 @@ const SviPoslovi = () => {
                 </Tooltip>
               </TableCell>
               <TableCell>
-                {dayjs(row.date).format("DD.MM.YYYY [u] HH:mm[h]")}
+                {dayjs(row.updatedAt).format("DD.MM.YYYY [u] HH:mm[h]")}
               </TableCell>
               <TableCell>
                 {dayjs(row.active_until).format("DD.MM.YYYY [u] HH:mm[h]")}

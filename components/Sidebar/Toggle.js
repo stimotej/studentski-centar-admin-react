@@ -1,4 +1,3 @@
-import React from "react";
 import { MdMenu, MdClose } from "react-icons/md";
 
 const Toggle = ({ active, onClick }) => {

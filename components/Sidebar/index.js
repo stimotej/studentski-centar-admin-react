@@ -55,7 +55,7 @@ const Sidebar = ({ category }) => {
         </nav>
         <div className="flex flex-col">
           <Link
-            icon={<MdOutlineLogout />}
+            icon={<MdOutlineLogout size={24} />}
             title="Odjava"
             button
             onClick={handleLogOut}

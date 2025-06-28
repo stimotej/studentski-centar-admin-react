@@ -51,7 +51,7 @@ const UrediPosao = () => {
       skills: "",
       labels: "",
       city: "",
-      positions: 1,
+      positions: "",
       work_start: "",
       work_end: "",
       work_hours: "",
@@ -89,10 +89,10 @@ const UrediPosao = () => {
   }, [job]);
 
   useEffect(() => {
-    if (categories) {
+    if (categories && !jobId) {
       setValue("type", categories[0].id);
     }
-  }, [categories]);
+  }, [categories, router.query?.id]);
 
   const { mutate: createJob, isLoading: isCreating } = useCreateJob();
   const { mutate: updateJob, isLoading: isUpdating } = useUpdateJob();
@@ -124,6 +124,7 @@ const UrediPosao = () => {
         {
           onSuccess: () => {
             toast.success("Posao je uspješno spremljen");
+            router.back();
           },
         }
       );
@@ -348,8 +349,6 @@ const UrediPosao = () => {
                   <TextField
                     {...field}
                     label="Potreban broj izvođača (studenata/ica)"
-                    type={"number"}
-                    inputProps={{ min: 1 }}
                     error={!!errors.positions}
                     helperText={errors.positions && errors.positions.message}
                   />
