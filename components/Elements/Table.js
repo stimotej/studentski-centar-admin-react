@@ -212,6 +212,7 @@ export default function MyTable({
   totalNumberOfItems,
   customSort,
   onChangeSort,
+  page = 0,
   onChangePage,
   noDataText,
   loading,
@@ -225,7 +226,6 @@ export default function MyTable({
 }) {
   const [order, setOrder] = React.useState(defaultOrder || "asc");
   const [orderBy, setOrderBy] = React.useState(defaultOrderBy);
-  const [page, setPage] = React.useState(0);
   const [opened, setOpened] = React.useState(null);
 
   const handleRequestSort = (event, property) => {
@@ -266,19 +266,22 @@ export default function MyTable({
 
   // If "totalNumberOfItems" prop exists, manually handle pagination
   useEffect(() => {
-    if ((page + 1) * rowsPerPage > rows?.length && !totalNumberOfItems) {
-      setPage(Math.max(0, Math.ceil(rows?.length / rowsPerPage) - 1));
+    if (
+      (page + 1) * rowsPerPage > rows?.length &&
+      !totalNumberOfItems &&
+      !loading
+    ) {
+      onChangePage(Math.max(0, Math.ceil(rows?.length / rowsPerPage) - 1));
     }
-  }, [rows, rowsPerPage, page, totalNumberOfItems]);
+  }, [rows, rowsPerPage, page, totalNumberOfItems, loading]);
 
   const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-    onChangePage && onChangePage(newPage);
+    onChangePage(newPage);
   };
 
   // const handleChangeRowsPerPage = (event) => {
   //   setRowsPerPage(parseInt(event.target.value, 10));
-  //   setPage(0);
+  //   onChangePage(0);
   // };
 
   const handleRowClick = (row) => {

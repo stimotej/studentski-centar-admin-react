@@ -71,8 +71,9 @@ const SviPoslovi = () => {
 
   const timeoutRef = useRef(null);
 
-  const [page, setPage] = useState(1);
   const [sort, setSort] = useState("date|desc");
+
+  const page = router.query.page ? Number(router.query.page) : 0;
 
   const [search, setSearch] = useState("");
   const isDefaultSearchSet = useRef(false);
@@ -92,7 +93,7 @@ const SviPoslovi = () => {
     orderby: sort?.split("|")?.[0],
     order: sort?.split("|")?.[1],
     search: searchQuery,
-    page,
+    page: page + 1,
   });
 
   const [selectedJobs, setSelectedJobs] = useState([]);
@@ -120,6 +121,24 @@ const SviPoslovi = () => {
       {
         onError: (err) => {},
       }
+    );
+  };
+
+  const handleChangePage = (nextPage) => {
+    const routerQuery = router.query;
+
+    if (nextPage > 0) {
+      routerQuery.page = nextPage;
+    } else {
+      delete routerQuery.page;
+    }
+
+    router.push(
+      {
+        query: routerQuery,
+      },
+      undefined,
+      { shallow: true }
     );
   };
 
@@ -152,7 +171,6 @@ const SviPoslovi = () => {
     }, 500);
   };
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (timeoutRef.current) {
@@ -226,9 +244,8 @@ const SviPoslovi = () => {
           rowsPerPage={itemsPerPage}
           totalNumberOfItems={totalNumberOfItems}
           enableSelectAll={false}
-          onChangePage={(nextPage) => {
-            setPage(nextPage + 1);
-          }}
+          page={page}
+          onChangePage={handleChangePage}
           customSort
           onChangeSort={(field, order) => {
             setSort([field, order].join("|"));
