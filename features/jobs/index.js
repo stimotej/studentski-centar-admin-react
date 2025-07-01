@@ -13,8 +13,6 @@ export const useJobs = (filters, options) => {
   const [totalPages, setTotalPages] = useState(0);
 
   const fetchJobs = async (newFilters) => {
-    const userId = window.localStorage.getItem("user_id");
-
     const response = await axios.get(
       "https://www.sczg.unizg.hr/wp-json/wp/v2/jobs",
       {
@@ -23,7 +21,7 @@ export const useJobs = (filters, options) => {
           order: newFilters?.order,
           search: newFilters?.search,
           per_page: jobsPerPage,
-          page: newFilters?.search ? undefined : newFilters?.page,
+          page: newFilters?.page,
         },
       }
     );

@@ -197,8 +197,6 @@ export default function MyTable({
   headCells,
   rows,
   rowCells,
-  defaultOrder,
-  defaultOrderBy,
   title,
   titleComponent,
   selectedAction,
@@ -211,6 +209,8 @@ export default function MyTable({
   setSelected,
   totalNumberOfItems,
   customSort,
+  order,
+  orderBy,
   onChangeSort,
   page = 0,
   onChangePage,
@@ -224,14 +224,10 @@ export default function MyTable({
   expandOnRowClick = false,
   expandContent,
 }) {
-  const [order, setOrder] = React.useState(defaultOrder || "asc");
-  const [orderBy, setOrderBy] = React.useState(defaultOrderBy);
   const [opened, setOpened] = React.useState(null);
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === "asc";
-    setOrder(isAsc ? "desc" : "asc");
-    setOrderBy(property);
     onChangeSort && onChangeSort(property, isAsc ? "desc" : "asc");
   };
 

@@ -32,12 +32,12 @@ const headCells = [
   {
     id: "long_island_id",
     label: "Broj narudžbe",
-    sort: true,
+    sort: false,
   },
   {
     id: "company_name",
     label: "Poslodavac",
-    sort: true,
+    sort: false,
   },
   {
     id: "title",
@@ -45,24 +45,24 @@ const headCells = [
     sort: true,
   },
   {
-    id: "date",
+    id: "modified",
     label: "Objavljen",
     sort: true,
   },
   {
     id: "active_until",
     label: "Aktivan do",
-    sort: true,
+    sort: false,
   },
   {
     id: "featured",
     label: "Radnje",
-    sort: true,
+    sort: false,
   },
   {
     id: "allowed_sc",
     label: "Status",
-    sort: true,
+    sort: false,
   },
 ];
 
@@ -71,8 +71,8 @@ const SviPoslovi = () => {
 
   const timeoutRef = useRef(null);
 
-  const [sort, setSort] = useState("date|desc");
-
+  const order = router.query.order ?? "desc";
+  const orderBy = router.query.orderBy ?? "modified";
   const page = router.query.page ? Number(router.query.page) : 0;
 
   const [search, setSearch] = useState("");
@@ -89,12 +89,21 @@ const SviPoslovi = () => {
     isError,
     totalNumberOfItems,
     itemsPerPage,
-  } = useJobs({
-    orderby: sort?.split("|")?.[0],
-    order: sort?.split("|")?.[1],
-    search: searchQuery,
-    page: page + 1,
-  });
+  } = useJobs(
+    {
+      orderby: orderBy,
+      order: order,
+      search: searchQuery,
+      page: page + 1,
+    },
+    {
+      onError: () => {
+        if (!!searchQuery && page > 0) {
+          handleChangePage(0);
+        }
+      },
+    }
+  );
 
   const [selectedJobs, setSelectedJobs] = useState([]);
 
@@ -131,6 +140,26 @@ const SviPoslovi = () => {
       routerQuery.page = nextPage;
     } else {
       delete routerQuery.page;
+    }
+
+    router.push(
+      {
+        query: routerQuery,
+      },
+      undefined,
+      { shallow: true }
+    );
+  };
+
+  const handleChangeSort = (field, order) => {
+    const routerQuery = router.query;
+
+    if (field === "modified" && order === "desc") {
+      delete routerQuery.order;
+      delete routerQuery.orderBy;
+    } else {
+      routerQuery.orderBy = field;
+      routerQuery.order = order;
     }
 
     router.push(
@@ -237,8 +266,6 @@ const SviPoslovi = () => {
           rows={jobs || []}
           selected={selectedJobs}
           setSelected={setSelectedJobs}
-          defaultOrder="desc"
-          defaultOrderBy="date"
           error={isError}
           errorMessage="Greška kod dohvaćanja poslova"
           rowsPerPage={itemsPerPage}
@@ -247,9 +274,9 @@ const SviPoslovi = () => {
           page={page}
           onChangePage={handleChangePage}
           customSort
-          onChangeSort={(field, order) => {
-            setSort([field, order].join("|"));
-          }}
+          order={order}
+          orderBy={orderBy}
+          onChangeSort={handleChangeSort}
           // containerClassName="mt-6"
           // enableRowSelect={false}
           // displayToolbar={false}
