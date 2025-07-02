@@ -32,12 +32,12 @@ const headCells = [
   {
     id: "long_island_id",
     label: "Broj narudžbe",
-    sort: false,
+    sort: true,
   },
   {
     id: "company_name",
     label: "Poslodavac",
-    sort: false,
+    sort: true,
   },
   {
     id: "title",
@@ -52,7 +52,7 @@ const headCells = [
   {
     id: "active_until",
     label: "Aktivan do",
-    sort: false,
+    sort: true,
   },
   {
     id: "featured",
