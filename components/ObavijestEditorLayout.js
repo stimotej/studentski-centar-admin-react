@@ -59,8 +59,9 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
 
   const isUserSliderEditor =
     user?.data?.roles &&
-    Array.isArray(user.data.roles) &&
-    user.data.roles.includes(SLIDER_EDITOR_ROLE);
+    (Array.isArray(user.data.roles)
+      ? user.data.roles.includes(SLIDER_EDITOR_ROLE)
+      : Object.values(user.data.roles).includes(SLIDER_EDITOR_ROLE));
 
   const storedPostKeys = useMemo(
     () => [
