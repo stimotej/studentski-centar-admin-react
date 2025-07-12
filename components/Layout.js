@@ -98,6 +98,20 @@ const Layout = ({ children }) => {
     },
   });
 
+  const themeTeatarTD = createTheme({
+    palette: {
+      primary: {
+        main: "rgb(207, 36, 42)",
+      },
+      secondary: {
+        main: "#fafafa",
+      },
+    },
+    shape: {
+      borderRadius: 8,
+    },
+  });
+
   const { data: user } = useUser();
   const { mutate: checkAuth } = useCheckAuth();
 
@@ -146,6 +160,8 @@ const Layout = ({ children }) => {
           ? themeSmjestaj
           : category === "sport"
           ? themeSport
+          : category === "teatar-td"
+          ? themeTeatarTD
           : themeObavijesti
       }
     >

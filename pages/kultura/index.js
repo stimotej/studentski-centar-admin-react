@@ -1,7 +1,12 @@
 import Header from "../../components/Header";
 import Layout from "../../components/Layout";
-import React, { useEffect, useState } from "react";
-import { adminKulturaCategory, kulturaCategoryId } from "../../lib/constants";
+import { useEffect, useRef, useState } from "react";
+import {
+  adminKulturaCategory,
+  kulturaCategoryId,
+  teatarTdONamaPost,
+  teatarTdProdajaUlaznicaPost,
+} from "../../lib/constants";
 import {
   Button,
   CircularProgress,
@@ -15,7 +20,6 @@ import {
   MenuItem,
   MenuList,
   Paper,
-  TextField,
   Tooltip,
 } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -38,6 +42,8 @@ const QuillTextEditor = dynamic(
   () => import("../../components/Elements/QuillTextEditor"),
   { ssr: false }
 );
+
+const teatarPostIds = [teatarTdONamaPost, teatarTdProdajaUlaznicaPost];
 
 const Home = () => {
   const {
@@ -64,6 +70,16 @@ const Home = () => {
     }
   );
 
+  const {
+    data: teatarTdPosts,
+    isInitialLoading: isLoadingTeatarTdPosts,
+    isError: isTeatarTdPostsError,
+    refetch: refetchTeatarTdPosts,
+    isRefetching: isRefetchingTeatarTdPosts,
+  } = usePosts({
+    include: teatarPostIds,
+  });
+
   const [page, setPage] = useState(0);
   const [category, setCategory] = useState(0);
 
@@ -79,8 +95,10 @@ const Home = () => {
   const [link, setLink] = useState("");
   const [slug, setSlug] = useState("");
 
+  const isDataSetForTheFirstTime = useRef(false);
+
   useEffect(() => {
-    if (posts) {
+    if (posts && !isDataSetForTheFirstTime.current) {
       const post = posts.find((d) => d.id === page) || posts?.[0];
       if (!post) return;
       const categoryId =
@@ -88,23 +106,27 @@ const Home = () => {
         categories?.[0]?.id;
       setPage(post.id);
       setCategory(categoryId);
-      setImage(post.imageId);
+      setImage(post.image);
       setTitle(post.title);
       setExcerpt(post.excerpt);
       setContent(post.content);
       setLink(post.link);
       setSlug(post.slug);
+      isDataSetForTheFirstTime.current = true;
     }
-  }, [posts, categories]);
+  }, [posts, categories, page]);
 
   const handleSelectPage = (postId, categoryId) => {
-    const post = posts.find((p) => p.id === postId);
+    const isTeatarPost = teatarPostIds.includes(postId);
+    const post = (isTeatarPost ? teatarTdPosts : posts).find(
+      (p) => p.id === postId
+    );
     if (!post) return;
     setPage(postId);
     setCategory(categoryId);
-    setImage(post.imageId);
+    setImage(post.image);
     setTitle(post.title);
-    setExcerpt(post.excerpt);
+    setExcerpt(isTeatarPost ? post.sadrzaj : post.excerpt);
     setContent(post.content);
     setLink(post.link);
     setSlug(post.slug);
@@ -114,7 +136,8 @@ const Home = () => {
   const { mutate: updatePost, isLoading: isUpdating } = useUpdatePost();
   const { mutate: deletePost, isLoading: isDeleting } = useDeletePost();
 
-  const handleCreateDormitory = () => {
+  const handleCreatePost = () => {
+    if (teatarPostIds.includes(page)) return;
     createPost(
       {
         title: dialogTitle,
@@ -135,15 +158,19 @@ const Home = () => {
   };
 
   const handleUpdatePost = () => {
-    const post = posts.find((d) => d.id === page);
+    const isTeatarPost = teatarPostIds.includes(page);
+    const post = (isTeatarPost ? teatarTdPosts : posts).find(
+      (d) => d.id === page
+    );
     if (!post) return;
     updatePost(
       {
         id: page,
         title: title,
-        excerpt: excerpt || "<p></p>",
+        sadrzaj: isTeatarPost ? excerpt : undefined,
+        excerpt: isTeatarPost ? undefined : excerpt || "<p></p>",
         content: content,
-        link: clearHtmlFromString(link || ""),
+        link: isTeatarPost ? undefined : clearHtmlFromString(link || ""),
         status: "publish",
         ...(image ? { featuredMedia: image } : {}),
       },
@@ -155,7 +182,8 @@ const Home = () => {
     );
   };
 
-  const handleDeleteDormitory = () => {
+  const handleDeletePost = () => {
+    if (teatarPostIds.includes(page)) return;
     deletePost(
       {
         id: page,
@@ -258,6 +286,53 @@ const Home = () => {
                 </div>
               ))
             )}
+
+            {/* Teatar &TD Posts Section */}
+            {isLoadingTeatarTdPosts ? (
+              <div className="flex items-center justify-center py-2 mt-6">
+                <CircularProgress size={24} />
+              </div>
+            ) : isTeatarTdPostsError ? (
+              <div className="flex flex-col text-error my-2 px-4 mt-6">
+                <h3 className="font-semibold mb-2">Teatar &TD</h3>
+                Greška kod učitavanja
+                <LoadingButton
+                  variant="outlined"
+                  className="mt-4"
+                  onClick={() => refetchTeatarTdPosts()}
+                  loading={isRefetchingTeatarTdPosts}
+                >
+                  Pokušaj ponovno
+                </LoadingButton>
+              </div>
+            ) : (
+              teatarTdPosts?.length > 0 && (
+                <div className="mb-6 mt-6">
+                  <h3 className="font-semibold mb-2">Teatar &TD</h3>
+                  <Paper className="md:!min-w-[260px] md:!max-w-[400px]">
+                    <MenuList>
+                      {teatarTdPosts.map((post) => (
+                        <MenuItem
+                          key={post.id}
+                          selected={page === post.id}
+                          onClick={() => handleSelectPage(post.id, 0)}
+                        >
+                          <ListItemText className="line-clamp-1">
+                            <QuillTextEditor
+                              value={post.title}
+                              useToolbar={false}
+                              className="[&>div>div>p]:hover:cursor-pointer [&>div>div]:line-clamp-1"
+                              readOnly
+                              includeStyles={false}
+                            />
+                          </ListItemText>
+                        </MenuItem>
+                      ))}
+                    </MenuList>
+                  </Paper>
+                </div>
+              )
+            )}
           </div>
           <div className="flex-1">
             {categories?.find((post) => post.id === category)?.slug ===
@@ -273,17 +348,23 @@ const Home = () => {
                 </>
               )}
 
-            {categories?.find((post) => post.id === category)?.slug ===
-              "lokacije" && (
+            {(page === teatarTdONamaPost ||
+              categories?.find((post) => post.id === category)?.slug ===
+                "lokacije") && (
               <>
                 <h3 className="font-semibold">Slika</h3>
                 <SelectMediaInput
-                  defaultValue={posts?.find((d) => d.id === page)?.image}
+                  defaultValue={image}
                   onChange={setImage}
                   className="!w-full md:!w-1/2 !bg-transparent border-gray-200"
                   mediaCategoryId={kulturaCategoryId}
                 />
+              </>
+            )}
 
+            {categories?.find((post) => post.id === category)?.slug ===
+              "lokacije" && (
+              <>
                 <h3 className="font-semibold mt-4 mb-2">Poveznica</h3>
                 <QuillTextEditor
                   value={link}
@@ -295,6 +376,7 @@ const Home = () => {
                 />
               </>
             )}
+
             <h3 className="font-semibold mt-4 mb-2">Naslov</h3>
             <QuillTextEditor
               value={title}
@@ -305,8 +387,9 @@ const Home = () => {
               useToolbar={false}
             />
 
-            {categories?.find((post) => post.id === category)?.slug ===
-              "lokacije" && (
+            {(teatarPostIds.includes(page) ||
+              categories?.find((post) => post.id === category)?.slug ===
+                "lokacije") && (
               <>
                 <h3 className="font-semibold mt-4 mb-2">Opis</h3>
                 <QuillTextEditor
@@ -318,8 +401,9 @@ const Home = () => {
               </>
             )}
 
-            {categories?.find((post) => post.id === category)?.slug ===
-              "stranice-kultura-admin" && (
+            {(teatarPostIds.includes(page) ||
+              categories?.find((post) => post.id === category)?.slug ===
+                "stranice-kultura-admin") && (
               <>
                 <h3 className="font-semibold mt-4 mb-2">Sadržaj</h3>
                 <QuillTextEditor
@@ -340,13 +424,15 @@ const Home = () => {
               >
                 Spremi
               </LoadingButton>
-              <LoadingButton
-                variant="outlined"
-                color="error"
-                onClick={() => setDeletePostDialog(true)}
-              >
-                Obriši
-              </LoadingButton>
+              {!teatarPostIds.includes(page) && (
+                <LoadingButton
+                  variant="outlined"
+                  color="error"
+                  onClick={() => setDeletePostDialog(true)}
+                >
+                  Obriši
+                </LoadingButton>
+              )}
             </div>
           </div>
         </div>
@@ -372,7 +458,7 @@ const Home = () => {
           </Button>
           <LoadingButton
             color="error"
-            onClick={handleDeleteDormitory}
+            onClick={handleDeletePost}
             loading={isDeleting}
           >
             Obriši
@@ -413,7 +499,7 @@ const Home = () => {
           >
             Odustani
           </Button>
-          <LoadingButton onClick={handleCreateDormitory} loading={isCreating}>
+          <LoadingButton onClick={handleCreatePost} loading={isCreating}>
             Dodaj
           </LoadingButton>
         </DialogActions>

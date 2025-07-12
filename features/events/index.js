@@ -25,6 +25,7 @@ export const useEvents = (filters, options) => {
             order: filters?.order,
             search: filters?.search,
             is_course: filters?.is_course,
+            location: filters?.location,
             per_page: eventsPerPage,
             page: pageParam,
             timestamp: new Date().getTime(),

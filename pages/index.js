@@ -49,6 +49,12 @@ const LoginSelect = () => {
             text="Upravljanje sadržajem početne stranice"
             link="/pocetna-stranica/login"
           />
+          <LoginCard
+            theme="theme-teatar-td"
+            title="Teatar &TD"
+            text="Upravljanje sadržajem stranice Teatar &TD"
+            link="/teatar-td/login"
+          />
         </div>
         {/* <span className="font-light mb-5 px-6 text-center">
         Za sva pitanja, prijedloge za izmjenu, uočavanje grešaka u radu stustava

@@ -1,7 +1,7 @@
 import EventEditorLayout from "../../components/EventEditorLayout";
 
 const EventEditorPage = () => {
-  return <EventEditorLayout />;
+  return <EventEditorLayout location="Teatar &TD" />;
 };
 
 export default EventEditorPage;
