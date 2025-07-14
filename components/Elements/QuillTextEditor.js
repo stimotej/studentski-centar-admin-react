@@ -14,46 +14,6 @@ import clsx from "clsx";
 
 Quill.register("modules/imageResize", ImageResize, true);
 
-const Block = Quill.import("blots/block");
-const Inline = Quill.import("blots/inline");
-const Delta = Quill.import("delta");
-
-class DetailsBlot extends Block {
-  static create() {
-    const node = super.create();
-    node.setAttribute("open", "true"); // Open by default
-    return node;
-  }
-
-  static formats(node) {
-    return node.getAttribute("open");
-  }
-
-  static register() {
-    Quill.register(DetailsBlot);
-  }
-}
-
-DetailsBlot.blotName = "details";
-DetailsBlot.tagName = "details";
-DetailsBlot.className = "ql-details";
-
-class SummaryBlot extends Inline {
-  static create() {
-    return super.create();
-  }
-
-  static register() {
-    Quill.register(SummaryBlot);
-  }
-}
-SummaryBlot.blotName = "summary";
-SummaryBlot.tagName = "summary";
-SummaryBlot.className = "ql-summary";
-
-Quill.register(DetailsBlot);
-Quill.register(SummaryBlot);
-
 const formatsDefault = [
   "bold",
   "italic",
@@ -67,8 +27,6 @@ const formatsDefault = [
   "blockquote",
   "image",
   "video",
-  "details",
-  "summary",
 ];
 
 const QuillTextEditor = ({
@@ -183,29 +141,8 @@ const QuillTextEditor = ({
     }
   }, [videoId]);
 
-  function handleInsertCollapsible() {
-    const quill = reactQuillRef.current.getEditor();
-    if (!quill) return;
-
-    const Delta = Quill.import("delta");
-    const range = quill.getSelection();
-    const position = range ? range.index : 0;
-
-    const delta = new Delta()
-      .retain(position)
-      .insert("Summary title", { summary: true })
-      .insert("Details content")
-      .insert("\n", { details: true });
-
-    quill.updateContents(delta);
-    quill.setSelection(position + 1, 0); // Place cursor after summary
-  }
-
   return (
     <>
-      <button onClick={handleInsertCollapsible} className="p-4">
-        alooo
-      </button>
       <div
         className={clsx(
           includeStyles &&
@@ -318,9 +255,6 @@ const Header = ({ useFiles = true, toolbarId }) => {
       <button className="ql-list my-1 sm:my-2" value="ordered"></button>
       <button className="ql-link my-1 sm:my-2"></button>
       <button className="ql-blockquote my-1 sm:my-2"></button>
-      <button className="ql-details my-1 sm:my-2">
-        <span className="text-black hover:text-primary">Details</span>
-      </button>
       <button className="ql-addImageToolbar my-1 sm:my-2">
         <MdOutlineImage className="text-black hover:text-primary" />
       </button>
