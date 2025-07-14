@@ -90,7 +90,6 @@ const QuillTextEditor = ({
                 addImageToolbar: addImageToolbar,
                 addYoutubeVideo: addYoutubeVideo,
                 addDocumentToolbar: addDocumentToolbar,
-                details: handleInsertCollapsible,
               },
             },
       imageResize: {
