@@ -6,7 +6,7 @@ import { LoadingButton } from "@mui/lab";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  teatarTDCategoryId,
+  teatarTdCategoryId,
   teatarTdONamaPost,
   teatarTdProdajaUlaznicaPost,
 } from "../../lib/constants";
@@ -138,7 +138,7 @@ const PocetnaStranica = () => {
                   defaultValue={posts?.find((d) => d.id === page)?.image}
                   onChange={setImage}
                   className="!w-full md:!w-1/2 !bg-transparent border-gray-200"
-                  mediaCategoryId={teatarTDCategoryId}
+                  mediaCategoryId={teatarTdCategoryId}
                 />
               </div>
             )}
@@ -164,7 +164,7 @@ const PocetnaStranica = () => {
                 onChange={setExcerpt}
                 className="[&>div>div]:!min-h-[100px]"
                 placeholder="Unesi kratki opis..."
-                mediaCategoryId={teatarTDCategoryId}
+                mediaCategoryId={teatarTdCategoryId}
               />
             </div>
             <div className="w-full">
@@ -238,7 +238,7 @@ const PocetnaStranica = () => {
                 value={content}
                 onChange={setContent}
                 files={files}
-                mediaCategoryId={teatarTDCategoryId}
+                mediaCategoryId={teatarTdCategoryId}
                 setFiles={setFiles}
                 placeholder="Unesi sadržaj..."
               />

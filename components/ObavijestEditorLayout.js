@@ -47,8 +47,8 @@ import getIconByMimeType from "../lib/getIconbyMimeType";
 import dayjs from "dayjs";
 import clearHtmlFromString from "../lib/clearHtmlFromString";
 import { useUser } from "../features/auth";
-import { extractInstagramEmbedCode } from "./Elements/QuillTextEditor";
 import { toast } from "react-toastify";
+import { extractInstagramEmbedCode } from "../lib/extractInstagramEmbedCode";
 
 const ObavijestEditorLayout = ({ categoryId, from }) => {
   const { data: user } = useUser();
