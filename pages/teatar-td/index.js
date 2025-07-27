@@ -25,6 +25,7 @@ const PocetnaStranica = () => {
   const [content, setContent] = useState("");
   const [image, setImage] = useState("");
   const [files, setFiles] = useState([]);
+  const [accordionItems, setAccordionItems] = useState([]);
 
   const {
     data: posts,
@@ -48,6 +49,7 @@ const PocetnaStranica = () => {
       setContent(post.content);
       setImage(post.imageId);
       setFiles(post.documents || []);
+      setAccordionItems(post.accordionItems || []);
     },
     [posts]
   );
@@ -81,6 +83,7 @@ const PocetnaStranica = () => {
           mime_type: file.mimeType || file.mime_type,
           source_url: file.src || file.source_url,
         })),
+      accordionItems,
       ...(image ? { featuredMedia: image } : {}),
     });
   };
@@ -163,6 +166,69 @@ const PocetnaStranica = () => {
                 placeholder="Unesi kratki opis..."
                 mediaCategoryId={teatarTDCategoryId}
               />
+            </div>
+            <div className="w-full">
+              <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
+                Padajući izbornici
+              </h4>
+              <div className="space-y-2 mb-2">
+                {accordionItems.map((accordionItem, index) => (
+                  <div key={index} className="p-2 border rounded-md">
+                    <input
+                      type="text"
+                      value={accordionItem.title}
+                      onChange={(e) => {
+                        setAccordionItems((prevItems) =>
+                          prevItems.map((item, i) =>
+                            i === index
+                              ? { ...item, title: e.target.value }
+                              : item
+                          )
+                        );
+                      }}
+                      className="font-medium text-sm mb-2 border rounded bg-transparent w-full"
+                      placeholder="Naslov"
+                    />
+                    <textarea
+                      rows={3}
+                      value={accordionItem.description}
+                      onChange={(e) => {
+                        setAccordionItems((prevItems) =>
+                          prevItems.map((item, i) =>
+                            i === index
+                              ? { ...item, description: e.target.value }
+                              : item
+                          )
+                        );
+                      }}
+                      className="font-medium text-sm border rounded bg-transparent w-full"
+                      placeholder="Opis"
+                    />
+                    <LoadingButton
+                      color="error"
+                      className="mt-2"
+                      onClick={() => {
+                        setAccordionItems((prevItems) =>
+                          prevItems.filter((_, i) => i !== index)
+                        );
+                      }}
+                    >
+                      Obriši
+                    </LoadingButton>
+                  </div>
+                ))}
+              </div>
+              <LoadingButton
+                variant="outlined"
+                onClick={() => {
+                  setAccordionItems((prevItems) => [
+                    ...prevItems,
+                    { title: "", description: "" },
+                  ]);
+                }}
+              >
+                Dodaj padajući izbornik
+              </LoadingButton>
             </div>
             <div className="w-full">
               <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">

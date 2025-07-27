@@ -202,6 +202,7 @@ export const useUpdatePost = () => {
       status,
       featuredMedia,
       documents,
+      accordionItems,
       sadrzaj,
       kontakt,
       radno_vrijeme_blagajni,
@@ -226,6 +227,7 @@ export const useUpdatePost = () => {
             lokacija,
             image_groups,
             link,
+            accordion_items: accordionItems,
           },
         }
       );

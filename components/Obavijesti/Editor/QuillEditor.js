@@ -4,12 +4,44 @@ import ImageResize from "quill-image-resize-module-react";
 
 Quill.register("modules/imageResize", ImageResize, true);
 
+const BlockEmbed = Quill.import("blots/block/embed");
+
+class InstagramEmbed extends BlockEmbed {
+  static create(value) {
+    const node = super.create();
+    node.innerHTML = value;
+
+    return node;
+  }
+
+  static value(node) {
+    if (!window.instgrm) {
+      const script = document.createElement("script");
+      script.src = "https://www.instagram.com/embed.js";
+      document.body.appendChild(script);
+    } else {
+      window.instgrm.Embeds.process();
+    }
+
+    return node.innerHTML;
+  }
+}
+
+InstagramEmbed.blotName = "instagram";
+InstagramEmbed.tagName = "div";
+InstagramEmbed.className = "instagram-embed";
+
+Quill.register(InstagramEmbed, true);
+
 const Editor = ({
   value,
   onChange,
   addImageToolbar,
   addYoutubeVideo,
+  addEmbedPost,
   addDocumentToolbar,
+  embed,
+  setEmbed,
   videoId,
   setVideoId,
   className,
@@ -42,6 +74,17 @@ const Editor = ({
     }
   }, [videoId]);
 
+  useEffect(() => {
+    if (embed) {
+      const quill = reactQuillRef.current.getEditor();
+      const range = quill.getSelection();
+      const position = range ? range.index : 0;
+
+      quill.insertEmbed(position, "instagram", embed);
+      setEmbed(null);
+    }
+  }, [embed]);
+
   const formats = [
     "bold",
     "italic",
@@ -55,6 +98,7 @@ const Editor = ({
     "blockquote",
     "image",
     "video",
+    "instagram",
   ];
 
   const modules = useMemo(
@@ -64,6 +108,7 @@ const Editor = ({
         handlers: {
           addImageToolbar: addImageToolbar,
           addYoutubeVideo: addYoutubeVideo,
+          addEmbedPost: addEmbedPost,
           addDocumentToolbar: addDocumentToolbar,
         },
       },

@@ -47,6 +47,8 @@ import getIconByMimeType from "../lib/getIconbyMimeType";
 import dayjs from "dayjs";
 import clearHtmlFromString from "../lib/clearHtmlFromString";
 import { useUser } from "../features/auth";
+import { extractInstagramEmbedCode } from "./Elements/QuillTextEditor";
+import { toast } from "react-toastify";
 
 const ObavijestEditorLayout = ({ categoryId, from }) => {
   const { data: user } = useUser();
@@ -277,10 +279,28 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
 
   const [ytModal, setYtModal] = useState(false);
   const [ytUrl, setYtUrl] = useState("");
+  const [embedModal, setEmbedModal] = useState(false);
+  const [embedUrl, setEmbedUrl] = useState("");
+  const [embed, setEmbed] = useState("");
   const [videoId, setVideoId] = useState("");
+
+  const addEmbedPost = () => {
+    setEmbedModal(true);
+  };
 
   const addYoutubeVideo = () => {
     setYtModal(true);
+  };
+
+  const handleAddEmbed = () => {
+    const embed = extractInstagramEmbedCode(embedUrl);
+    if (embed) {
+      setEmbed(embed);
+      setEmbedModal(false);
+      setEmbedUrl("");
+    } else {
+      toast.error("Neispravan Instagram URL");
+    }
   };
 
   const handleAddYtVideo = () => {
@@ -496,6 +516,22 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
           fullWidth
         />
       </MyDialog>
+      <MyDialog
+        opened={embedModal}
+        setOpened={setEmbedModal}
+        title="Instagram post"
+        actionTitle="Dodaj"
+        onClick={handleAddEmbed}
+      >
+        <TextField
+          value={embedUrl}
+          onChange={(e) => setEmbedUrl(e.target.value)}
+          label="Instagram URL"
+          placeholder="https://www.instagram.com/p/..."
+          className="mt-2"
+          fullWidth
+        />
+      </MyDialog>
       <div className="pr-0 lg:pr-72">
         <div className="px-5 py-10 md:p-12">
           <QuillTextEditor
@@ -520,7 +556,10 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
             }}
             addImageToolbar={addImageToolbar}
             addYoutubeVideo={addYoutubeVideo}
+            addEmbedPost={addEmbedPost}
             addDocumentToolbar={addDocumentToolbar}
+            embed={embed}
+            setEmbed={setEmbed}
             videoId={videoId}
             setVideoId={setVideoId}
             src={src}

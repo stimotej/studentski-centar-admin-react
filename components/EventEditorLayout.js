@@ -11,7 +11,7 @@ const QuillEditor = dynamic(() => import("./Obavijesti/Editor/QuillEditor"), {
 });
 import StoredPostNote from "./Obavijesti/Editor/StoredPostNote";
 import Layout from "./Layout";
-import { eventsCategoryId } from "../lib/constants";
+import { eventsCategoryId, teatarTDsliderCategoryId } from "../lib/constants";
 import Loader from "./Elements/Loader";
 import {
   Checkbox,
@@ -107,6 +107,7 @@ const EventEditorLayout = ({ location }) => {
   const [eventDates, setEventDates] = useState([]);
 
   const [addToSlider, setAddToSlider] = useState(false);
+  const [addToTeatarTDSlider, setAddToTeatarTDSlider] = useState(false);
 
   const [image, setImage] = useState(null);
 
@@ -127,6 +128,9 @@ const EventEditorLayout = ({ location }) => {
       setEventLocation(event.location || "");
       setEventType(event.type || "");
       setAddToSlider(event.show_on_slider || false);
+      setAddToTeatarTDSlider(
+        !!event.categories.includes(teatarTDsliderCategoryId)
+      );
       setFiles(event.documents || []);
     } else {
       setTitle(window.localStorage.getItem("event_title") || "");
@@ -140,6 +144,9 @@ const EventEditorLayout = ({ location }) => {
       );
       setEventType(window.localStorage.getItem("event_type") || "");
       setAddToSlider(window.localStorage.getItem("event_slider") || false);
+      setAddToTeatarTDSlider(
+        window.localStorage.getItem("event_slider_teatar_td") || false
+      );
       setFiles(JSON.parse(window.localStorage.getItem("event_files")) || []);
     }
   }, [event]);
@@ -159,6 +166,7 @@ const EventEditorLayout = ({ location }) => {
     setEventDates([]);
     setEventType("");
     setAddToSlider(false);
+    setAddToTeatarTDSlider(false);
     setFiles([]);
   };
 
@@ -176,6 +184,7 @@ const EventEditorLayout = ({ location }) => {
       type: eventType,
       show_on_slider: addToSlider,
       is_course: eventType === "Tečaj" || eventType === "Radionica",
+      categories: [...(addToTeatarTDSlider ? [teatarTDsliderCategoryId] : [])],
       documents:
         files.length > 0 &&
         files.map((file) => ({
@@ -366,6 +375,23 @@ const EventEditorLayout = ({ location }) => {
             />
           }
           label="Dodaj na slider"
+        />
+
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={addToTeatarTDSlider}
+              onChange={(e) => {
+                setAddToTeatarTDSlider(e.target.checked);
+                !eventId &&
+                  window.localStorage.setItem(
+                    "event_slider_teatar_td",
+                    e.target.checked
+                  );
+              }}
+            />
+          }
+          label="Dodaj na slider podstranice Teatar &TD"
         />
 
         {/* <div className="mt-4 mb-3">Datum i vrijeme eventa:</div>

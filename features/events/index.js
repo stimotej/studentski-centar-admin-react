@@ -130,6 +130,7 @@ export const useUpdateEvent = () => {
           content: event?.content,
           featured_media: event?.imageId,
           status: event?.status,
+          categories: event?.categories,
           meta: {
             dates: event?.dates,
             location: event?.location,
