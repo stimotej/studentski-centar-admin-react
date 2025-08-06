@@ -98,6 +98,21 @@ const Layout = ({ children }) => {
     },
   });
 
+  const themeTurizam = createTheme({
+    palette: {
+      primary: {
+        main: "rgb(250, 127, 40)",
+        contrastText: "#ffffff",
+      },
+      secondary: {
+        main: "#fafafa",
+      },
+    },
+    shape: {
+      borderRadius: 8,
+    },
+  });
+
   const { data: user } = useUser();
   const { mutate: checkAuth } = useCheckAuth();
 
@@ -146,6 +161,8 @@ const Layout = ({ children }) => {
           ? themeSmjestaj
           : category === "sport"
           ? themeSport
+          : category === "turizam"
+          ? themeTurizam
           : themeObavijesti
       }
     >

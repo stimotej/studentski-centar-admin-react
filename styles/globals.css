@@ -36,6 +36,9 @@
   .theme-sport {
     --color-primary: 0, 150, 136;
   }
+  .theme-turizam {
+    --color-primary: 250, 127, 40;
+  }
 }
 
 @layer utilities {
@@ -52,7 +55,8 @@ input::-webkit-calendar-picker-indicator {
 }
 
 @layer components {
-  input, textarea {
+  input,
+  textarea {
     @apply outline-none px-3 py-2 bg-secondary;
   }
 }
