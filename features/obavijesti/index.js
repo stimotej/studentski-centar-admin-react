@@ -8,6 +8,7 @@ import axios from "axios";
 import {
   obavijestiCategoryId,
   pocetnaStranicaCategoryId,
+  teatarTdCategoryId,
 } from "../../lib/constants";
 import formatObavijest from "./format";
 import obavijestiKeys from "./queries";
@@ -33,7 +34,7 @@ export const useObavijesti = (filters, options) => {
             page: pageParam,
             timestamp: new Date().getTime(),
             status: ["publish", "draft"],
-            categories_exclude: [pocetnaStranicaCategoryId],
+            categories_exclude: [pocetnaStranicaCategoryId, teatarTdCategoryId],
           },
         }
       );
@@ -80,7 +81,7 @@ export const useCategories = (options) => {
         {
           params: {
             parent: obavijestiCategoryId,
-            exclude: [pocetnaStranicaCategoryId],
+            exclude: [pocetnaStranicaCategoryId, teatarTdCategoryId],
           },
         }
       );
