@@ -10,20 +10,19 @@ import {
 import Image from "next/image";
 import React, { useState } from "react";
 import dynamic from "next/dynamic";
-const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 const QuillTextEditor = dynamic(
   () => import("../../components/Elements/QuillTextEditor"),
   { ssr: false }
 );
 
-const EditLocation = ({ value, onChange }) => {
+const EditLocation = ({ value, onChange, defaultHeight = 450 }) => {
   const [editLocation, setEditLocation] = useState(false);
   const [locationGuideDialog, setLocationGuideDialog] = useState(false);
 
   const handleLocationValueChange = (e) => {
     const value = e.target.value
       .replace(/width="[^"]*"/g, 'width="100%"')
-      .replace(/height="[^"]*"/g, 'height="450"');
+      .replace(/height="[^"]*"/g, `height="${defaultHeight}"`);
     onChange(value);
   };
 

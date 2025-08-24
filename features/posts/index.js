@@ -208,6 +208,8 @@ export const useUpdatePost = () => {
       lokacija,
       image_groups,
       link,
+      images,
+      rentalOptions,
     }) => {
       const response = await axios.post(
         `https://www.sczg.unizg.hr/wp-json/wp/v2/posts/${id}`,
@@ -226,6 +228,8 @@ export const useUpdatePost = () => {
             lokacija,
             image_groups,
             link,
+            images,
+            rental_options: rentalOptions,
           },
         }
       );
