@@ -137,7 +137,7 @@ const PocetnaStranica = () => {
 
   return (
     <Layout>
-      <Header title="Teatar &TD" />
+      <Header title="Turizam" />
       <div className="flex items-start gap-10 flex-wrap md:flex-nowrap px-5 md:px-10 pb-6">
         <div>
           {isLoadingPosts ? (
