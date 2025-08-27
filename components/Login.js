@@ -30,7 +30,6 @@ const Login = ({ from, title }) => {
         if (res) router.push(`/${from}`);
       })
       .catch((err) => {
-        console.log("kaka err", err.message);
         setError(err.message);
       });
   };

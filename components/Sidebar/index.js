@@ -6,14 +6,18 @@ import { MdOutlineLogout } from "react-icons/md";
 import Toggle from "./Toggle";
 import Link from "./Link";
 import { logout } from "../../features/auth";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Sidebar = ({ category }) => {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const [active, setActive] = useState(false);
 
   const handleLogOut = () => {
     logout();
+
+    queryClient.removeQueries();
 
     router.push({
       pathname: `/${category}/login`,

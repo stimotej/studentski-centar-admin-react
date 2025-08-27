@@ -51,6 +51,7 @@ export const useLogin = () => {
 };
 
 export const useCheckAuth = () => {
+  const queryClient = useQueryClient();
   return useMutation(
     async () => {
       const response = await axios.post(
@@ -62,6 +63,7 @@ export const useCheckAuth = () => {
     {
       onError: () => {
         logout();
+        queryClient.removeQueries();
       },
     }
   );
