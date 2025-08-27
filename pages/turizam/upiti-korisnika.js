@@ -20,16 +20,19 @@ import { LoadingButton } from "@mui/lab";
 import { Fragment, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown } from "@fortawesome/pro-regular-svg-icons";
-import dynamic from "next/dynamic";
 import clearHtmlFromString from "../../lib/clearHtmlFromString";
-
-const QuillTextEditor = dynamic(
-  () => import("../../components/Elements/QuillTextEditor"),
-  { ssr: false }
-);
+import { useUser } from "../../features/auth";
+import { TURIZAM_ROLE } from "../../lib/constants";
 
 const UpitiKorisnika = () => {
   const [deleteContactMailDialog, setDeleteContactMailDialog] = useState(null);
+  const { data: user } = useUser();
+
+  const userHasTurizamRole =
+    !!user?.data?.roles &&
+    (Array.isArray(user.data.roles)
+      ? user.data.roles.includes(TURIZAM_ROLE)
+      : Object.values(user.data.roles).includes(TURIZAM_ROLE));
 
   const {
     data: contactMails,
@@ -46,6 +49,7 @@ const UpitiKorisnika = () => {
     useDeleteContactMail();
 
   const handleDeleteContactMail = () => {
+    if (!userHasTurizamRole) return;
     deleteContactMail(
       { id: deleteContactMailDialog },
       {

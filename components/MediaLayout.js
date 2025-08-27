@@ -54,6 +54,7 @@ const MediaLayout = ({
   mediaUncategorizedFolder,
   from,
   includeBanners,
+  disabled = false,
 }) => {
   const [folderHistory, setFolderHistory] = useState([
     {
@@ -124,6 +125,7 @@ const MediaLayout = ({
   const { mutate: deleteMedia, isLoading: isDeleting } = useDeleteMedia();
 
   const handleAddMedia = async () => {
+    if (disabled) return;
     var reader = new FileReader();
     reader.onloadend = async () => {
       createMedia(
@@ -147,6 +149,7 @@ const MediaLayout = ({
   };
 
   const handleUpdateMedia = async () => {
+    if (disabled) return;
     updateMedia(
       {
         id: mediaDialog.id,
@@ -165,6 +168,7 @@ const MediaLayout = ({
   };
 
   const handleDeleteMedia = async () => {
+    if (disabled) return;
     deleteMedia(mediaDialog.id, {
       onSuccess: () => {
         setMediaDialog(null);
@@ -180,6 +184,7 @@ const MediaLayout = ({
     useDeleteMediaFolder();
 
   const handleCreateFolder = () => {
+    if (disabled) return;
     createMediaFolder(
       {
         name: folderName,
@@ -196,6 +201,7 @@ const MediaLayout = ({
   };
 
   const handleUpdateFolder = () => {
+    if (disabled) return;
     const selectedFolderId =
       updateFolderDialog.folderId ||
       folderHistory[folderHistory.length - 1]?.id;
@@ -221,6 +227,7 @@ const MediaLayout = ({
   };
 
   const handleDeleteFolder = () => {
+    if (disabled) return;
     const selectedFolderId =
       deleteFolderDialog.folderId ||
       folderHistory[folderHistory.length - 1]?.id;

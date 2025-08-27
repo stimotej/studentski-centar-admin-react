@@ -34,6 +34,7 @@ const FAQLayout = ({
   mediaCategoryId,
   title,
   actionText,
+  disabled = false,
 }) => {
   const [addFAQModal, setAddFAQModal] = useState(false);
 
@@ -51,6 +52,7 @@ const FAQLayout = ({
           mediaCategoryId={mediaCategoryId}
           addFAQModal={addFAQModal}
           setAddFAQModal={setAddFAQModal}
+          disabled={disabled}
         />
       </div>
     </Layout>
@@ -62,6 +64,7 @@ export const FAQList = ({
   mediaCategoryId,
   addFAQModal,
   setAddFAQModal,
+  disabled = false,
 }) => {
   const {
     data: faqList,
@@ -88,6 +91,7 @@ export const FAQList = ({
   const { mutate: deleteFAQPost, isLoading: isDeletingFaq } = useDeletePost();
 
   const handleAddFAQ = () => {
+    if (disabled) return;
     const newFaq = {
       id: faqId,
       title: question,
@@ -124,6 +128,7 @@ export const FAQList = ({
   };
 
   const handleDeletePostFaq = () => {
+    if (disabled) return;
     deleteFAQPost(
       { id: deleteFaqDialog },
       {

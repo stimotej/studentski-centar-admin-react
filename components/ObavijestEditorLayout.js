@@ -58,7 +58,7 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
   const obavijestId = router.query.id;
 
   const isUserSliderEditor =
-    user?.data?.roles &&
+    !!user?.data?.roles &&
     (Array.isArray(user.data.roles)
       ? user.data.roles.includes(SLIDER_EDITOR_ROLE)
       : Object.values(user.data.roles).includes(SLIDER_EDITOR_ROLE));

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { MdArrowBack } from "react-icons/md";
@@ -11,10 +11,9 @@ import MyDialog from "./Elements/MyDialog";
 const Login = ({ from, title }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const router = useRouter();
-
-  const [error, setError] = useState("");
 
   useEffect(() => {
     const token = window.localStorage.getItem("access_token");
@@ -25,11 +24,13 @@ const Login = ({ from, title }) => {
 
   const handleLogin = (e) => {
     e.preventDefault();
+
     login({ from, username, password })
       .then((res) => {
         if (res) router.push(`/${from}`);
       })
       .catch((err) => {
+        console.log("kaka err", err.message);
         setError(err.message);
       });
   };

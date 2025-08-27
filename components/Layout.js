@@ -5,6 +5,8 @@ import { createTheme, TextField, ThemeProvider } from "@mui/material";
 import { useEffect } from "react";
 import { useCheckAuth, useResetEmail, useUser } from "../features/auth";
 import { useState } from "react";
+import { TURIZAM_ROLE } from "../lib/constants";
+import { toast } from "react-toastify";
 
 const Layout = ({ children }) => {
   const router = useRouter();
@@ -118,6 +120,19 @@ const Layout = ({ children }) => {
 
   const [changeMailModal, setChangeMailModal] = useState(false);
   const [email, setEmail] = useState("");
+
+  useEffect(() => {
+    const userHasTurizamRole =
+      !!user?.data?.roles &&
+      (Array.isArray(user.data.roles)
+        ? user.data.roles.includes(TURIZAM_ROLE)
+        : Object.values(user.data.roles).includes(TURIZAM_ROLE));
+
+    if (user && category.startsWith("turizam") && !userHasTurizamRole) {
+      toast.error("Nemate pristup sučelju za uređivanje stranice Turizam");
+      router.replace("/");
+    }
+  }, [category, user, router]);
 
   useEffect(() => {
     checkAuth(

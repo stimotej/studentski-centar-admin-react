@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { useState } from "react";
 import { toast } from "react-toastify";
+import { TURIZAM_ROLE } from "../../lib/constants";
 
 // const url = "https://www.sczg.unizg.hr/wp-json/jwt-auth/v1/token";
 const url = "https://www.sczg.unizg.hr/wp-json/jwt-auth/v1/token";
@@ -17,12 +18,28 @@ export const useLogin = () => {
         username,
         password,
       });
+
+      const userHasTurizamRole =
+        !!response.data?.user_roles &&
+        (Array.isArray(response.data.user_roles)
+          ? response.data.user_roles.includes(TURIZAM_ROLE)
+          : Object.values(response.data.user_roles).includes(TURIZAM_ROLE));
+
+      if (from === "turizam" && !userHasTurizamRole) {
+        throw new Error("turizam-forbidden");
+      }
+
       window.localStorage.setItem("access_token", response.data?.token);
       axios.defaults.headers.common.Authorization = `Bearer ${response.data?.token}`;
       return response.data;
     } catch (error) {
-      if (error.response?.status === 400) {
+      if (error.response?.data?.code === "[jwt_auth] incorrect_password") {
         throw new Error("Pogrešno korisničko ime ili lozinka");
+      }
+      if (error.message === "turizam-forbidden") {
+        throw new Error(
+          "Nemate pristup sučelju za uređivanje stranice Turizam"
+        );
       }
       throw new Error("Greška prilikom slanja zahtjeva");
     } finally {

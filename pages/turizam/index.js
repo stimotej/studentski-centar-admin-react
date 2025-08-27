@@ -25,6 +25,7 @@ import {
 } from "../../features/posts";
 import {
   adminTurizamCategoryId,
+  TURIZAM_ROLE,
   turizamCategoryId,
   turizamCjenikCategoryId,
   turizamCjenikPostId,
@@ -48,6 +49,7 @@ import Image from "next/image";
 import MediaSelectDialog from "../../components/MediaSelectDialog";
 import clsx from "clsx";
 import EditLocation from "../../components/Elements/EditLocation";
+import { useUser } from "../../features/auth";
 
 const QuillTextEditor = dynamic(
   () => import("../../components/Elements/QuillTextEditor"),
@@ -61,6 +63,13 @@ const PocetnaStranica = () => {
   const [dialogTitle, setDialogTitle] = useState("");
   const [deletePostDialog, setDeletePostDialog] = useState(false);
   const [mediaDialogOpen, setMediaDialogOpen] = useState(false);
+  const { data: user } = useUser();
+
+  const userHasTurizamRole =
+    !!user?.data?.roles &&
+    (Array.isArray(user.data.roles)
+      ? user.data.roles.includes(TURIZAM_ROLE)
+      : Object.values(user.data.roles).includes(TURIZAM_ROLE));
 
   const {
     data: posts,
@@ -77,6 +86,7 @@ const PocetnaStranica = () => {
   const { mutate: deletePost, isLoading: isDeleting } = useDeletePost();
 
   const handleCreatePost = () => {
+    if (!userHasTurizamRole) return;
     if (
       ![turizamSmjestajCategoryId, turizamCjenikCategoryId].includes(
         addPostDialog
@@ -101,6 +111,7 @@ const PocetnaStranica = () => {
   };
 
   const handleUpdatePost = () => {
+    if (!userHasTurizamRole) return;
     updatePost({
       id: postData.id,
       title: postData.title,
@@ -115,6 +126,7 @@ const PocetnaStranica = () => {
   };
 
   const handleDeletePost = () => {
+    if (!userHasTurizamRole) return;
     deletePost(
       { id: selectedPost },
       {
