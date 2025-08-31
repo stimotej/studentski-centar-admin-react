@@ -22,7 +22,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown } from "@fortawesome/pro-regular-svg-icons";
 import clearHtmlFromString from "../../lib/clearHtmlFromString";
 import { useUser } from "../../features/auth";
-import { TURIZAM_ROLE } from "../../lib/constants";
+import { adminTurizamCategoryId, TURIZAM_ROLE } from "../../lib/constants";
 
 const UpitiKorisnika = () => {
   const [deleteContactMailDialog, setDeleteContactMailDialog] = useState(null);
@@ -43,7 +43,9 @@ const UpitiKorisnika = () => {
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
-  } = useContactMails();
+  } = useContactMails({
+    categoryId: adminTurizamCategoryId,
+  });
 
   const { mutate: deleteContactMail, isLoading: isDeletingContactMail } =
     useDeleteContactMail();
