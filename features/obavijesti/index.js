@@ -6,6 +6,8 @@ import {
 } from "@tanstack/react-query";
 import axios from "axios";
 import {
+  cateringCategoryId,
+  eventiCategoryId,
   obavijestiCategoryId,
   pocetnaStranicaCategoryId,
   turizamCategoryId,
@@ -34,7 +36,12 @@ export const useObavijesti = (filters, options) => {
             page: pageParam,
             timestamp: new Date().getTime(),
             status: ["publish", "draft"],
-            categories_exclude: [pocetnaStranicaCategoryId, turizamCategoryId],
+            categories_exclude: [
+              pocetnaStranicaCategoryId,
+              turizamCategoryId,
+              eventiCategoryId,
+              cateringCategoryId,
+            ],
           },
         }
       );
@@ -81,7 +88,12 @@ export const useCategories = (options) => {
         {
           params: {
             parent: obavijestiCategoryId,
-            exclude: [pocetnaStranicaCategoryId, turizamCategoryId],
+            exclude: [
+              pocetnaStranicaCategoryId,
+              turizamCategoryId,
+              eventiCategoryId,
+              cateringCategoryId,
+            ],
           },
         }
       );

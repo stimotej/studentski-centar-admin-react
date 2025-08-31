@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { useState } from "react";
 import { toast } from "react-toastify";
-import { TURIZAM_ROLE } from "../../lib/constants";
+import { CATERING_ROLE, EVENTI_ROLE, TURIZAM_ROLE } from "../../lib/constants";
 
 // const url = "https://www.sczg.unizg.hr/wp-json/jwt-auth/v1/token";
 const url = "https://www.sczg.unizg.hr/wp-json/jwt-auth/v1/token";
@@ -19,14 +19,20 @@ export const useLogin = () => {
         password,
       });
 
-      const userHasTurizamRole =
-        !!response.data?.user_roles &&
-        (Array.isArray(response.data.user_roles)
-          ? response.data.user_roles.includes(TURIZAM_ROLE)
-          : Object.values(response.data.user_roles).includes(TURIZAM_ROLE));
+      const roleMap = {
+        turizam: TURIZAM_ROLE,
+        eventi: EVENTI_ROLE,
+        catering: CATERING_ROLE,
+      };
 
-      if (from === "turizam" && !userHasTurizamRole) {
-        throw new Error("turizam-forbidden");
+      const userHasRole =
+        !!response.data?.user_roles &&
+        (Array.isArray(response.data?.user_roles)
+          ? response.data?.user_roles.includes(roleMap[from])
+          : Object.values(response.data?.user_roles).includes(roleMap[from]));
+
+      if (Object.keys(roleMap).includes(from) && !userHasRole) {
+        throw new Error("role-forbidden");
       }
 
       window.localStorage.setItem("access_token", response.data?.token);
@@ -36,10 +42,8 @@ export const useLogin = () => {
       if (error.response?.data?.code === "[jwt_auth] incorrect_password") {
         throw new Error("Pogrešno korisničko ime ili lozinka");
       }
-      if (error.message === "turizam-forbidden") {
-        throw new Error(
-          "Nemate pristup sučelju za uređivanje stranice Turizam"
-        );
+      if (error.message === "role-forbidden") {
+        throw new Error("Nemate pristup sučelju za uređivanje ove stranice");
       }
       throw new Error("Greška prilikom slanja zahtjeva");
     } finally {

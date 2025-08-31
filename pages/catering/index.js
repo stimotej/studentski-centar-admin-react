@@ -11,6 +11,7 @@ import {
   MenuItem,
   MenuList,
   Paper,
+  TextField,
   Tooltip,
 } from "@mui/material";
 import Header from "../../components/Header";
@@ -22,15 +23,13 @@ import {
   useUpdatePost,
 } from "../../features/posts";
 import {
-  adminTurizamCategoryId,
-  TURIZAM_ROLE,
-  turizamCategoryId,
-  turizamCjenikCategoryId,
-  turizamCjenikPostId,
-  turizamPagesCategoryId,
-  turizamPocetnaPostId,
-  turizamSmjestajCategoryId,
-  turizamSmjestajPostId,
+  adminCateringCategoryId,
+  CATERING_ROLE,
+  cateringCategoryId,
+  cateringNajamOpremeCategoryId,
+  cateringPagesCategoryId,
+  cateringPonudaHraneCategoryId,
+  cateringPonudaPicaCategoryId,
 } from "../../lib/constants";
 import { LoadingButton } from "@mui/lab";
 import { Fragment, useEffect, useRef, useState } from "react";
@@ -41,10 +40,7 @@ import {
   faTriangleExclamation,
 } from "@fortawesome/pro-regular-svg-icons";
 import SelectMediaInput from "../../components/Elements/SelectMediaInput";
-import EditLocation from "../../components/Elements/EditLocation";
 import { useUser } from "../../features/auth";
-import MultiImageSelect from "../../components/Elements/MultiImageSelect";
-import RentalOptionsEditor from "../../components/Turizam/RentalOptionsEditor";
 
 const QuillTextEditor = dynamic(
   () => import("../../components/Elements/QuillTextEditor"),
@@ -59,11 +55,11 @@ const PocetnaStranica = () => {
   const [deletePostDialog, setDeletePostDialog] = useState(false);
   const { data: user } = useUser();
 
-  const userHasTurizamRole =
+  const userHasCateringRole =
     !!user?.data?.roles &&
     (Array.isArray(user.data.roles)
-      ? user.data.roles.includes(TURIZAM_ROLE)
-      : Object.values(user.data.roles).includes(TURIZAM_ROLE));
+      ? user.data.roles.includes(CATERING_ROLE)
+      : Object.values(user.data.roles).includes(CATERING_ROLE));
 
   const {
     data: posts,
@@ -72,7 +68,7 @@ const PocetnaStranica = () => {
     isRefetching: isRefetchingPosts,
     refetch: refetchPosts,
   } = usePosts({
-    categories: adminTurizamCategoryId,
+    categories: adminCateringCategoryId,
   });
 
   const { mutate: createPost, isLoading: isCreating } = useCreatePost();
@@ -80,18 +76,20 @@ const PocetnaStranica = () => {
   const { mutate: deletePost, isLoading: isDeleting } = useDeletePost();
 
   const handleCreatePost = () => {
-    if (!userHasTurizamRole) return;
+    if (!userHasCateringRole) return;
     if (
-      ![turizamSmjestajCategoryId, turizamCjenikCategoryId].includes(
-        addPostDialog
-      )
+      ![
+        cateringPonudaHraneCategoryId,
+        cateringPonudaPicaCategoryId,
+        cateringNajamOpremeCategoryId,
+      ].includes(addPostDialog)
     )
       return;
 
     createPost(
       {
         title: dialogTitle,
-        categories: [adminTurizamCategoryId, addPostDialog],
+        categories: [adminCateringCategoryId, addPostDialog],
         status: "draft",
       },
       {
@@ -106,22 +104,20 @@ const PocetnaStranica = () => {
   };
 
   const handleUpdatePost = () => {
-    if (!userHasTurizamRole) return;
+    if (!userHasCateringRole) return;
     updatePost({
       id: postData.id,
       title: postData.title,
       excerpt: postData.excerpt,
       content: postData.content,
       featuredMedia: postData.imageId,
-      images: postData.images,
-      rentalOptions: postData.rentalOptions,
-      lokacija: postData.lokacija,
+      link: postData.link,
       status: "publish",
     });
   };
 
   const handleDeletePost = () => {
-    if (!userHasTurizamRole) return;
+    if (!userHasCateringRole) return;
     deletePost(
       { id: selectedPost },
       {
@@ -144,7 +140,7 @@ const PocetnaStranica = () => {
 
   return (
     <Layout>
-      <Header title="Turizam" />
+      <Header title="Catering" />
       <div className="flex items-start gap-10 flex-wrap md:flex-nowrap px-5 md:px-10 pb-6">
         <div>
           {isLoadingPosts ? (
@@ -169,16 +165,19 @@ const PocetnaStranica = () => {
             </div>
           ) : (
             [
-              turizamPagesCategoryId,
-              turizamSmjestajCategoryId,
-              turizamCjenikCategoryId,
+              cateringPagesCategoryId,
+              cateringPonudaHraneCategoryId,
+              cateringPonudaPicaCategoryId,
+              cateringNajamOpremeCategoryId,
             ]?.map((category) => (
               <Fragment key={category}>
-                {category !== turizamPagesCategoryId && (
+                {category !== cateringPagesCategoryId && (
                   <h3 className="font-semibold mb-2 mt-6">
-                    {category === turizamSmjestajCategoryId
-                      ? "Smjestaj"
-                      : "Cjenik"}
+                    {category === cateringPonudaHraneCategoryId
+                      ? "Ponuda hrane"
+                      : category === cateringPonudaPicaCategoryId
+                      ? "Ponuda pića"
+                      : "Najam opreme"}
                   </h3>
                 )}
                 <Paper className="md:!min-w-[260px] md:!max-w-[400px]">
@@ -224,7 +223,7 @@ const PocetnaStranica = () => {
                     )}
                   </MenuList>
                 </Paper>
-                {category !== turizamPagesCategoryId && (
+                {category !== cateringPagesCategoryId && (
                   <LoadingButton
                     className="!mt-2"
                     startIcon={<FontAwesomeIcon icon={faPlus} />}
@@ -238,24 +237,22 @@ const PocetnaStranica = () => {
           )}
         </div>
         <div className="flex flex-col items-start gap-4 w-full">
-          {(postData.categories?.includes(turizamSmjestajCategoryId) ||
-            selectedPost === turizamPocetnaPostId) && (
-            <div className="w-full">
-              <h4 className="uppercase text-sm font-semibold tracking-wide">
-                Slika
-              </h4>
-              <SelectMediaInput
-                defaultValue={
-                  posts?.find((post) => post.id === selectedPost)?.image
-                }
-                onChange={(imageId) =>
-                  setPostData((curr) => ({ ...curr, imageId }))
-                }
-                className="!w-full md:!w-1/2"
-                mediaCategoryId={turizamCategoryId}
-              />
-            </div>
-          )}
+          <div className="w-full">
+            <h4 className="uppercase text-sm font-semibold tracking-wide">
+              Slika
+            </h4>
+            <SelectMediaInput
+              defaultValue={
+                posts?.find((post) => post.id === selectedPost)?.image
+              }
+              onChange={(imageId) =>
+                setPostData((curr) => ({ ...curr, imageId }))
+              }
+              className="!w-full md:!w-1/2"
+              mediaCategoryId={cateringCategoryId}
+            />
+          </div>
+
           <div className="w-full">
             <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
               Naslov
@@ -270,84 +267,56 @@ const PocetnaStranica = () => {
             />
           </div>
 
-          {!postData.categories?.includes(turizamSmjestajCategoryId) &&
-            ![turizamSmjestajPostId, turizamCjenikPostId].includes(
-              selectedPost
-            ) && (
-              <div className="w-full">
-                <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
-                  Kratki opis
-                </h4>
-                <QuillTextEditor
-                  value={postData?.excerpt}
-                  onChange={(excerpt) =>
-                    setPostData((curr) => ({ ...curr, excerpt }))
-                  }
-                  useToolbar={false}
-                  className="[&>div>div]:!min-h-[100px]"
-                  placeholder="Unesi kratki opis..."
-                />
-              </div>
-            )}
-          {!postData.categories?.includes(turizamCjenikCategoryId) &&
-            selectedPost !== turizamSmjestajPostId && (
-              <div className="w-full">
-                <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
-                  Sadržaj
-                </h4>
-                <QuillTextEditor
-                  value={postData?.content}
-                  onChange={(content) =>
-                    setPostData((curr) => ({ ...curr, content }))
-                  }
-                  placeholder="Unesi sadržaj..."
-                  mediaCategoryId={turizamCategoryId}
-                />
-              </div>
-            )}
-          {(postData.categories?.includes(turizamSmjestajCategoryId) ||
-            selectedPost === turizamPocetnaPostId) && (
+          {postData.categories?.includes(cateringPagesCategoryId) && (
             <div className="w-full">
               <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
-                Slike
+                Kratki opis
               </h4>
-              <MultiImageSelect
-                categoryId={turizamCategoryId}
-                value={postData.images}
-                onChange={(images) =>
-                  setPostData((curr) => ({ ...curr, images }))
+              <QuillTextEditor
+                value={postData?.excerpt}
+                onChange={(excerpt) =>
+                  setPostData((curr) => ({ ...curr, excerpt }))
                 }
-              />
-            </div>
-          )}
-          {postData.categories?.includes(turizamCjenikCategoryId) && (
-            <div className="w-full">
-              <h4 className="uppercase text-sm font-semibold tracking-wide !mb-2">
-                Opcije najma
-              </h4>
-              <RentalOptionsEditor
-                value={postData.rentalOptions}
-                onChange={(value) =>
-                  setPostData({ ...postData, rentalOptions: value })
-                }
+                useToolbar={false}
+                className="[&>div>div]:!min-h-[100px]"
+                placeholder="Unesi kratki opis..."
               />
             </div>
           )}
 
-          {postData.categories?.includes(turizamSmjestajCategoryId) && (
+          {postData.categories?.includes(cateringPagesCategoryId) && (
             <div className="w-full">
-              <h4 className="uppercase text-sm font-semibold tracking-wide !mb-2">
-                Lokacija
+              <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
+                Sadržaj
               </h4>
-              <EditLocation
-                value={postData.lokacija}
-                onChange={(value) =>
-                  setPostData({ ...postData, lokacija: value })
+              <QuillTextEditor
+                value={postData?.content}
+                onChange={(content) =>
+                  setPostData((curr) => ({ ...curr, content }))
                 }
-                defaultHeight={350}
+                placeholder="Unesi sadržaj..."
+                mediaCategoryId={cateringCategoryId}
               />
             </div>
           )}
+
+          {!postData.categories?.includes(cateringPagesCategoryId) && (
+            <div className="w-full">
+              <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
+                Saznaj više - poveznica
+              </h4>
+              <TextField
+                variant="outlined"
+                label="Poveznica"
+                className="w-full"
+                value={postData.link || ""}
+                onChange={(e) => {
+                  setPostData((curr) => ({ ...curr, link: e.target.value }));
+                }}
+              />
+            </div>
+          )}
+
           <div className="flex !gap-4">
             <LoadingButton
               variant="contained"
@@ -357,7 +326,7 @@ const PocetnaStranica = () => {
             >
               Spremi
             </LoadingButton>
-            {!postData.categories?.includes(turizamPagesCategoryId) && (
+            {!postData.categories?.includes(cateringPagesCategoryId) && (
               <LoadingButton
                 variant="outlined"
                 color="error"

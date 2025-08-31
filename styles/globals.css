@@ -39,6 +39,12 @@
   .theme-turizam {
     --color-primary: 250, 127, 40;
   }
+  .theme-eventi {
+    --color-primary: 2, 132, 199;
+  }
+  .theme-catering {
+    --color-primary: 234, 179, 8;
+  }
 }
 
 @layer utilities {

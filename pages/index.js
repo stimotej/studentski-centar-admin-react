@@ -55,6 +55,18 @@ const LoginSelect = () => {
             text="Upravljanje sadržajem podstranice turizam"
             link="/turizam/login"
           />
+          <LoginCard
+            theme="theme-eventi"
+            title="Najam prostora"
+            text="Upravljanje sadržajem podstranice za najam prostora"
+            link="/eventi/login"
+          />
+          <LoginCard
+            theme="theme-catering"
+            title="Catering"
+            text="Upravljanje sadržajem podstranice catering"
+            link="/catering/login"
+          />
         </div>
         {/* <span className="font-light mb-5 px-6 text-center">
         Za sva pitanja, prijedloge za izmjenu, uočavanje grešaka u radu stustava

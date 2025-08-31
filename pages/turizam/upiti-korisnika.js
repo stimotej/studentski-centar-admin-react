@@ -87,7 +87,6 @@ const UpitiKorisnika = () => {
         ) : (
           contactMails?.pages?.map((contactMail) => (
             <Fragment key={contactMail.id}>
-              {console.log("kaka contactMail.id", contactMail.id)}
               <Accordion>
                 <AccordionSummary
                   expandIcon={<FontAwesomeIcon icon={faChevronDown} />}

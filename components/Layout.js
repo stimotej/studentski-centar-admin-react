@@ -5,7 +5,7 @@ import { createTheme, TextField, ThemeProvider } from "@mui/material";
 import { useEffect } from "react";
 import { useCheckAuth, useResetEmail, useUser } from "../features/auth";
 import { useState } from "react";
-import { TURIZAM_ROLE } from "../lib/constants";
+import { CATERING_ROLE, EVENTI_ROLE, TURIZAM_ROLE } from "../lib/constants";
 import { toast } from "react-toastify";
 
 const Layout = ({ children }) => {
@@ -122,16 +122,24 @@ const Layout = ({ children }) => {
   const [email, setEmail] = useState("");
 
   useEffect(() => {
-    const userHasTurizamRole =
-      !!user?.data?.roles &&
-      (Array.isArray(user.data.roles)
-        ? user.data.roles.includes(TURIZAM_ROLE)
-        : Object.values(user.data.roles).includes(TURIZAM_ROLE));
+    const roleMap = {
+      turizam: TURIZAM_ROLE,
+      eventi: EVENTI_ROLE,
+      catering: CATERING_ROLE,
+    };
 
-    if (user && category.startsWith("turizam") && !userHasTurizamRole) {
-      toast.error("Nemate pristup sučelju za uređivanje stranice Turizam");
-      router.replace("/");
-    }
+    Object.keys(roleMap).forEach((cat) => {
+      const userHasRole =
+        !!user?.data?.roles &&
+        (Array.isArray(user.data.roles)
+          ? user.data.roles.includes(roleMap[cat])
+          : Object.values(user.data.roles).includes(roleMap[cat]));
+
+      if (user && category.startsWith(cat) && !userHasRole) {
+        toast.error("Nemate pristup sučelju za uređivanje ove stranice");
+        router.replace("/");
+      }
+    });
   }, [category, user, router]);
 
   useEffect(() => {

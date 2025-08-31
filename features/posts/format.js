@@ -20,8 +20,6 @@ const formatPost = (post) => ({
   image: post.image_url,
   categories: post.categories,
   status: post.status,
-  image: post.image_url,
-  imageId: post.featured_media,
   sadrzaj: post.meta.sadrzaj,
   radno_vrijeme_blagajni: post.meta.radno_vrijeme_blagajni,
   kontakt: post.meta.kontakt,
@@ -30,6 +28,7 @@ const formatPost = (post) => ({
   link: post.meta.link,
   images: post.meta.images,
   rentalOptions: post.meta.rental_options,
+  features: post.meta.features,
 });
 
 export default formatPost;
