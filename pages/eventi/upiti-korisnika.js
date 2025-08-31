@@ -1,20 +1,20 @@
 import { useUser } from "../../features/auth";
-import { adminTurizamCategoryId, TURIZAM_ROLE } from "../../lib/constants";
+import { adminEventiCategoryId, EVENTI_ROLE } from "../../lib/constants";
 import UpitiKorisnikaLayout from "../../components/UpitiKorisnikaLayout";
 
 const UpitiKorisnikaPage = () => {
   const { data: user } = useUser();
 
-  const userHasTurizamRole =
+  const userHasEventRole =
     !!user?.data?.roles &&
     (Array.isArray(user.data.roles)
-      ? user.data.roles.includes(TURIZAM_ROLE)
-      : Object.values(user.data.roles).includes(TURIZAM_ROLE));
+      ? user.data.roles.includes(EVENTI_ROLE)
+      : Object.values(user.data.roles).includes(EVENTI_ROLE));
 
   return (
     <UpitiKorisnikaLayout
-      adminCategoryId={adminTurizamCategoryId}
-      disabled={!userHasTurizamRole}
+      adminCategoryId={adminEventiCategoryId}
+      disabled={!userHasEventRole}
     />
   );
 };
