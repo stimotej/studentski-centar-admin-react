@@ -34,7 +34,11 @@ export const useObavijesti = (filters, options) => {
             page: pageParam,
             timestamp: new Date().getTime(),
             status: ["publish", "draft"],
-            categories_exclude: [pocetnaStranicaCategoryId, teatarTdCategoryId],
+            categories_exclude:
+              !filters?.categoryId ||
+              filters?.categoryId === obavijestiCategoryId
+                ? [pocetnaStranicaCategoryId, teatarTdCategoryId]
+                : undefined,
           },
         }
       );
