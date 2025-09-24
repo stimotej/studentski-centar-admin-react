@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import Header from "./Obavijesti/Editor/Header";
@@ -11,7 +11,12 @@ const QuillEditor = dynamic(() => import("./Obavijesti/Editor/QuillEditor"), {
 });
 import StoredPostNote from "./Obavijesti/Editor/StoredPostNote";
 import Layout from "./Layout";
-import { eventsCategoryId, teatarTDsliderCategoryId } from "../lib/constants";
+import {
+  adminTeatarTdCategory,
+  eventsCategoryId,
+  teatarTdArchiveCategoryId,
+  teatarTDsliderCategoryId,
+} from "../lib/constants";
 import Loader from "./Elements/Loader";
 import {
   Checkbox,
@@ -31,6 +36,7 @@ import { useCreateEvent, useEvent, useUpdateEvent } from "../features/events";
 import MyDialog from "./Elements/MyDialog";
 import getIconByMimeType from "../lib/getIconbyMimeType";
 import clearHtmlFromString from "../lib/clearHtmlFromString";
+import { usePosts } from "../features/posts";
 
 const storedPostKeys = [
   "event_title",
@@ -41,6 +47,9 @@ const storedPostKeys = [
   "event_location",
   "event_dates",
   "event_type",
+  "event_is_premiere",
+  "event_is_guest_show",
+  "event_archive_id",
   "event_slider",
   "event_course",
   "event_files",
@@ -106,6 +115,10 @@ const EventEditorLayout = ({ location }) => {
   const [eventDate, setEventDate] = useState(null);
   const [eventDates, setEventDates] = useState([]);
 
+  const [isPremiere, setIsPremiere] = useState(false);
+  const [isGuestShow, setIsGuestShow] = useState(false);
+  const [archive, setArchive] = useState(null);
+
   const [addToSlider, setAddToSlider] = useState(false);
   const [addToTeatarTDSlider, setAddToTeatarTDSlider] = useState(false);
 
@@ -117,6 +130,45 @@ const EventEditorLayout = ({ location }) => {
     enabled: !!eventId,
   });
 
+  const { data: teatarTdPosts, isInitialLoading: isLoadingTeatarTdPosts } =
+    usePosts(
+      {
+        categories: adminTeatarTdCategory,
+      },
+      {
+        enabled: location === "Teatar &TD",
+      }
+    );
+
+  const archivePosts = useMemo(
+    () =>
+      teatarTdPosts
+        ? teatarTdPosts.filter((p) =>
+            p.categories.includes(teatarTdArchiveCategoryId)
+          )
+        : [],
+    [teatarTdPosts]
+  );
+
+  useEffect(() => {
+    if (archivePosts?.length) {
+      if (event?.archive_id) {
+        const foundArchive = archivePosts.find(
+          (a) => a.id === event.archive_id
+        );
+        setArchive(foundArchive ?? null);
+      } else {
+        const storedArchiveId = window.localStorage.getItem("event_archive_id");
+        if (storedArchiveId) {
+          const foundArchive = archivePosts.find(
+            (a) => a.id === Number(storedArchiveId)
+          );
+          setArchive(foundArchive ?? null);
+        }
+      }
+    }
+  }, [archivePosts, event]);
+
   useEffect(() => {
     if (event) {
       setImage({ src: event.image !== "false" ? event.image : null } || null);
@@ -127,6 +179,8 @@ const EventEditorLayout = ({ location }) => {
       setEventDates(event.dates || []);
       setEventLocation(event.location || "");
       setEventType(event.type || "");
+      setIsPremiere(event.is_premiere || false);
+      setIsGuestShow(event.is_guest_show || false);
       setAddToSlider(event.show_on_slider || false);
       setAddToTeatarTDSlider(
         !!event.categories.includes(teatarTDsliderCategoryId)
@@ -143,6 +197,8 @@ const EventEditorLayout = ({ location }) => {
         window.localStorage.getItem("event_dates")?.split(",") || []
       );
       setEventType(window.localStorage.getItem("event_type") || "");
+      setIsPremiere(window.localStorage.getItem("event_is_premiere") || "");
+      setIsGuestShow(window.localStorage.getItem("event_is_guest_show") || "");
       setAddToSlider(window.localStorage.getItem("event_slider") || false);
       setAddToTeatarTDSlider(
         window.localStorage.getItem("event_slider_teatar_td") || false
@@ -165,6 +221,9 @@ const EventEditorLayout = ({ location }) => {
     setEventLocation("");
     setEventDates([]);
     setEventType("");
+    setIsPremiere(false);
+    setIsGuestShow(false);
+    setArchive(null);
     setAddToSlider(false);
     setAddToTeatarTDSlider(false);
     setFiles([]);
@@ -182,6 +241,9 @@ const EventEditorLayout = ({ location }) => {
       dates: eventDates.map((date) => dayjs(date).toISOString()),
       location: location ?? eventLocation,
       type: eventType,
+      is_premiere: isPremiere,
+      is_guest_show: isGuestShow,
+      archive_id: archive,
       show_on_slider: addToSlider,
       is_course: eventType === "Tečaj" || eventType === "Radionica",
       categories: [...(addToTeatarTDSlider ? [teatarTDsliderCategoryId] : [])],
@@ -360,6 +422,65 @@ const EventEditorLayout = ({ location }) => {
           <div className="text-sm text-light bg-gray-100 p-2 rounded-lg mt-4">
             Tečajevi i radionice se prikazuju odvojeno od ostalih evenata.
           </div>
+        )}
+
+        <div className="flex flex-col mt-4">
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={isPremiere}
+                onChange={(e) => {
+                  setIsPremiere(e.target.checked);
+                  !eventId &&
+                    window.localStorage.setItem(
+                      "event_is_premiere",
+                      e.target.checked
+                    );
+                }}
+              />
+            }
+            label="Premijera"
+          />
+
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={isGuestShow}
+                onChange={(e) => {
+                  setIsGuestShow(e.target.checked);
+                  !eventId &&
+                    window.localStorage.setItem(
+                      "event_is_guest_show",
+                      e.target.checked
+                    );
+                }}
+              />
+            }
+            label="Gostovanje"
+          />
+        </div>
+
+        {location === "Teatar &TD" && (
+          <Autocomplete
+            className="mt-4"
+            loading={isLoadingTeatarTdPosts}
+            loadingText="Učitavanje..."
+            noOptionsText="Nema arhiva za prikaz"
+            options={archivePosts}
+            isOptionEqualToValue={(option, value) => option?.id === value?.id}
+            getOptionLabel={(option) => clearHtmlFromString(option.title)}
+            getOptionKey={(option) => option.id}
+            renderInput={(params) => <TextField {...params} label="Arhiva" />}
+            value={archive}
+            onChange={(_, val) => {
+              setArchive(val);
+              !eventId &&
+                window.localStorage.setItem(
+                  "event_archive_id",
+                  val !== null ? val.id : ""
+                );
+            }}
+          />
         )}
 
         <div className="mt-4">Istakni event:</div>

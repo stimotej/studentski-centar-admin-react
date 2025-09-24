@@ -15,7 +15,7 @@ import Loader from "./Elements/Loader";
 import ObavijestPreview from "./Obavijesti/Home/Preview";
 import ObavijestSelect from "./Obavijesti/Home/Select";
 
-const EventsLayout = ({ location }) => {
+const EventsLayout = ({ location, from }) => {
   const [event, setEvent] = useState(null);
 
   const [search, setSearch] = useState("");
@@ -87,7 +87,7 @@ const EventsLayout = ({ location }) => {
       <Header
         title="Kultura"
         link
-        to="/kultura/uredi-event"
+        to={`/${from}/uredi-event`}
         text="Dodaj event"
         icon={<MdAdd />}
         primary
@@ -148,6 +148,7 @@ const EventsLayout = ({ location }) => {
                     onChange={(value) => setEvent(value)}
                     handleDelete={() => setDeleteDialog(true)}
                     isEvent={true}
+                    from={from}
                   />
                 </Fragment>
               ))}
@@ -173,6 +174,7 @@ const EventsLayout = ({ location }) => {
               setObavijest={setEvent}
               handleDelete={() => setDeleteDialog(true)}
               isEvent={true}
+              from={from}
             />
           ) : (
             <div className="text-gray-500 mt-10">
