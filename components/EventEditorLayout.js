@@ -231,7 +231,7 @@ const EventEditorLayout = ({ location }) => {
       dates: eventDates.map((date) => dayjs(date).toISOString()),
       location: location ?? eventLocation,
       type: eventType,
-      archive_id: archive?.id,
+      archive_id: archive?.id || 0,
       show_on_slider: addToSlider,
       is_course: eventType === "Tečaj" || eventType === "Radionica",
       categories: [...(addToTeatarTDSlider ? [teatarTDsliderCategoryId] : [])],
