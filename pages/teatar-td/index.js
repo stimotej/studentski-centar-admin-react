@@ -11,6 +11,7 @@ import {
   MenuItem,
   MenuList,
   Paper,
+  TextField,
   Tooltip,
 } from "@mui/material";
 import Header from "../../components/Header";
@@ -37,9 +38,11 @@ import SelectMediaInput from "../../components/Elements/SelectMediaInput";
 import { useUser } from "../../features/auth";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
+  faFileMagnifyingGlass,
   faPlus,
   faTriangleExclamation,
 } from "@fortawesome/pro-regular-svg-icons";
+import MediaSelectDialog from "../../components/MediaSelectDialog";
 
 const QuillTextEditor = dynamic(
   () => import("../../components/Elements/QuillTextEditor"),
@@ -51,6 +54,7 @@ const PocetnaStranica = () => {
   const [addPostDialog, setAddPostDialog] = useState(null);
   const [dialogTitle, setDialogTitle] = useState("");
   const [deletePostDialog, setDeletePostDialog] = useState(false);
+  const [mediaDialog, setMediaDialog] = useState(false);
 
   const { data: user } = useUser();
 
@@ -108,6 +112,7 @@ const PocetnaStranica = () => {
       excerpt: "<p></p>",
       content: postData.content,
       status: "publish",
+      link: postData.link,
       documents:
         postData.documents.length > 0 &&
         postData.documents.map((file) => ({
@@ -374,6 +379,40 @@ const PocetnaStranica = () => {
                 />
               </div>
             )}
+            {postData?.categories?.includes(teatarTdArchiveCategoryId) && (
+              <div className="w-full">
+                <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
+                  Poveznica na Word dokument
+                </h4>
+                <TextField
+                  variant="outlined"
+                  label="Poveznica"
+                  className="w-full"
+                  value={postData.link || ""}
+                  helperText="Ako je poveznica na dokument definirana, događaji se neće prikazivati pod ovim padajućim izbornikom. Umjesto toga, bit će vidljiv pregled dokumenta."
+                  onChange={(e) => {
+                    setPostData((curr) => ({
+                      ...curr,
+                      link: e.target.value,
+                    }));
+                  }}
+                />
+                <Button className="!mt-4" onClick={() => setMediaDialog(true)}>
+                  Odaberi datoteku
+                </Button>
+                {!!postData.link && (
+                  <>
+                    <h4 className="uppercase text-sm font-semibold tracking-wide mb-2 mt-6">
+                      Pregled
+                    </h4>
+                    <iframe
+                      src={`https://view.officeapps.live.com/op/embed.aspx?src=${postData.link}`}
+                      className="w-full h-[60rem]"
+                    />
+                  </>
+                )}
+              </div>
+            )}
 
             <div className="flex !gap-4">
               <LoadingButton
@@ -397,6 +436,16 @@ const PocetnaStranica = () => {
           </div>
         </div>
       </div>
+
+      <MediaSelectDialog
+        opened={mediaDialog}
+        onClose={() => setMediaDialog(false)}
+        onSelect={(value) =>
+          value && setPostData((curr) => ({ ...curr, link: value.src }))
+        }
+        categoryId={teatarTdCategoryId}
+        mediaType="application"
+      />
 
       <Dialog
         open={!!addPostDialog}

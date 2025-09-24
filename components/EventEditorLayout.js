@@ -47,8 +47,6 @@ const storedPostKeys = [
   "event_location",
   "event_dates",
   "event_type",
-  "event_is_premiere",
-  "event_is_guest_show",
   "event_archive_id",
   "event_slider",
   "event_course",
@@ -115,8 +113,6 @@ const EventEditorLayout = ({ location }) => {
   const [eventDate, setEventDate] = useState(null);
   const [eventDates, setEventDates] = useState([]);
 
-  const [isPremiere, setIsPremiere] = useState(false);
-  const [isGuestShow, setIsGuestShow] = useState(false);
   const [archive, setArchive] = useState(null);
 
   const [addToSlider, setAddToSlider] = useState(false);
@@ -179,8 +175,6 @@ const EventEditorLayout = ({ location }) => {
       setEventDates(event.dates || []);
       setEventLocation(event.location || "");
       setEventType(event.type || "");
-      setIsPremiere(event.is_premiere || false);
-      setIsGuestShow(event.is_guest_show || false);
       setAddToSlider(event.show_on_slider || false);
       setAddToTeatarTDSlider(
         !!event.categories.includes(teatarTDsliderCategoryId)
@@ -197,8 +191,6 @@ const EventEditorLayout = ({ location }) => {
         window.localStorage.getItem("event_dates")?.split(",") || []
       );
       setEventType(window.localStorage.getItem("event_type") || "");
-      setIsPremiere(window.localStorage.getItem("event_is_premiere") || "");
-      setIsGuestShow(window.localStorage.getItem("event_is_guest_show") || "");
       setAddToSlider(window.localStorage.getItem("event_slider") || false);
       setAddToTeatarTDSlider(
         window.localStorage.getItem("event_slider_teatar_td") || false
@@ -221,8 +213,6 @@ const EventEditorLayout = ({ location }) => {
     setEventLocation("");
     setEventDates([]);
     setEventType("");
-    setIsPremiere(false);
-    setIsGuestShow(false);
     setArchive(null);
     setAddToSlider(false);
     setAddToTeatarTDSlider(false);
@@ -241,9 +231,7 @@ const EventEditorLayout = ({ location }) => {
       dates: eventDates.map((date) => dayjs(date).toISOString()),
       location: location ?? eventLocation,
       type: eventType,
-      is_premiere: isPremiere,
-      is_guest_show: isGuestShow,
-      archive_id: archive,
+      archive_id: archive?.id,
       show_on_slider: addToSlider,
       is_course: eventType === "Tečaj" || eventType === "Radionica",
       categories: [...(addToTeatarTDSlider ? [teatarTDsliderCategoryId] : [])],
@@ -423,42 +411,6 @@ const EventEditorLayout = ({ location }) => {
             Tečajevi i radionice se prikazuju odvojeno od ostalih evenata.
           </div>
         )}
-
-        <div className="flex flex-col mt-4">
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={isPremiere}
-                onChange={(e) => {
-                  setIsPremiere(e.target.checked);
-                  !eventId &&
-                    window.localStorage.setItem(
-                      "event_is_premiere",
-                      e.target.checked
-                    );
-                }}
-              />
-            }
-            label="Premijera"
-          />
-
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={isGuestShow}
-                onChange={(e) => {
-                  setIsGuestShow(e.target.checked);
-                  !eventId &&
-                    window.localStorage.setItem(
-                      "event_is_guest_show",
-                      e.target.checked
-                    );
-                }}
-              />
-            }
-            label="Gostovanje"
-          />
-        </div>
 
         {location === "Teatar &TD" && (
           <Autocomplete

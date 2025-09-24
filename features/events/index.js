@@ -86,8 +86,6 @@ export const useCreateEvent = (displayToasts = true) => {
             documents: event?.documents,
             show_on_slider: event?.show_on_slider,
             is_course: event?.is_course,
-            is_premiere: event?.is_premiere,
-            is_guest_show: event?.is_guest_show,
             archive_id: event?.archive_id,
           },
         }
@@ -141,8 +139,6 @@ export const useUpdateEvent = () => {
             documents: event?.documents,
             show_on_slider: event?.show_on_slider,
             is_course: event?.is_course,
-            is_premiere: event?.is_premiere,
-            is_guest_show: event?.is_guest_show,
             archive_id: event?.archive_id,
           },
         }

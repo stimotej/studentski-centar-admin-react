@@ -16,8 +16,6 @@ const formatEvent = (event) => ({
   type: event.meta.type,
   show_on_slider: event.meta.show_on_slider,
   is_course: event.meta.is_course,
-  is_premiere: event.meta.is_premiere,
-  is_guest_show: event.meta.is_guest_show,
   archive_id: event.meta.archive_id,
   documents: event.meta.documents,
 });
