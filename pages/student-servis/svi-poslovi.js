@@ -57,12 +57,12 @@ const headCells = [
   {
     id: "featured",
     label: "Radnje",
-    sort: false,
+    sort: true,
   },
   {
     id: "allowed_sc",
     label: "Status",
-    sort: false,
+    sort: true,
   },
 ];
 
