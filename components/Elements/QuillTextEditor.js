@@ -1,6 +1,6 @@
 import { useMemo, useState, useRef, useEffect, useId } from "react";
 import { MdOutlineImage } from "react-icons/md";
-import { FaYoutube } from "react-icons/fa";
+import { FaYoutube, FaInstagram } from "react-icons/fa";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFilePdf, faXmark } from "@fortawesome/pro-regular-svg-icons";
 import MediaSelectDialog from "../MediaSelectDialog";
@@ -11,8 +11,40 @@ import ReactQuill, { Quill } from "react-quill";
 import ImageResize from "quill-image-resize-module-react";
 import getIconByMimeType from "../../lib/getIconbyMimeType";
 import clsx from "clsx";
+import { toast } from "react-toastify";
+import { extractInstagramEmbedCode } from "../../lib/extractInstagramEmbedCode";
 
 Quill.register("modules/imageResize", ImageResize, true);
+
+const BlockEmbed = Quill.import("blots/block/embed");
+
+class InstagramEmbed extends BlockEmbed {
+  static create(value) {
+    const node = super.create();
+    node.innerHTML = value;
+
+    return node;
+  }
+
+  static value(node) {
+    if (!window.instgrm) {
+      const script = document.createElement("script");
+      script.src = "https://www.instagram.com/embed.js";
+      script.async = true;
+      document.body.appendChild(script);
+    } else {
+      window.instgrm.Embeds.process();
+    }
+
+    return node.innerHTML;
+  }
+}
+
+InstagramEmbed.blotName = "instagram";
+InstagramEmbed.tagName = "div";
+InstagramEmbed.className = "instagram-embed";
+
+Quill.register(InstagramEmbed, true);
 
 const formatsDefault = [
   "bold",
@@ -27,6 +59,7 @@ const formatsDefault = [
   "blockquote",
   "image",
   "video",
+  "instagram",
 ];
 
 const QuillTextEditor = ({
@@ -48,7 +81,9 @@ const QuillTextEditor = ({
   const toolbarId = useId();
 
   const [ytModal, setYtModal] = useState(false);
+  const [embedModal, setEmbedModal] = useState(false);
   const [ytUrl, setYtUrl] = useState("");
+  const [embedUrl, setEmbedUrl] = useState("");
   const [videoId, setVideoId] = useState("");
   const [src, setSrc] = useState(null);
 
@@ -60,10 +95,33 @@ const QuillTextEditor = ({
     setYtModal(true);
   };
 
+  const addEmbedPost = () => {
+    setEmbedModal(true);
+  };
+
   const handleAddYtVideo = () => {
     const ytUrlParams = new URLSearchParams(ytUrl.split("?")[1]);
     setVideoId(ytUrlParams.get("v"));
     setYtModal(false);
+    setYtUrl(""); // Clear the input
+  };
+
+  const handleAddEmbed = () => {
+    if (!embedUrl.trim()) return;
+
+    const embed = extractInstagramEmbedCode(embedUrl);
+    if (embed) {
+      const quill = reactQuillRef.current.getEditor();
+      const range = quill.getSelection();
+      const position = range ? range.index : 0;
+
+      quill.insertEmbed(position, "instagram", embed);
+    } else {
+      toast.error("Neispravan Instagram URL");
+    }
+
+    setEmbedModal(false);
+    setEmbedUrl("");
   };
 
   const addDocumentToolbar = () => {
@@ -89,6 +147,7 @@ const QuillTextEditor = ({
               handlers: {
                 addImageToolbar: addImageToolbar,
                 addYoutubeVideo: addYoutubeVideo,
+                addEmbedPost: addEmbedPost,
                 addDocumentToolbar: addDocumentToolbar,
               },
             },
@@ -122,7 +181,7 @@ const QuillTextEditor = ({
         "video",
         `https://www.youtube.com/embed/${videoId}`
       );
-      setVideoId(null);
+      setVideoId("");
     }
   }, [videoId]);
 
@@ -190,13 +249,29 @@ const QuillTextEditor = ({
         opened={ytModal}
         setOpened={setYtModal}
         title="YouTube video"
-        actionTitle={"Dodaj"}
+        actionTitle="Dodaj"
         onClick={handleAddYtVideo}
       >
         <TextField
           value={ytUrl}
           onChange={(e) => setYtUrl(e.target.value)}
           label="Url"
+          className="mt-2"
+          fullWidth
+        />
+      </MyDialog>
+      <MyDialog
+        opened={embedModal}
+        setOpened={setEmbedModal}
+        title="Instagram post"
+        actionTitle="Dodaj"
+        onClick={handleAddEmbed}
+      >
+        <TextField
+          value={embedUrl}
+          onChange={(e) => setEmbedUrl(e.target.value)}
+          label="Instagram URL"
+          placeholder="https://www.instagram.com/p/..."
           className="mt-2"
           fullWidth
         />
@@ -245,6 +320,9 @@ const Header = ({ useFiles = true, toolbarId }) => {
       </button>
       <button className="ql-addYoutubeVideo my-1 sm:my-2">
         <FaYoutube className="text-black hover:text-primary" />
+      </button>
+      <button className="ql-addEmbedPost my-1 sm:my-2">
+        <FaInstagram className="text-black hover:text-primary" />
       </button>
       {useFiles && (
         <button className="ql-addDocumentToolbar my-1 sm:my-2">

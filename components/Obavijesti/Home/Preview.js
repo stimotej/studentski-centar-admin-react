@@ -81,7 +81,7 @@ const Preview = ({
           text="Uredi"
           variant="outlined"
           icon={<MdOutlineEdit />}
-          to={isEvent ? "/kultura/uredi-event" : `/${from}/uredi-obavijest`}
+          to={isEvent ? `/${from}/uredi-event` : `/${from}/uredi-obavijest`}
           state={{ id: obavijest.id }}
         />
         <Button
@@ -92,7 +92,9 @@ const Preview = ({
           openInNewTab
           to={
             isEvent
-              ? `https://www.sczg.unizg.hr/kultura/eventi/${obavijest?.slug}`
+              ? from === "teatar-td"
+                ? `https://www.sczg.unizg.hr/teatar-td/predstave/${obavijest?.slug}`
+                : `https://www.sczg.unizg.hr/kultura/eventi/${obavijest?.slug}`
               : `https://www.sczg.unizg.hr/obavijesti/${obavijest?.slug}`
           }
           className="!ml-4"

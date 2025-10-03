@@ -16,6 +16,7 @@ const Item = ({
   onClick,
   className,
   isEvent,
+  showEventLocation,
   showCategory,
 }) => {
   return (

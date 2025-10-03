@@ -16,6 +16,12 @@ const formatPost = (post) => ({
         source_url: document.src || document.source_url,
       }))
     : [],
+  accordionItems: post.meta.accordion_items
+    ? post.meta.accordion_items.map((accordionItem) => ({
+        title: accordionItem.title,
+        description: accordionItem.description,
+      }))
+    : [],
   imageId: post.featured_media,
   image: post.image_url,
   categories: post.categories,

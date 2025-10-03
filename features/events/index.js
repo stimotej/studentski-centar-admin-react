@@ -25,6 +25,7 @@ export const useEvents = (filters, options) => {
             order: filters?.order,
             search: filters?.search,
             is_course: filters?.is_course,
+            location: filters?.location,
             per_page: eventsPerPage,
             page: pageParam,
             timestamp: new Date().getTime(),
@@ -85,6 +86,7 @@ export const useCreateEvent = (displayToasts = true) => {
             documents: event?.documents,
             show_on_slider: event?.show_on_slider,
             is_course: event?.is_course,
+            archive_id: event?.archive_id,
           },
         }
       );
@@ -129,6 +131,7 @@ export const useUpdateEvent = () => {
           content: event?.content,
           featured_media: event?.imageId,
           status: event?.status,
+          categories: event?.categories,
           meta: {
             dates: event?.dates,
             location: event?.location,
@@ -136,6 +139,7 @@ export const useUpdateEvent = () => {
             documents: event?.documents,
             show_on_slider: event?.show_on_slider,
             is_course: event?.is_course,
+            archive_id: event?.archive_id,
           },
         }
       );

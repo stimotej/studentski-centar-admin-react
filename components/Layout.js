@@ -100,6 +100,20 @@ const Layout = ({ children }) => {
     },
   });
 
+  const themeTeatarTD = createTheme({
+    palette: {
+      primary: {
+        main: "rgb(207, 36, 42)",
+      },
+      secondary: {
+        main: "#fafafa",
+      },
+    },
+    shape: {
+      borderRadius: 8,
+    },
+  });
+
   const themeTurizam = createTheme({
     palette: {
       primary: {
@@ -184,6 +198,8 @@ const Layout = ({ children }) => {
           ? themeSmjestaj
           : category === "sport"
           ? themeSport
+          : category === "teatar-td"
+          ? themeTeatarTD
           : category === "turizam"
           ? themeTurizam
           : themeObavijesti

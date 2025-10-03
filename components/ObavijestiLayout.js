@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
+import { useState } from "react";
 import { MdAdd } from "react-icons/md";
 import Header from "./Header";
 import ObavijestPreview from "./Obavijesti/Home/Preview";

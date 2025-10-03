@@ -45,6 +45,9 @@
   .theme-catering {
     --color-primary: 234, 179, 8;
   }
+  .theme-teatar-td {
+    --color-primary: 207, 36, 42;
+  }
 }
 
 @layer utilities {

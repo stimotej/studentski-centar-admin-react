@@ -10,6 +10,7 @@ import {
   eventiCategoryId,
   obavijestiCategoryId,
   pocetnaStranicaCategoryId,
+  teatarTdCategoryId,
   turizamCategoryId,
 } from "../../lib/constants";
 import formatObavijest from "./format";
@@ -36,12 +37,17 @@ export const useObavijesti = (filters, options) => {
             page: pageParam,
             timestamp: new Date().getTime(),
             status: ["publish", "draft"],
-            categories_exclude: [
-              pocetnaStranicaCategoryId,
-              turizamCategoryId,
-              eventiCategoryId,
-              cateringCategoryId,
-            ],
+            categories_exclude:
+              !filters?.categoryId ||
+              filters?.categoryId === obavijestiCategoryId
+                ? [
+                    pocetnaStranicaCategoryId,
+                    turizamCategoryId,
+                    eventiCategoryId,
+                    cateringCategoryId,
+                    teatarTdCategoryId,
+                  ]
+                : undefined,
           },
         }
       );
@@ -93,6 +99,7 @@ export const useCategories = (options) => {
               turizamCategoryId,
               eventiCategoryId,
               cateringCategoryId,
+              teatarTdCategoryId,
             ],
           },
         }
