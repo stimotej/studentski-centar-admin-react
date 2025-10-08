@@ -37,6 +37,7 @@ import MyDialog from "./Elements/MyDialog";
 import getIconByMimeType from "../lib/getIconbyMimeType";
 import clearHtmlFromString from "../lib/clearHtmlFromString";
 import { usePosts } from "../features/posts";
+import { MobileDatePicker } from "@mui/x-date-pickers";
 
 const storedPostKeys = [
   "event_title",
@@ -48,6 +49,8 @@ const storedPostKeys = [
   "event_dates",
   "event_type",
   "event_archive_id",
+  "event_show_event",
+  "event_end_showing",
   "event_slider",
   "event_course",
   "event_files",
@@ -115,6 +118,9 @@ const EventEditorLayout = ({ location }) => {
 
   const [archive, setArchive] = useState(null);
 
+  const [showEvent, setShowEvent] = useState(false);
+  const [endShowing, setEndShowing] = useState(null);
+
   const [addToSlider, setAddToSlider] = useState(false);
   const [addToTeatarTDSlider, setAddToTeatarTDSlider] = useState(false);
 
@@ -179,6 +185,8 @@ const EventEditorLayout = ({ location }) => {
       setAddToTeatarTDSlider(
         !!event.categories.includes(teatarTDsliderCategoryId)
       );
+      setShowEvent(!!event.end_showing);
+      setEndShowing(event.end_showing || null);
       setFiles(event.documents || []);
     } else {
       setTitle(window.localStorage.getItem("event_title") || "");
@@ -195,6 +203,8 @@ const EventEditorLayout = ({ location }) => {
       setAddToTeatarTDSlider(
         window.localStorage.getItem("event_slider_teatar_td") || false
       );
+      setShowEvent(window.localStorage.getItem("event_show_event") === "true");
+      setEndShowing(window.localStorage.getItem("event_end_showing") || null);
       setFiles(JSON.parse(window.localStorage.getItem("event_files")) || []);
     }
   }, [event]);
@@ -216,6 +226,8 @@ const EventEditorLayout = ({ location }) => {
     setArchive(null);
     setAddToSlider(false);
     setAddToTeatarTDSlider(false);
+    setShowEvent(false);
+    setEndShowing(null);
     setFiles([]);
   };
 
@@ -235,6 +247,7 @@ const EventEditorLayout = ({ location }) => {
       show_on_slider: addToSlider,
       is_course: eventType === "Tečaj" || eventType === "Radionica",
       categories: [...(addToTeatarTDSlider ? [teatarTDsliderCategoryId] : [])],
+      end_showing: showEvent ? endShowing : null,
       documents:
         files.length > 0 &&
         files.map((file) => ({
@@ -413,26 +426,65 @@ const EventEditorLayout = ({ location }) => {
         )}
 
         {location === "Teatar &TD" && (
-          <Autocomplete
-            className="mt-4"
-            loading={isLoadingTeatarTdPosts}
-            loadingText="Učitavanje..."
-            noOptionsText="Nema arhiva za prikaz"
-            options={archivePosts}
-            isOptionEqualToValue={(option, value) => option?.id === value?.id}
-            getOptionLabel={(option) => clearHtmlFromString(option.title)}
-            getOptionKey={(option) => option.id}
-            renderInput={(params) => <TextField {...params} label="Arhiva" />}
-            value={archive}
-            onChange={(_, val) => {
-              setArchive(val);
-              !eventId &&
-                window.localStorage.setItem(
-                  "event_archive_id",
-                  val !== null ? val.id : ""
-                );
-            }}
-          />
+          <>
+            <Autocomplete
+              className="mt-4"
+              loading={isLoadingTeatarTdPosts}
+              loadingText="Učitavanje..."
+              noOptionsText="Nema arhiva za prikaz"
+              options={archivePosts}
+              isOptionEqualToValue={(option, value) => option?.id === value?.id}
+              getOptionLabel={(option) => clearHtmlFromString(option.title)}
+              getOptionKey={(option) => option.id}
+              renderInput={(params) => <TextField {...params} label="Arhiva" />}
+              value={archive}
+              onChange={(_, val) => {
+                setArchive(val);
+                !eventId &&
+                  window.localStorage.setItem(
+                    "event_archive_id",
+                    val !== null ? val.id : ""
+                  );
+              }}
+            />
+
+            <div className="mt-4">Prikazivanje na stranici:</div>
+            <div className="flex flex-col">
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={showEvent}
+                    onChange={(e) => {
+                      if (!e.target.checked) setEndShowing(null);
+                      setShowEvent(e.target.checked);
+                      !eventId &&
+                        window.localStorage.setItem(
+                          "event_show_event",
+                          e.target.checked
+                        );
+                    }}
+                  />
+                }
+                label="Prikaži obavijest"
+              />
+              {showEvent && (
+                <MobileDatePicker
+                  inputFormat="DD/MM/YYYY"
+                  views={["day", "month", "year"]}
+                  value={endShowing}
+                  toolbarTitle="Odaberite datum"
+                  className="!mt-2"
+                  label="Kraj prikaza"
+                  onChange={(value) => {
+                    setEndShowing(value);
+                    !eventId &&
+                      window.localStorage.setItem("event_end_showing", value);
+                  }}
+                  renderInput={(params) => <TextField {...params} />}
+                />
+              )}
+            </div>
+          </>
         )}
 
         <div className="mt-4">Istakni event:</div>
