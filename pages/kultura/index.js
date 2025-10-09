@@ -106,7 +106,7 @@ const Home = () => {
         categories?.[0]?.id;
       setPage(post.id);
       setCategory(categoryId);
-      setImage(post.image);
+      setImage(post.imageId);
       setTitle(post.title);
       setExcerpt(post.excerpt);
       setContent(post.content);
@@ -124,7 +124,7 @@ const Home = () => {
     if (!post) return;
     setPage(postId);
     setCategory(categoryId);
-    setImage(post.image);
+    setImage(post.imageId);
     setTitle(post.title);
     setExcerpt(isTeatarPost ? post.sadrzaj : post.excerpt);
     setContent(post.content);
@@ -354,7 +354,12 @@ const Home = () => {
               <>
                 <h3 className="font-semibold">Slika</h3>
                 <SelectMediaInput
-                  defaultValue={image}
+                  defaultValue={
+                    (teatarPostIds.includes(page)
+                      ? teatarTdPosts
+                      : posts
+                    )?.find((post) => post.id === page)?.image
+                  }
                   onChange={setImage}
                   className="!w-full md:!w-1/2 !bg-transparent border-gray-200"
                   mediaCategoryId={kulturaCategoryId}

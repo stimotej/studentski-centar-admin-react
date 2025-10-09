@@ -38,7 +38,6 @@ import SelectMediaInput from "../../components/Elements/SelectMediaInput";
 import { useUser } from "../../features/auth";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faFileMagnifyingGlass,
   faPlus,
   faTriangleExclamation,
 } from "@fortawesome/pro-regular-svg-icons";
