@@ -247,7 +247,7 @@ const EventEditorLayout = ({ location }) => {
       show_on_slider: addToSlider,
       is_course: eventType === "Tečaj" || eventType === "Radionica",
       categories: [...(addToTeatarTDSlider ? [teatarTDsliderCategoryId] : [])],
-      end_showing: showEvent ? endShowing : null,
+      end_showing: showEvent ? endShowing || "never" : null,
       documents:
         files.length > 0 &&
         files.map((file) => ({
@@ -471,7 +471,7 @@ const EventEditorLayout = ({ location }) => {
                 <MobileDatePicker
                   inputFormat="DD/MM/YYYY"
                   views={["day", "month", "year"]}
-                  value={endShowing}
+                  value={endShowing === "never" ? null : endShowing}
                   toolbarTitle="Odaberite datum"
                   className="!mt-2"
                   label="Kraj prikaza"
