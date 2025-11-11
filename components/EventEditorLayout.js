@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import Image from "next/image";
 import Header from "./Obavijesti/Editor/Header";
 import Sidebar from "./Obavijesti/Editor/Sidebar";
+import { MobileDatePicker } from "@mui/x-date-pickers";
 import dynamic from "next/dynamic";
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 const QuillEditor = dynamic(() => import("./Obavijesti/Editor/QuillEditor"), {
@@ -37,7 +38,8 @@ import MyDialog from "./Elements/MyDialog";
 import getIconByMimeType from "../lib/getIconbyMimeType";
 import clearHtmlFromString from "../lib/clearHtmlFromString";
 import { usePosts } from "../features/posts";
-import { MobileDatePicker } from "@mui/x-date-pickers";
+import { toast } from "react-toastify";
+import { extractInstagramEmbedCode } from "../lib/extractInstagramEmbedCode";
 
 const storedPostKeys = [
   "event_title",
@@ -303,10 +305,28 @@ const EventEditorLayout = ({ location }) => {
 
   const [ytModal, setYtModal] = useState(false);
   const [ytUrl, setYtUrl] = useState("");
+  const [embedModal, setEmbedModal] = useState(false);
+  const [embedUrl, setEmbedUrl] = useState("");
+  const [embed, setEmbed] = useState("");
   const [videoId, setVideoId] = useState("");
 
   const addYoutubeVideo = () => {
     setYtModal(true);
+  };
+
+  const addEmbedPost = () => {
+    setEmbedModal(true);
+  };
+
+  const handleAddEmbed = () => {
+    const parsedEmbed = extractInstagramEmbedCode(embedUrl);
+    if (parsedEmbed) {
+      setEmbed(parsedEmbed);
+      setEmbedModal(false);
+      setEmbedUrl("");
+    } else {
+      toast.error("Neispravan Instagram URL");
+    }
   };
 
   const handleAddYtVideo = () => {
@@ -366,15 +386,12 @@ const EventEditorLayout = ({ location }) => {
             options={eventLocations}
             renderInput={(params) => <TextField {...params} label="Lokacija" />}
             value={eventLocation || ""}
-            onChangeCapture={(e, val) => {
-              setEventLocation(val !== null ? val : "");
+            onChangeCapture={(e) => {
+              setEventLocation(e.target.value);
               !eventId &&
-                window.localStorage.setItem(
-                  "event_location",
-                  val !== null ? val : ""
-                );
+                window.localStorage.setItem("event_location", e.target.value);
             }}
-            onChange={(e, val) => {
+            onChange={(_, val) => {
               setEventLocation(val !== null ? val : "");
               !eventId &&
                 window.localStorage.setItem(
@@ -401,15 +418,12 @@ const EventEditorLayout = ({ location }) => {
           options={eventTypes}
           renderInput={(params) => <TextField {...params} label="Program" />}
           value={eventType || ""}
-          onChangeCapture={(e, val) => {
-            setEventType(val !== null ? val : "");
+          onChangeCapture={(e) => {
+            setEventType(e.target.value);
             !eventId &&
-              window.localStorage.setItem(
-                "event_type",
-                val !== null ? val : ""
-              );
+              window.localStorage.setItem("event_type", e.target.value);
           }}
-          onChange={(e, val) => {
+          onChange={(_, val) => {
             setEventType(val !== null ? val : "");
             !eventId &&
               window.localStorage.setItem(
@@ -639,6 +653,23 @@ const EventEditorLayout = ({ location }) => {
           />
         </div>
       </MyDialog>
+      <MyDialog
+        opened={embedModal}
+        setOpened={setEmbedModal}
+        title="Instagram post"
+        actionTitle="Dodaj"
+        onClick={handleAddEmbed}
+      >
+        <div className="pt-2">
+          <TextField
+            value={embedUrl}
+            onChange={(e) => setEmbedUrl(e.target.value)}
+            label="Instagram URL"
+            placeholder="https://www.instagram.com/p/..."
+            fullWidth
+          />
+        </div>
+      </MyDialog>
       <div className="pr-0 lg:pr-72">
         <div className="px-5 py-10 md:p-12">
           <ReactQuill
@@ -672,7 +703,10 @@ const EventEditorLayout = ({ location }) => {
             }}
             addImageToolbar={addImageToolbar}
             addYoutubeVideo={addYoutubeVideo}
+            addEmbedPost={addEmbedPost}
             addDocumentToolbar={addDocumentToolbar}
+            embed={embed}
+            setEmbed={setEmbed}
             videoId={videoId}
             setVideoId={setVideoId}
             src={src}

@@ -58,11 +58,39 @@
 .ql-editor iframe {
   width: 100%;
   min-height: 300px;
-  height: 100%;
 }
 
 .obavijest-title p,
 .obavijest-title .ql-blank {
   font-size: 1.5rem;
   line-height: 2rem;
+}
+
+.instagram-embed {
+  width: 100%;
+}
+
+.instagram-embed .embed-container {
+  display: inline-block;
+  max-width: 540px;
+  width: 100%;
+}
+
+.instagram-embed[style*="text-align:left"] .embed-container {
+  margin: 0 auto 0 0 !important;
+}
+
+.instagram-embed[style*="text-align:center"] .embed-container {
+  margin: 0 auto !important;
+}
+
+.instagram-embed[style*="text-align:right"] .embed-container {
+  margin: 0 0 0 auto !important;
+}
+
+.instagram-embed iframe,
+.instagram-embed blockquote.instagram-media {
+  border: none !important;
+  margin: 0 !important;
+  display: block !important;
 }
