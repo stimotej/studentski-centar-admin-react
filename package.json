@@ -45,11 +45,13 @@
     "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18.2.0",
     "react-dropzone": "^11.5.3",
+    "react-email-editor": "^1.7.11",
     "react-full-screen": "^1.1.0",
     "react-hook-form": "^7.34.0",
     "react-icons": "^4.3.1",
     "react-quill": "^2.0.0",
     "react-toastify": "^8.1.0",
+    "resend": "^6.9.3",
     "sharp": "^0.29.3",
     "socket.io-client": "^4.4.1",
     "yup": "^0.32.11"
