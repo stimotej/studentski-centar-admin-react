@@ -212,6 +212,10 @@ export const useUpdatePost = () => {
       images,
       rentalOptions,
       features,
+      teatarTdPhone,
+      teatarTdEmail,
+      teatarTdWebsiteUrl,
+      teatarTdAddress,
     }) => {
       const response = await axios.post(
         `https://www.sczg.unizg.hr/wp-json/wp/v2/posts/${id}`,
@@ -234,6 +238,10 @@ export const useUpdatePost = () => {
             rental_options: rentalOptions,
             features,
             accordion_items: accordionItems,
+            teatar_td_phone: teatarTdPhone,
+            teatar_td_email: teatarTdEmail,
+            teatar_td_website_url: teatarTdWebsiteUrl,
+            teatar_td_address: teatarTdAddress,
           },
         }
       );

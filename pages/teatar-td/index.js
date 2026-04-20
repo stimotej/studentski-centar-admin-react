@@ -30,6 +30,7 @@ import {
   TEATAR_TD_ROLE,
   teatarTdArchiveCategoryId,
   teatarTdCategoryId,
+  teatarTdKontaktiPost,
   teatarTdONamaPost,
   teatarTdPagesCategoryId,
   teatarTdProdajaUlaznicaPost,
@@ -45,7 +46,7 @@ import MediaSelectDialog from "../../components/MediaSelectDialog";
 
 const QuillTextEditor = dynamic(
   () => import("../../components/Elements/QuillTextEditor"),
-  { ssr: false }
+  { ssr: false },
 );
 
 const PocetnaStranica = () => {
@@ -97,7 +98,7 @@ const PocetnaStranica = () => {
           setDialogTitle("");
           setPostData(data);
         },
-      }
+      },
     );
   };
 
@@ -108,6 +109,10 @@ const PocetnaStranica = () => {
       id: postData.id,
       title: postData.title,
       sadrzaj: postData.sadrzaj,
+      teatarTdPhone: postData.teatarTdPhone,
+      teatarTdEmail: postData.teatarTdEmail,
+      teatarTdWebsiteUrl: postData.teatarTdWebsiteUrl,
+      teatarTdAddress: postData.teatarTdAddress,
       excerpt: "<p></p>",
       content: postData.content,
       status: "publish",
@@ -135,7 +140,7 @@ const PocetnaStranica = () => {
         onSuccess: () => {
           setDeletePostDialog(false);
         },
-      }
+      },
     );
   };
 
@@ -183,7 +188,7 @@ const PocetnaStranica = () => {
                   <Paper className="md:!min-w-[260px] md:!max-w-[400px]">
                     <MenuList>
                       {posts.filter((post) =>
-                        post.categories.includes(category)
+                        post.categories.includes(category),
                       )?.length <= 0 ? (
                         <div className="px-4">Nema informacija za prikaz</div>
                       ) : (
@@ -233,7 +238,7 @@ const PocetnaStranica = () => {
                     </LoadingButton>
                   )}
                 </Fragment>
-              )
+              ),
             )
           )}
         </div>
@@ -302,7 +307,7 @@ const PocetnaStranica = () => {
                                 (item, i) =>
                                   i === index
                                     ? { ...item, title: e.target.value }
-                                    : item
+                                    : item,
                               ),
                             }));
                           }}
@@ -319,7 +324,7 @@ const PocetnaStranica = () => {
                                 (item, i) =>
                                   i === index
                                     ? { ...item, description: e.target.value }
-                                    : item
+                                    : item,
                               ),
                             }));
                           }}
@@ -333,7 +338,7 @@ const PocetnaStranica = () => {
                             setPostData((curr) => ({
                               ...curr,
                               accordionItems: curr.accordionItems.filter(
-                                (_, i) => i !== index
+                                (_, i) => i !== index,
                               ),
                             }));
                           }}
@@ -359,25 +364,26 @@ const PocetnaStranica = () => {
                   </LoadingButton>
                 </div>
               )}
-            {postData?.categories?.includes(teatarTdPagesCategoryId) && (
-              <div className="w-full">
-                <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
-                  Sadržaj
-                </h4>
-                <QuillTextEditor
-                  value={postData?.content}
-                  onChange={(content) =>
-                    setPostData((curr) => ({ ...curr, content }))
-                  }
-                  files={postData.documents}
-                  mediaCategoryId={teatarTdCategoryId}
-                  setFiles={(documents) =>
-                    setPostData((curr) => ({ ...curr, documents }))
-                  }
-                  placeholder="Unesi sadržaj..."
-                />
-              </div>
-            )}
+            {postData?.categories?.includes(teatarTdPagesCategoryId) &&
+              postData?.id !== teatarTdKontaktiPost && (
+                <div className="w-full">
+                  <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
+                    Sadržaj
+                  </h4>
+                  <QuillTextEditor
+                    value={postData?.content}
+                    onChange={(content) =>
+                      setPostData((curr) => ({ ...curr, content }))
+                    }
+                    files={postData.documents}
+                    mediaCategoryId={teatarTdCategoryId}
+                    setFiles={(documents) =>
+                      setPostData((curr) => ({ ...curr, documents }))
+                    }
+                    placeholder="Unesi sadržaj..."
+                  />
+                </div>
+              )}
             {postData?.categories?.includes(teatarTdArchiveCategoryId) && (
               <div className="w-full">
                 <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
@@ -410,6 +416,65 @@ const PocetnaStranica = () => {
                     />
                   </>
                 )}
+              </div>
+            )}
+            {postData?.id === teatarTdKontaktiPost && (
+              <div className="w-full space-y-4">
+                <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
+                  Kontakt
+                </h4>
+                <TextField
+                  variant="outlined"
+                  label="Telefon"
+                  className="w-full"
+                  value={postData.teatarTdPhone || ""}
+                  onChange={(e) => {
+                    setPostData((curr) => ({
+                      ...curr,
+                      teatarTdPhone: e.target.value,
+                    }));
+                  }}
+                  placeholder="Unesi broj telefona..."
+                />
+                <TextField
+                  variant="outlined"
+                  label="Email"
+                  className="w-full"
+                  value={postData.teatarTdEmail || ""}
+                  onChange={(e) => {
+                    setPostData((curr) => ({
+                      ...curr,
+                      teatarTdEmail: e.target.value,
+                    }));
+                  }}
+                  placeholder="Unesi email adresu..."
+                />
+                <TextField
+                  variant="outlined"
+                  label="Web stranica"
+                  className="w-full"
+                  value={postData.teatarTdWebsiteUrl || ""}
+                  onChange={(e) => {
+                    setPostData((curr) => ({
+                      ...curr,
+                      teatarTdWebsiteUrl: e.target.value,
+                    }));
+                  }}
+                  placeholder="Unesi URL web stranice..."
+                />
+                <TextField
+                  variant="outlined"
+                  label="Adresa"
+                  className="w-full"
+                  value={postData.teatarTdAddress || ""}
+                  onChange={(e) => {
+                    setPostData((curr) => ({
+                      ...curr,
+                      teatarTdAddress: e.target.value,
+                    }));
+                  }}
+                  placeholder="Unesi adresu..."
+                />
               </div>
             )}
 

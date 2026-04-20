@@ -35,6 +35,10 @@ const formatPost = (post) => ({
   images: post.meta.images,
   rentalOptions: post.meta.rental_options,
   features: post.meta.features,
+  teatarTdPhone: post.meta.teatar_td_phone,
+  teatarTdEmail: post.meta.teatar_td_email,
+  teatarTdWebsiteUrl: post.meta.teatar_td_website_url,
+  teatarTdAddress: post.meta.teatar_td_address,
 });
 
 export default formatPost;
