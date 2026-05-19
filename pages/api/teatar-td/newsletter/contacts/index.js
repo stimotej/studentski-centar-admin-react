@@ -1,8 +1,8 @@
 import {
-  getNewsletterConfig,
+  getNewsletterPage,
+  getWordPressAuthorization,
   normalizeContact,
-  resendClient,
-  unwrapResendResponse,
+  wordpressRequest,
 } from "../../../../../lib/newsletter";
 
 const EMAIL_SEPARATOR_REGEX = /[\s,;]+/;
@@ -10,23 +10,22 @@ const EMAIL_SEPARATOR_REGEX = /[\s,;]+/;
 const isValidEmail = (value = "") =>
   /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value).trim());
 
-const sleep = (duration) =>
-  new Promise((resolve) => {
-    setTimeout(resolve, duration);
-  });
-
 export default async function handler(req, res) {
-  const client = resendClient();
-  const { segmentId } = getNewsletterConfig();
+  const page = getNewsletterPage();
 
   try {
+    const authorization = getWordPressAuthorization(req);
+
     if (req.method === "GET") {
-      const response = await client.contacts.list({
-        segmentId,
-      });
+      const response = await wordpressRequest(
+        `/sc/v1/newsletter-subscribers?page=${encodeURIComponent(page)}`,
+        {
+          authorization,
+        },
+      );
 
       return res.status(200).json({
-        data: (unwrapResendResponse(response)?.data || []).map(normalizeContact),
+        data: (response?.data || []).map(normalizeContact),
       });
     }
 
@@ -60,38 +59,30 @@ export default async function handler(req, res) {
       const createdContacts = [];
       const failedEmails = [];
 
-      for (const [index, email] of emails.entries()) {
+      for (const email of emails) {
         try {
-          const response = await client.contacts.create({
-            email,
-            unsubscribed: false,
-            segments: [{ id: segmentId }],
+          const response = await wordpressRequest("/sc/v1/newsletter-subscribers", {
+            method: "POST",
+            authorization,
+            body: {
+              email,
+              page,
+            },
           });
-          const contact = unwrapResendResponse(response);
 
-          createdContacts.push({
-            id: contact.id,
-            email,
-            firstName: "",
-            lastName: "",
-            createdAt: new Date().toISOString(),
-            unsubscribed: false,
-          });
+          createdContacts.push(normalizeContact(response?.data || response));
         } catch (error) {
           failedEmails.push({
             email,
             message: error.message,
           });
         }
-
-        if (index < emails.length - 1) {
-          await sleep(550);
-        }
       }
 
       if (createdContacts.length <= 0) {
         return res.status(400).json({
-          message: failedEmails[0]?.message || "Dodavanje pretplatnika nije uspjelo.",
+          message:
+            failedEmails[0]?.message || "Dodavanje pretplatnika nije uspjelo.",
           data: {
             failedEmails,
           },

@@ -1,32 +1,38 @@
 import {
+  getWordPressAuthorization,
   normalizeContact,
-  resendClient,
-  unwrapResendResponse,
+  wordpressRequest,
 } from "../../../../../lib/newsletter";
 
 export default async function handler(req, res) {
-  const client = resendClient();
   const { id } = req.query;
 
   try {
+    const authorization = getWordPressAuthorization(req);
+
     if (req.method === "PATCH") {
-      await client.contacts.update({
-        id,
-        firstName: req.body?.firstName || null,
-        lastName: req.body?.lastName || null,
-        unsubscribed: !!req.body?.unsubscribed,
+      const response = await wordpressRequest(`/sc/v1/newsletter-subscribers/${id}`, {
+        method: "PATCH",
+        authorization,
+        body: {
+          firstName: req.body?.firstName || "",
+          lastName: req.body?.lastName || "",
+          unsubscribed: !!req.body?.unsubscribed,
+        },
       });
 
-      const response = await client.contacts.get(id);
-
       return res.status(200).json({
-        data: normalizeContact(unwrapResendResponse(response)),
+        data: normalizeContact(response?.data || response),
       });
     }
 
     if (req.method === "DELETE") {
-      const response = await client.contacts.remove(id);
-      return res.status(200).json({ data: unwrapResendResponse(response) });
+      const response = await wordpressRequest(`/sc/v1/newsletter-subscribers/${id}`, {
+        method: "DELETE",
+        authorization,
+      });
+
+      return res.status(200).json({ data: response?.data || response });
     }
 
     return res.status(405).json({ message: "Method not allowed" });

@@ -1,6 +1,4 @@
 import { useMemo, useState } from "react";
-import Link from "next/link";
-import dayjs from "dayjs";
 import {
   Alert,
   Checkbox,
@@ -25,13 +23,11 @@ import {
   TextField,
 } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
-import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import {
   MdDeleteOutline,
   MdContentCopy,
   MdEdit,
   MdMoreVert,
-  MdOutlineScheduleSend,
   MdSend,
 } from "react-icons/md";
 import Layout from "../../components/Layout";
@@ -64,7 +60,7 @@ const formatDate = (value) => {
 const canEditBroadcast = (status) => !["sent"].includes(status);
 const canDuplicateBroadcast = () => true;
 const canSendBroadcast = (status) => ["draft"].includes(status);
-const canDeleteBroadcast = (status) => ["draft", "scheduled"].includes(status);
+const canDeleteBroadcast = (status) => ["draft", "failed"].includes(status);
 const hasBroadcastActions = (status) =>
   canDuplicateBroadcast(status) ||
   canEditBroadcast(status) ||
@@ -77,12 +73,7 @@ const statusBadgeStyles = {
     container: "bg-gray-100 text-gray-700",
     label: "Skica",
   },
-  scheduled: {
-    dot: "bg-gray-400",
-    container: "bg-gray-100 text-gray-700",
-    label: "Zakazano",
-  },
-  queued: {
+  sending: {
     dot: "bg-blue-500",
     container: "bg-blue-50 text-blue-700",
     label: "Slanje",
@@ -146,14 +137,13 @@ const NewsletterPage = () => {
   const [selectedTab, setSelectedTab] = useState(0);
   const [actionsAnchor, setActionsAnchor] = useState(null);
   const [selectedBroadcast, setSelectedBroadcast] = useState(null);
+  const [broadcastPendingSend, setBroadcastPendingSend] = useState(null);
   const [broadcastPendingDelete, setBroadcastPendingDelete] = useState(null);
   const [deleteBroadcastDialogOpen, setDeleteBroadcastDialogOpen] =
     useState(false);
   const [contactActionsAnchor, setContactActionsAnchor] = useState(null);
   const [selectedContact, setSelectedContact] = useState(null);
   const [deleteContactId, setDeleteContactId] = useState(null);
-  const [scheduleDialog, setScheduleDialog] = useState(null);
-  const [scheduledAt, setScheduledAt] = useState(dayjs().add(1, "hour"));
   const [editingContact, setEditingContact] = useState(null);
   const [contactForm, setContactForm] = useState({
     firstName: "",
@@ -203,6 +193,10 @@ const NewsletterPage = () => {
       }),
     [broadcasts],
   );
+  const activeContactsCount = useMemo(
+    () => (contacts || []).filter((contact) => !contact.unsubscribed).length,
+    [contacts],
+  );
 
   const openContactDialog = (contact) => {
     setEditingContact(contact);
@@ -213,24 +207,17 @@ const NewsletterPage = () => {
     });
   };
 
-  const handleSchedule = () => {
-    if (!scheduleDialog || !scheduledAt) return;
+  const handleSendNow = () => {
+    if (!broadcastPendingSend?.id) return;
 
     sendBroadcast(
-      {
-        id: scheduleDialog,
-        scheduledAt: scheduledAt.toISOString(),
-      },
+      { id: broadcastPendingSend.id },
       {
         onSuccess: () => {
-          setScheduleDialog(null);
+          setBroadcastPendingSend(null);
         },
       },
     );
-  };
-
-  const handleSendNow = (id) => {
-    sendBroadcast({ id });
   };
 
   const handleDeleteBroadcast = () => {
@@ -357,8 +344,9 @@ const NewsletterPage = () => {
                       <TableCell>Naziv</TableCell>
                       <TableCell>Status</TableCell>
                       <TableCell>Kreirano</TableCell>
-                      <TableCell>Zakazano</TableCell>
                       <TableCell>Poslano</TableCell>
+                      <TableCell>Primatelja</TableCell>
+                      <TableCell>Greške</TableCell>
                       <TableCell align="right"></TableCell>
                     </TableRow>
                   </TableHead>
@@ -382,10 +370,9 @@ const NewsletterPage = () => {
                           <BroadcastStatusBadge status={broadcast.status} />
                         </TableCell>
                         <TableCell>{formatDate(broadcast.createdAt)}</TableCell>
-                        <TableCell>
-                          {formatDate(broadcast.scheduledAt)}
-                        </TableCell>
                         <TableCell>{formatDate(broadcast.sentAt)}</TableCell>
+                        <TableCell>{broadcast.recipientCount || 0}</TableCell>
+                        <TableCell>{broadcast.failedCount || 0}</TableCell>
                         <TableCell align="right">
                           {hasBroadcastActions(broadcast.status) ? (
                             <IconButton
@@ -515,27 +502,13 @@ const NewsletterPage = () => {
           <MenuItem
             onClick={() => {
               handleCloseBroadcastActions();
-              handleSendNow(selectedBroadcast.id);
+              setBroadcastPendingSend(selectedBroadcast);
             }}
           >
             <ListItemIcon>
               <MdSend />
             </ListItemIcon>
             <ListItemText>Pošalji</ListItemText>
-          </MenuItem>
-        )}
-        {selectedBroadcast && canSendBroadcast(selectedBroadcast.status) && (
-          <MenuItem
-            onClick={() => {
-              handleCloseBroadcastActions();
-              setScheduleDialog(selectedBroadcast.id);
-              setScheduledAt(dayjs().add(1, "hour"));
-            }}
-          >
-            <ListItemIcon>
-              <MdOutlineScheduleSend />
-            </ListItemIcon>
-            <ListItemText>Zakaži</ListItemText>
           </MenuItem>
         )}
         {selectedBroadcast && canDeleteBroadcast(selectedBroadcast.status) && (
@@ -603,6 +576,71 @@ const NewsletterPage = () => {
       </Menu>
 
       <Dialog
+        open={!!broadcastPendingSend}
+        onClose={() => setBroadcastPendingSend(null)}
+        TransitionProps={{
+          onExited: () => setBroadcastPendingSend(null),
+        }}
+      >
+        <DialogTitle>Potvrda slanja newslettera</DialogTitle>
+        <DialogContent>
+          <div className="flex flex-col gap-3">
+            <DialogContentText>
+              Ova radnja odmah šalje newsletter i nije ju moguće poništiti.
+            </DialogContentText>
+            <DialogContentText>
+              <strong>Naziv:</strong>{" "}
+              {broadcastPendingSend?.name || "Bez naziva"}
+            </DialogContentText>
+            <DialogContentText>
+              <strong>Predmet:</strong>{" "}
+              {broadcastPendingSend?.subject || "-"}
+            </DialogContentText>
+            <DialogContentText>
+              <strong>Način slanja:</strong> slanje na aktivne newsletter
+              pretplatnike za Teatar&amp;TD.
+            </DialogContentText>
+            <DialogContentText>
+              <strong>Broj aktivnih primatelja:</strong>{" "}
+              {activeContactsCount}
+            </DialogContentText>
+            <DialogContentText>
+              Pretplatnici označeni kao odjavljeni neće primiti email.
+            </DialogContentText>
+          </div>
+        </DialogContent>
+        <DialogActions>
+          <LoadingButton onClick={() => setBroadcastPendingSend(null)}>
+            Odustani
+          </LoadingButton>
+          <LoadingButton
+            onClick={handleSendNow}
+            loading={isSendingBroadcast}
+            variant="contained"
+            sx={{
+              "&&": {
+                backgroundColor: "rgb(207, 36, 42)",
+                color: "#fff",
+              },
+              "&&:hover": {
+                backgroundColor: "rgb(180, 28, 34)",
+                color: "#fff",
+              },
+              "&&.Mui-disabled": {
+                backgroundColor: "rgb(207, 36, 42)",
+                color: "rgba(255, 255, 255, 0.9)",
+              },
+              "& .MuiLoadingButton-loadingIndicator": {
+                color: "#fff",
+              },
+            }}
+          >
+            Pošalji email
+          </LoadingButton>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
         open={deleteBroadcastDialogOpen}
         onClose={() => setDeleteBroadcastDialogOpen(false)}
         TransitionProps={{
@@ -612,8 +650,7 @@ const NewsletterPage = () => {
         <DialogTitle>Brisanje newsletter emaila</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Ovim se briše odabrani newsletter email. Ako je email zakazan,
-            zakazano slanje će biti otkazano.
+            Ovim se briše odabrani newsletter email.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -626,33 +663,6 @@ const NewsletterPage = () => {
             loading={isDeletingBroadcast}
           >
             Obriši
-          </LoadingButton>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog open={!!scheduleDialog} onClose={() => setScheduleDialog(null)}>
-        <DialogTitle>Zakaži slanje</DialogTitle>
-        <DialogContent className="!pt-4 !min-w-[320px]">
-          <DateTimePicker
-            inputFormat="DD/MM/YYYY HH:mm"
-            label="Datum i vrijeme slanja"
-            value={scheduledAt}
-            onChange={(value) => setScheduledAt(value)}
-            className="w-full"
-            minDateTime={dayjs().add(1, "minute")}
-            renderInput={(params) => <TextField {...params} fullWidth />}
-          />
-        </DialogContent>
-        <DialogActions>
-          <LoadingButton onClick={() => setScheduleDialog(null)}>
-            Odustani
-          </LoadingButton>
-          <LoadingButton
-            onClick={handleSchedule}
-            loading={isSendingBroadcast}
-            disabled={!scheduledAt}
-          >
-            Zakaži
           </LoadingButton>
         </DialogActions>
       </Dialog>

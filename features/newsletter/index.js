@@ -7,16 +7,34 @@ const newsletterApi = axios.create({
   baseURL: "",
 });
 
+newsletterApi.interceptors.request.use((config) => {
+  if (typeof window !== "undefined") {
+    const token = window.localStorage.getItem("access_token");
+
+    if (token) {
+      config.headers = {
+        ...config.headers,
+        Authorization: `Bearer ${token}`,
+      };
+    }
+  }
+
+  return config;
+});
+
 const newsletterApiPath = (path = "") =>
   `/zaposlenici/api/teatar-td/newsletter${path}`;
 
-const mergeBroadcastData = (current, incoming) => ({
+const mergeCampaignData = (current, incoming) => ({
   ...current,
   ...incoming,
   createdAt: incoming?.createdAt ?? current?.createdAt ?? null,
-  scheduledAt: incoming?.scheduledAt ?? current?.scheduledAt ?? null,
   sentAt: incoming?.sentAt ?? current?.sentAt ?? null,
-  status: incoming?.status ?? current?.status ?? "",
+  status: incoming?.status ?? current?.status ?? "draft",
+  recipientCount: incoming?.recipientCount ?? current?.recipientCount ?? 0,
+  sentCount: incoming?.sentCount ?? current?.sentCount ?? 0,
+  failedCount: incoming?.failedCount ?? current?.failedCount ?? 0,
+  errorSummary: incoming?.errorSummary ?? current?.errorSummary ?? "",
 });
 
 export const useNewsletterBroadcasts = (options) =>
@@ -32,7 +50,7 @@ export const useNewsletterBroadcasts = (options) =>
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
       ...options,
-    }
+    },
   );
 
 export const useNewsletterBroadcast = (id, options) =>
@@ -40,7 +58,7 @@ export const useNewsletterBroadcast = (id, options) =>
     newsletterKeys.broadcast(id),
     async () => {
       const response = await newsletterApi.get(
-        newsletterApiPath(`/broadcasts/${id}`)
+        newsletterApiPath(`/broadcasts/${id}`),
       );
       return response.data.data;
     },
@@ -51,7 +69,7 @@ export const useNewsletterBroadcast = (id, options) =>
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
       ...options,
-    }
+    },
   );
 
 export const useCreateNewsletterBroadcast = () => {
@@ -61,7 +79,7 @@ export const useCreateNewsletterBroadcast = () => {
     async (payload) => {
       const response = await newsletterApi.post(
         newsletterApiPath("/broadcasts"),
-        payload
+        payload,
       );
       return response.data.data;
     },
@@ -76,10 +94,10 @@ export const useCreateNewsletterBroadcast = () => {
       },
       onError: (error) => {
         toast.error(
-          error.response?.data?.message || "Greška kod spremanja newslettera."
+          error.response?.data?.message || "Greška kod spremanja newslettera.",
         );
       },
-    }
+    },
   );
 };
 
@@ -90,7 +108,7 @@ export const useUpdateNewsletterBroadcast = () => {
     async ({ id, ...payload }) => {
       const response = await newsletterApi.patch(
         newsletterApiPath(`/broadcasts/${id}`),
-        payload
+        payload,
       );
       return response.data.data;
     },
@@ -98,22 +116,22 @@ export const useUpdateNewsletterBroadcast = () => {
       onSuccess: (data) => {
         toast.success("Newsletter email je ažuriran.");
         queryClient.setQueryData(newsletterKeys.broadcast(data.id), (current) =>
-          current ? mergeBroadcastData(current, data) : data
+          current ? mergeCampaignData(current, data) : data,
         );
         queryClient.setQueryData(newsletterKeys.broadcasts, (current = []) =>
           current.map((broadcast) =>
             broadcast.id === data.id
-              ? mergeBroadcastData(broadcast, data)
-              : broadcast
-          )
+              ? mergeCampaignData(broadcast, data)
+              : broadcast,
+          ),
         );
       },
       onError: (error) => {
         toast.error(
-          error.response?.data?.message || "Greška kod ažuriranja newslettera."
+          error.response?.data?.message || "Greška kod ažuriranja newslettera.",
         );
       },
-    }
+    },
   );
 };
 
@@ -128,15 +146,15 @@ export const useDeleteNewsletterBroadcast = () => {
       onSuccess: (_, id) => {
         toast.success("Newsletter email je obrisan.");
         queryClient.setQueryData(newsletterKeys.broadcasts, (current = []) =>
-          current.filter((broadcast) => broadcast.id !== id)
+          current.filter((broadcast) => broadcast.id !== id),
         );
       },
       onError: (error) => {
         toast.error(
-          error.response?.data?.message || "Greška kod brisanja newslettera."
+          error.response?.data?.message || "Greška kod brisanja newslettera.",
         );
       },
-    }
+    },
   );
 };
 
@@ -146,7 +164,7 @@ export const useDuplicateNewsletterBroadcast = () => {
   return useMutation(
     async (id) => {
       const response = await newsletterApi.post(
-        newsletterApiPath(`/broadcasts/${id}/duplicate`)
+        newsletterApiPath(`/broadcasts/${id}/duplicate`),
       );
       return response.data.data;
     },
@@ -161,10 +179,10 @@ export const useDuplicateNewsletterBroadcast = () => {
       },
       onError: (error) => {
         toast.error(
-          error.response?.data?.message || "Greška kod dupliciranja newslettera."
+          error.response?.data?.message || "Greška kod dupliciranja newslettera.",
         );
       },
-    }
+    },
   );
 };
 
@@ -172,36 +190,39 @@ export const useSendNewsletterBroadcast = () => {
   const queryClient = useQueryClient();
 
   return useMutation(
-    async ({ id, scheduledAt }) => {
-      await newsletterApi.post(newsletterApiPath(`/broadcasts/${id}/send`), {
-        scheduledAt,
-      });
+    async ({ id }) => {
+      const response = await newsletterApi.post(
+        newsletterApiPath(`/broadcasts/${id}/send`),
+      );
+      return response.data.data;
     },
     {
-      onSuccess: (_, { id, scheduledAt }) => {
-        toast.success(
-          scheduledAt
-            ? "Newsletter email je uspješno zakazan."
-            : "Newsletter email je uspješno poslan."
+      onSuccess: (data) => {
+        if (data.failedCount > 0) {
+          toast.warning(
+            `Newsletter poslan uz greške. Poslano: ${data.sentCount}, neuspješno: ${data.failedCount}.`,
+          );
+        } else {
+          toast.success("Newsletter email je uspješno poslan.");
+        }
+
+        queryClient.setQueryData(newsletterKeys.broadcast(data.id), (current) =>
+          current ? mergeCampaignData(current, data) : data,
         );
         queryClient.setQueryData(newsletterKeys.broadcasts, (current = []) =>
           current.map((broadcast) =>
-            broadcast.id === id
-              ? {
-                  ...broadcast,
-                  status: scheduledAt ? "scheduled" : "queued",
-                  scheduledAt: scheduledAt || null,
-                }
-              : broadcast
-          )
+            broadcast.id === data.id
+              ? mergeCampaignData(broadcast, data)
+              : broadcast,
+          ),
         );
       },
       onError: (error) => {
         toast.error(
-          error.response?.data?.message || "Greška kod slanja newslettera."
+          error.response?.data?.message || "Greška kod slanja newslettera.",
         );
       },
-    }
+    },
   );
 };
 
@@ -218,7 +239,7 @@ export const useNewsletterContacts = (options) =>
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
       ...options,
-    }
+    },
   );
 
 export const useUpdateNewsletterContact = () => {
@@ -228,7 +249,7 @@ export const useUpdateNewsletterContact = () => {
     async ({ id, ...payload }) => {
       const response = await newsletterApi.patch(
         newsletterApiPath(`/contacts/${id}`),
-        payload
+        payload,
       );
       return response.data.data;
     },
@@ -236,15 +257,15 @@ export const useUpdateNewsletterContact = () => {
       onSuccess: (data) => {
         toast.success("Pretplatnik je ažuriran.");
         queryClient.setQueryData(newsletterKeys.contacts, (current = []) =>
-          current.map((contact) => (contact.id === data.id ? data : contact))
+          current.map((contact) => (contact.id === data.id ? data : contact)),
         );
       },
       onError: (error) => {
         toast.error(
-          error.response?.data?.message || "Greška kod ažuriranja pretplatnika."
+          error.response?.data?.message || "Greška kod ažuriranja pretplatnika.",
         );
       },
-    }
+    },
   );
 };
 
@@ -253,10 +274,9 @@ export const useCreateNewsletterContacts = () => {
 
   return useMutation(
     async ({ emails }) => {
-      const response = await newsletterApi.post(
-        newsletterApiPath("/contacts"),
-        { emails }
-      );
+      const response = await newsletterApi.post(newsletterApiPath("/contacts"), {
+        emails,
+      });
       return response.data;
     },
     {
@@ -266,13 +286,13 @@ export const useCreateNewsletterContacts = () => {
 
         if (meta.failedCount > 0) {
           toast.warning(
-            `Dodano: ${meta.createdCount}. Neuspješno: ${meta.failedCount}.`
+            `Dodano: ${meta.createdCount}. Neuspješno: ${meta.failedCount}.`,
           );
         } else {
           toast.success(
             contacts.length === 1
               ? "Pretplatnik je dodan."
-              : `Dodano pretplatnika: ${contacts.length}.`
+              : `Dodano pretplatnika: ${contacts.length}.`,
           );
         }
 
@@ -280,7 +300,7 @@ export const useCreateNewsletterContacts = () => {
           ...contacts,
           ...current.filter(
             (currentContact) =>
-              !contacts.some((contact) => contact.id === currentContact.id)
+              !contacts.some((contact) => contact.id === currentContact.id),
           ),
         ]);
       },
@@ -297,16 +317,16 @@ export const useCreateNewsletterContacts = () => {
           toast.error(
             failedEmails
               .map((item) => `${item.email}: ${item.message}`)
-              .join(" | ")
+              .join(" | "),
           );
           return;
         }
 
         toast.error(
-          error.response?.data?.message || "Greška kod dodavanja pretplatnika."
+          error.response?.data?.message || "Greška kod dodavanja pretplatnika.",
         );
       },
-    }
+    },
   );
 };
 
@@ -321,14 +341,14 @@ export const useDeleteNewsletterContact = () => {
       onSuccess: (_, id) => {
         toast.success("Pretplatnik je obrisan.");
         queryClient.setQueryData(newsletterKeys.contacts, (current = []) =>
-          current.filter((contact) => contact.id !== id)
+          current.filter((contact) => contact.id !== id),
         );
       },
       onError: (error) => {
         toast.error(
-          error.response?.data?.message || "Greška kod brisanja pretplatnika."
+          error.response?.data?.message || "Greška kod brisanja pretplatnika.",
         );
       },
-    }
+    },
   );
 };

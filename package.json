@@ -5,7 +5,8 @@
     "dev": "npx next dev",
     "build": "npx next build",
     "start": "npx next start",
-    "lint": "npx next lint"
+    "lint": "npx next lint",
+    "gmail:token": "node scripts/generate-gmail-refresh-token.mjs"
   },
   "dependencies": {
     "@emotion/react": "^11.10.0",
@@ -31,6 +32,7 @@
     "cookie": "^0.4.1",
     "date-fns": "^2.29.1",
     "dayjs": "^1.11.0",
+    "googleapis": "^171.4.0",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.21",
     "next": "^13.2.1",
@@ -51,7 +53,6 @@
     "react-icons": "^4.3.1",
     "react-quill": "^2.0.0",
     "react-toastify": "^8.1.0",
-    "resend": "^6.9.3",
     "sharp": "^0.29.3",
     "socket.io-client": "^4.4.1",
     "yup": "^0.32.11"

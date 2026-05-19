@@ -1,54 +1,41 @@
 import {
-  buildBroadcastFromPayload,
-  createBroadcastPayload,
-  getNewsletterConfig,
-  normalizeBroadcast,
-  normalizeBroadcastSummary,
-  resendClient,
-  unwrapResendResponse,
+  buildNewsletterHtml,
+  getWordPressAuthorization,
+  normalizeCampaign,
+  wordpressRequest,
 } from "../../../../../lib/newsletter";
 
-const getAllBroadcasts = async (client) => {
-  const listResponse = await client.broadcasts.list();
-  const broadcasts = unwrapResendResponse(listResponse)?.data || [];
-  return broadcasts
-    .map(normalizeBroadcastSummary)
-    .sort(
-      (first, second) =>
-        new Date(second.createdAt || 0) - new Date(first.createdAt || 0),
-    );
-};
-
 export default async function handler(req, res) {
-  const client = resendClient();
-  const { segmentId } = getNewsletterConfig();
-
   try {
+    const authorization = getWordPressAuthorization(req);
+
     if (req.method === "GET") {
-      const broadcasts = await getAllBroadcasts(client);
+      const response = await wordpressRequest("/sc/v1/newsletter-campaigns", {
+        authorization,
+      });
+
       return res.status(200).json({
-        data: broadcasts.filter(
-          (broadcast) => broadcast.segmentId === segmentId,
-        ),
+        data: (response?.data || []).map(normalizeCampaign),
       });
     }
 
     if (req.method === "POST") {
-      const payload = createBroadcastPayload(req.body);
-      const createResponse = await client.broadcasts.create(payload);
-      const broadcastId = unwrapResendResponse(createResponse)?.id;
+      const response = await wordpressRequest("/sc/v1/newsletter-campaigns", {
+        method: "POST",
+        authorization,
+        body: {
+          name: req.body?.name || "",
+          subject: req.body?.subject || "",
+          html: buildNewsletterHtml({
+            html: req.body?.html || "",
+            design: req.body?.design || null,
+          }),
+          design: req.body?.design || null,
+        },
+      });
 
       return res.status(200).json({
-        data: buildBroadcastFromPayload({
-          id: broadcastId,
-          name: req.body?.name,
-          subject: req.body?.subject,
-          html: req.body?.html,
-          text: req.body?.text,
-          design: req.body?.design,
-          status: "draft",
-          createdAt: new Date().toISOString(),
-        }),
+        data: normalizeCampaign(response?.data || response),
       });
     }
 

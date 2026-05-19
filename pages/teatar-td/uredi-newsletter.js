@@ -19,26 +19,26 @@ const EmailEditor = dynamic(() => import("react-email-editor"), {
 });
 
 const canEditBroadcast = (status) => !["sent"].includes(status);
-const resendMergeTags = {
+const newsletterMergeTags = {
   first_name: {
     name: "Ime",
-    value: "{{{FIRST_NAME|}}}",
+    value: "{{first_name}}",
     sample: "Ana",
   },
   last_name: {
     name: "Prezime",
-    value: "{{{LAST_NAME|}}}",
+    value: "{{last_name}}",
     sample: "Anić",
   },
   email: {
     name: "Email",
-    value: "{{{EMAIL}}}",
+    value: "{{email}}",
     sample: "ana@example.com",
   },
   unsubscribe_url: {
     name: "Link za odjavu",
-    value: "{{{RESEND_UNSUBSCRIBE_URL}}}",
-    sample: "https://resend.dev/unsubscribe/example",
+    value: "{{unsubscribe_url}}",
+    sample: "https://www.sczg.unizg.hr/wp-json/sc/v1/newsletter-unsubscribe?token=...",
   },
 };
 
@@ -278,7 +278,7 @@ const NewsletterEditorPage = () => {
                 features: {
                   preview: true,
                 },
-                mergeTags: resendMergeTags,
+                mergeTags: newsletterMergeTags,
               }}
             />
           )}

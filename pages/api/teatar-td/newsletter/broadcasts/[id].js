@@ -1,41 +1,53 @@
 import {
-  buildBroadcastFromPayload,
-  createBroadcastPayload,
-  normalizeBroadcast,
-  resendClient,
-  unwrapResendResponse,
+  buildNewsletterHtml,
+  getWordPressAuthorization,
+  normalizeCampaign,
+  wordpressRequest,
 } from "../../../../../lib/newsletter";
 
 export default async function handler(req, res) {
-  const client = resendClient();
   const { id } = req.query;
 
   try {
+    const authorization = getWordPressAuthorization(req);
+
     if (req.method === "GET") {
-      const response = await client.broadcasts.get(id);
+      const response = await wordpressRequest(`/sc/v1/newsletter-campaigns/${id}`, {
+        authorization,
+      });
+
       return res.status(200).json({
-        data: normalizeBroadcast(unwrapResendResponse(response)),
+        data: normalizeCampaign(response?.data || response),
       });
     }
 
     if (req.method === "PATCH") {
-      await client.broadcasts.update(id, createBroadcastPayload(req.body));
+      const response = await wordpressRequest(`/sc/v1/newsletter-campaigns/${id}`, {
+        method: "PATCH",
+        authorization,
+        body: {
+          name: req.body?.name || "",
+          subject: req.body?.subject || "",
+          html: buildNewsletterHtml({
+            html: req.body?.html || "",
+            design: req.body?.design || null,
+          }),
+          design: req.body?.design || null,
+        },
+      });
 
       return res.status(200).json({
-        data: buildBroadcastFromPayload({
-          id,
-          name: req.body?.name,
-          subject: req.body?.subject,
-          html: req.body?.html,
-          text: req.body?.text,
-          design: req.body?.design,
-        }),
+        data: normalizeCampaign(response?.data || response),
       });
     }
 
     if (req.method === "DELETE") {
-      const response = await client.broadcasts.remove(id);
-      return res.status(200).json({ data: unwrapResendResponse(response) });
+      const response = await wordpressRequest(`/sc/v1/newsletter-campaigns/${id}`, {
+        method: "DELETE",
+        authorization,
+      });
+
+      return res.status(200).json({ data: response?.data || response });
     }
 
     return res.status(405).json({ message: "Method not allowed" });
