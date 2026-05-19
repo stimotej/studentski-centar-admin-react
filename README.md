@@ -1,34 +1,73 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# studentski-centar-admin-react
 
-## Getting Started
-
-First, run the development server:
+## Local commands
 
 ```bash
 npm run dev
-# or
-yarn dev
+npm run lint
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Newsletter v1 environment
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+Set these as server-only environment variables for the Next app:
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+```bash
+WORDPRESS_API_BASE_URL=https://www.sczg.unizg.hr/wp-json
+WORDPRESS_SITE_URL=https://www.sczg.unizg.hr
+NEWSLETTER_PAGE=teatar-td
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+GMAIL_CLIENT_ID=
+GMAIL_CLIENT_SECRET=
+GMAIL_REFRESH_TOKEN=
+GMAIL_SENDER_EMAIL=
+NEWSLETTER_UNSUBSCRIBE_SECRET=
 
-## Learn More
+# Existing contact form route still uses these:
+MAIL_USER=
+MAIL_PASS=
+MAIL_ADMIN=
+```
 
-To learn more about Next.js, take a look at the following resources:
+`NEWSLETTER_UNSUBSCRIBE_SECRET` must match the secret configured in [docs/newsletter-wordpress-snippet.php](/Users/timotej/Documents/GitHub/studentski-centar-admin-react/docs/newsletter-wordpress-snippet.php).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Gmail refresh token
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+Generate a durable Gmail refresh token with:
 
-## Deploy on Vercel
+```bash
+npm run gmail:token
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Before running it:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+1. In Google Cloud Console, open the OAuth client and add this redirect URI:
+   `http://127.0.0.1:3007/oauth2callback`
+2. Set these env vars in the same terminal:
+
+```bash
+export GMAIL_CLIENT_ID="..."
+export GMAIL_CLIENT_SECRET="..."
+export GMAIL_SENDER_EMAIL="newsletter@example.com"
+```
+
+3. Run `npm run gmail:token`
+4. Open the printed authorize URL in your browser
+5. Sign in with the Gmail account that will send newsletters
+6. Copy the printed `GMAIL_REFRESH_TOKEN`
+
+Optional overrides:
+
+```bash
+GMAIL_OAUTH_PORT=3007
+GMAIL_OAUTH_HOST=127.0.0.1
+GMAIL_REDIRECT_URI=http://127.0.0.1:3007/oauth2callback
+```
+
+## WordPress snippet
+
+The WordPress Code Snippets implementation for newsletter subscribers, campaigns, and unsubscribe handling is in:
+
+`docs/newsletter-wordpress-snippet.php`
+
+Replace `CHANGE_ME` in that file with the same value used for `NEWSLETTER_UNSUBSCRIBE_SECRET`.

@@ -18,7 +18,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import hr from "dayjs/locale/hr";
 
 dayjs.extend(minMax);
-// dayjs.locale("hr");
+dayjs.locale("hr");
 
 const queryClient = new QueryClient();
 
@@ -39,7 +39,7 @@ function MyApp({ Component, pageProps }) {
         <DndProvider backend={HTML5Backend}>
           <LocalizationProvider
             dateAdapter={AdapterDayjs}
-            adapterLocale={hr}
+            adapterLocale="hr"
             dateFormats={{
               normalDate: "DD/MM/YYYY",
               keyboardDate: "DD/MM/YYYY",

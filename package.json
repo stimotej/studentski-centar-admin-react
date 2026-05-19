@@ -5,7 +5,8 @@
     "dev": "npx next dev",
     "build": "npx next build",
     "start": "npx next start",
-    "lint": "npx next lint"
+    "lint": "npx next lint",
+    "gmail:token": "node scripts/generate-gmail-refresh-token.mjs"
   },
   "dependencies": {
     "@emotion/react": "^11.10.0",
@@ -31,6 +32,7 @@
     "cookie": "^0.4.1",
     "date-fns": "^2.29.1",
     "dayjs": "^1.11.0",
+    "googleapis": "^171.4.0",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.21",
     "next": "^13.2.1",
@@ -45,6 +47,7 @@
     "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18.2.0",
     "react-dropzone": "^11.5.3",
+    "react-email-editor": "^1.7.11",
     "react-full-screen": "^1.1.0",
     "react-hook-form": "^7.34.0",
     "react-icons": "^4.3.1",
