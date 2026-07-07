@@ -20,6 +20,7 @@ const formatObavijest = (obavijest) => ({
   show_always: obavijest?.meta?.show_always,
   event_date: obavijest?.meta?.event_date,
   featured: obavijest?.meta?.featured,
+  order: obavijest?.meta?.order,
   documents: obavijest?.meta?.documents
     ? obavijest?.meta?.documents?.map((document) => ({
         id: document.id,

@@ -10,6 +10,7 @@ import {
   eventiCategoryId,
   obavijestiCategoryId,
   pocetnaStranicaCategoryId,
+  sliderCategoryId,
   teatarTdCategoryId,
   turizamCategoryId,
 } from "../../lib/constants";
@@ -80,6 +81,34 @@ export const useObavijest = (id, options) => {
     },
     {
       select: (data) => formatObavijest(data),
+      ...options,
+    }
+  );
+};
+
+export const useSliderObavijesti = (options) => {
+  return useQuery(
+    obavijestiKeys.sliderObavijesti,
+    async () => {
+      const response = await axios.get(
+        "https://www.sczg.unizg.hr/wp-json/wp/v2/obavijesti",
+        {
+          params: {
+            categories: sliderCategoryId,
+            per_page: 100,
+            status: "publish",
+            filter_by_date: true,
+            timestamp: new Date().getTime(),
+          },
+        }
+      );
+      return response.data;
+    },
+    {
+      select: (data) =>
+        data
+          .map((obavijest) => formatObavijest(obavijest))
+          .sort((a, b) => (a.order || 0) - (b.order || 0)),
       ...options,
     }
   );

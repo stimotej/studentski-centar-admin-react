@@ -32,6 +32,7 @@ const formatPost = (post) => ({
   lokacija: post.meta.lokacija,
   image_groups: post.meta.image_groups,
   link: post.meta.link,
+  actionTitle: post.meta.footnotes,
   images: post.meta.images,
   rentalOptions: post.meta.rental_options,
   features: post.meta.features,

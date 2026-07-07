@@ -3,6 +3,7 @@ const obavijestiKeys = {
   categories: ["categories"],
   obavijestiFiltered: (filters) => [...obavijestiKeys.obavijesti, filters],
   obavijest: (id) => [...obavijestiKeys.obavijesti, id],
+  sliderObavijesti: ["obavijesti", "slider"],
 };
 
 export default obavijestiKeys;

@@ -160,7 +160,7 @@ export const useCreatePost = () => {
   const queryClient = useQueryClient();
 
   return useMutation(
-    async ({ title, excerpt, content, status, categories, documents }) => {
+    async ({ title, excerpt, content, status, categories, documents, slug }) => {
       const response = await axios.post(
         `https://www.sczg.unizg.hr/wp-json/wp/v2/posts`,
         {
@@ -168,6 +168,7 @@ export const useCreatePost = () => {
           excerpt,
           content,
           status,
+          slug,
           categories: [adminPostsCategory, ...categories],
           meta: {
             documents,
@@ -201,6 +202,7 @@ export const useUpdatePost = () => {
       content,
       status,
       featuredMedia,
+      slug,
       documents,
       accordionItems,
       sadrzaj,
@@ -209,6 +211,7 @@ export const useUpdatePost = () => {
       lokacija,
       image_groups,
       link,
+      actionTitle,
       images,
       rentalOptions,
       features,
@@ -225,7 +228,7 @@ export const useUpdatePost = () => {
           content,
           status,
           featured_media: featuredMedia,
-          slug: title,
+          slug: slug || title,
           meta: {
             documents,
             sadrzaj,
@@ -234,6 +237,7 @@ export const useUpdatePost = () => {
             lokacija,
             image_groups,
             link,
+            footnotes: actionTitle,
             images,
             rental_options: rentalOptions,
             features,

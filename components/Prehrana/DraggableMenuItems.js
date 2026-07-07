@@ -18,7 +18,13 @@ const QuillTextEditor = dynamic(
   { ssr: false }
 );
 
-const DraggableMenuItems = ({ items, value, onChange }) => {
+const DraggableMenuItems = ({
+  items,
+  value,
+  onChange,
+  dndType = ItemTypesDnD.RESTAURANT,
+  endpoint = "posts",
+}) => {
   const [innerItems, setInnerItems] = useState(items);
 
   useEffect(() => {
@@ -32,7 +38,7 @@ const DraggableMenuItems = ({ items, value, onChange }) => {
   const handleOnDrop = () => {
     const promises = innerItems.map((item, index) => {
       return axios.post(
-        "https://www.sczg.unizg.hr/wp-json/wp/v2/posts/" + item.id,
+        `https://www.sczg.unizg.hr/wp-json/wp/v2/${endpoint}/${item.id}`,
         {
           meta: {
             order: index,
@@ -41,9 +47,9 @@ const DraggableMenuItems = ({ items, value, onChange }) => {
       );
     });
 
-    const updateRestaurants = Promise.all(promises).catch(() => {});
+    const updateOrder = Promise.all(promises).catch(() => {});
 
-    toast.promise(updateRestaurants, {
+    toast.promise(updateOrder, {
       pending: "Spremanje redoslijeda...",
       success: "Uspješno spremljeno",
       error: "Greška prilikom spremanja",
@@ -58,6 +64,7 @@ const DraggableMenuItems = ({ items, value, onChange }) => {
       onClick={() => onChange(item.id)}
       moveCard={handleMoveCard}
       dropCard={handleOnDrop}
+      dndType={dndType}
     >
       {item.status === "draft" && (
         <Tooltip title="Još nije vidljivo na stranici." arrow>
@@ -91,10 +98,11 @@ const DraggableItem = ({
   selected,
   onClick,
   dropCard,
+  dndType,
 }) => {
   const ref = useRef(null);
   const [{ handlerId }, drop] = useDrop({
-    accept: ItemTypesDnD.RESTAURANT,
+    accept: dndType,
     collect(monitor) {
       return {
         handlerId: monitor.getHandlerId(),
@@ -145,7 +153,7 @@ const DraggableItem = ({
     },
   });
   const [{ isDragging }, drag, preview] = useDrag({
-    type: ItemTypesDnD.RESTAURANT,
+    type: dndType,
     item: () => {
       return { id, index };
     },
