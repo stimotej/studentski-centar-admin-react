@@ -4,13 +4,14 @@ import { toast } from "react-toastify";
 import { adminPostsCategory } from "../../lib/constants";
 import formatPost from "./format";
 import postsKeys from "./queries";
+import { WP_API } from "../../lib/wp";
 
 export const usePosts = (filters, options) => {
   return useQuery(
     postsKeys.postsFiltered(filters),
     async () => {
       const response = await axios.get(
-        "https://www.sczg.unizg.hr/wp-json/wp/v2/posts",
+        `${WP_API}/posts`,
         {
           params: {
             order: "asc",
@@ -35,7 +36,7 @@ export const useAdminCategories = (filters, options) => {
     postsKeys.categoriesFiltered(filters),
     async () => {
       const response = await axios.get(
-        "https://www.sczg.unizg.hr/wp-json/wp/v2/categories",
+        `${WP_API}/categories`,
         {
           params: {
             order: "asc",
@@ -59,7 +60,7 @@ export const useCreateCategory = () => {
   return useMutation(
     async ({ name, parent }) => {
       const response = await axios.post(
-        `https://www.sczg.unizg.hr/wp-json/wp/v2/categories`,
+        `${WP_API}/categories`,
         {
           name,
           parent,
@@ -87,7 +88,7 @@ export const useUpdateCategory = () => {
   return useMutation(
     async ({ id, name, parent, meta }) => {
       const response = await axios.post(
-        `https://www.sczg.unizg.hr/wp-json/wp/v2/categories/${id}`,
+        `${WP_API}/categories/${id}`,
         {
           name,
           parent,
@@ -116,7 +117,7 @@ export const useDeleteCategory = () => {
   return useMutation(
     async ({ id }) => {
       const response = await axios.delete(
-        `https://www.sczg.unizg.hr/wp-json/wp/v2/categories/${id}`,
+        `${WP_API}/categories/${id}`,
         {
           params: {
             force: true,
@@ -144,7 +145,7 @@ export const usePost = (id, options) => {
     postsKeys.post(id),
     async () => {
       const response = await axios.get(
-        `https://www.sczg.unizg.hr/wp-json/wp/v2/posts/${id}`
+        `${WP_API}/posts/${id}`
       );
       return response.data;
     },
@@ -162,7 +163,7 @@ export const useCreatePost = () => {
   return useMutation(
     async ({ title, excerpt, content, status, categories, documents, slug }) => {
       const response = await axios.post(
-        `https://www.sczg.unizg.hr/wp-json/wp/v2/posts`,
+        `${WP_API}/posts`,
         {
           title,
           excerpt,
@@ -221,7 +222,7 @@ export const useUpdatePost = () => {
       teatarTdAddress,
     }) => {
       const response = await axios.post(
-        `https://www.sczg.unizg.hr/wp-json/wp/v2/posts/${id}`,
+        `${WP_API}/posts/${id}`,
         {
           title,
           excerpt,
@@ -271,7 +272,7 @@ export const useDeletePost = () => {
   return useMutation(
     async ({ id }) => {
       const response = await axios.delete(
-        `https://www.sczg.unizg.hr/wp-json/wp/v2/posts/${id}`,
+        `${WP_API}/posts/${id}`,
         {
           params: {
             force: true,

@@ -18,6 +18,7 @@ import formatObavijest from "./format";
 import obavijestiKeys from "./queries";
 import { toast } from "react-toastify";
 import { useRef } from "react";
+import { WP_API } from "../../lib/wp";
 
 export const useObavijesti = (filters, options) => {
   const postsPerPage = 10;
@@ -27,7 +28,7 @@ export const useObavijesti = (filters, options) => {
     obavijestiKeys.obavijestiFiltered(filters),
     async ({ pageParam }) => {
       const response = await axios.get(
-        "https://www.sczg.unizg.hr/wp-json/wp/v2/obavijesti",
+        `${WP_API}/obavijesti`,
         {
           params: {
             categories: filters?.categoryId,
@@ -75,7 +76,7 @@ export const useObavijest = (id, options) => {
     obavijestiKeys.obavijest(id),
     async () => {
       const response = await axios.get(
-        "https://www.sczg.unizg.hr/wp-json/wp/v2/obavijesti/" + id
+        `${WP_API}/obavijesti/` + id
       );
       return response.data;
     },
@@ -91,7 +92,7 @@ export const useSliderObavijesti = (options) => {
     obavijestiKeys.sliderObavijesti,
     async () => {
       const response = await axios.get(
-        "https://www.sczg.unizg.hr/wp-json/wp/v2/obavijesti",
+        `${WP_API}/obavijesti`,
         {
           params: {
             categories: sliderCategoryId,
@@ -119,7 +120,7 @@ export const useCategories = (options) => {
     obavijestiKeys.categories,
     async () => {
       const response = await axios.get(
-        "https://www.sczg.unizg.hr/wp-json/wp/v2/categories",
+        `${WP_API}/categories`,
         {
           params: {
             parent: obavijestiCategoryId,
@@ -147,7 +148,7 @@ export const useCreateObavijest = () => {
   return useMutation(
     async (obavijest) => {
       const response = await axios.post(
-        "https://www.sczg.unizg.hr/wp-json/wp/v2/obavijesti",
+        `${WP_API}/obavijesti`,
         {
           title: obavijest?.title,
           excerpt: obavijest?.description,
@@ -187,7 +188,7 @@ export const useUpdateObavijest = () => {
   return useMutation(
     async ({ id, obavijest }) => {
       const response = await axios.post(
-        `https://www.sczg.unizg.hr/wp-json/wp/v2/obavijesti/${id}`,
+        `${WP_API}/obavijesti/${id}`,
         {
           title: obavijest?.title,
           excerpt: obavijest?.description,
@@ -227,7 +228,7 @@ export const useDeleteObavijest = () => {
   return useMutation(
     async (id) => {
       const response = await axios.delete(
-        `https://www.sczg.unizg.hr/wp-json/wp/v2/obavijesti/${id}`,
+        `${WP_API}/obavijesti/${id}`,
         {
           params: {
             force: true,

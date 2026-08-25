@@ -8,6 +8,7 @@ import { useRef } from "react";
 import { toast } from "react-toastify";
 import formatContactMail from "./format";
 import contactMailKeys from "./queries";
+import { WP_API } from "../../lib/wp";
 
 export const useContactMails = (filters, options) => {
   const postsPerPage = 10;
@@ -17,7 +18,7 @@ export const useContactMails = (filters, options) => {
     contactMailKeys.contactMailsFiltered(filters),
     async ({ pageParam }) => {
       const response = await axios.get(
-        "https://www.sczg.unizg.hr/wp-json/wp/v2/contact_mails",
+        `${WP_API}/contact_mails`,
         {
           params: {
             categories: filters?.categoryId,
@@ -54,7 +55,7 @@ export const useDeleteContactMail = (displayToasts = true) => {
   return useMutation(
     async ({ id }) => {
       const response = await axios.delete(
-        "https://www.sczg.unizg.hr/wp-json/wp/v2/contact_mails/" + id,
+        `${WP_API}/contact_mails/` + id,
         {
           params: {
             force: true,

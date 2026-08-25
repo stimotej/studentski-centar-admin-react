@@ -2,6 +2,7 @@ import { renderToStream } from "@react-pdf/renderer";
 import axios from "axios";
 import CompanyDocument from "../../components/CompanyDocument";
 import NextCors from "nextjs-cors";
+import { WP_API } from "../../lib/wp";
 
 const documentCategoryId = 163;
 
@@ -30,7 +31,7 @@ export default async function handler(req, res) {
     );
 
     const response = await axios.post(
-      "https://www.sczg.unizg.hr/wp-json/wp/v2/media",
+      `${WP_API}/media`,
       documentFile,
       {
         headers: {
@@ -43,7 +44,7 @@ export default async function handler(req, res) {
       }
     );
     const mediaResponse = await axios.post(
-      "https://www.sczg.unizg.hr/wp-json/wp/v2/media/" + response.data.id,
+      `${WP_API}/media/` + response.data.id,
       {
         categories: documentCategoryId,
         author: req.body?.user_id,

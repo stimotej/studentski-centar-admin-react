@@ -13,6 +13,7 @@ import {
   useNewsletterBroadcast,
   useUpdateNewsletterBroadcast,
 } from "../../features/newsletter";
+import { WP_API_BASE } from "../../lib/wp";
 
 const EmailEditor = dynamic(() => import("react-email-editor"), {
   ssr: false,
@@ -38,7 +39,7 @@ const newsletterMergeTags = {
   unsubscribe_url: {
     name: "Link za odjavu",
     value: "{{unsubscribe_url}}",
-    sample: "https://www.sczg.unizg.hr/wp-json/sc/v1/newsletter-unsubscribe?token=...",
+    sample: `${WP_API_BASE}/sc/v1/newsletter-unsubscribe?token=...`,
   },
 };
 

@@ -4,6 +4,7 @@ import formatJob from "./format";
 import jobKeys from "./queries";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import { WP_API } from "../../lib/wp";
 
 export const useJobs = (filters, options) => {
   const queryClient = useQueryClient();
@@ -14,7 +15,7 @@ export const useJobs = (filters, options) => {
 
   const fetchJobs = async (newFilters) => {
     const response = await axios.get(
-      "https://www.sczg.unizg.hr/wp-json/wp/v2/jobs",
+      `${WP_API}/jobs`,
       {
         params: {
           orderby: newFilters?.orderby,
@@ -71,7 +72,7 @@ export const useJob = (id, options) => {
     jobKeys.job(id),
     async () => {
       const response = await axios.get(
-        "https://www.sczg.unizg.hr/wp-json/wp/v2/jobs/" + id
+        `${WP_API}/jobs/` + id
       );
       return formatJob(response.data);
     },
@@ -113,7 +114,7 @@ export const useCreateJob = () => {
   return useMutation(
     async (job) => {
       const response = await axios.post(
-        "https://www.sczg.unizg.hr/wp-json/wp/v2/jobs",
+        `${WP_API}/jobs`,
         {
           title: job.title,
           excerpt: job.description,
@@ -169,7 +170,7 @@ export const useUpdateJob = () => {
   return useMutation(
     async ({ id, job }) => {
       const response = await axios.post(
-        "https://www.sczg.unizg.hr/wp-json/wp/v2/jobs/" + id,
+        `${WP_API}/jobs/` + id,
         {
           title: job.title,
           slug: job.title,
@@ -198,7 +199,7 @@ export const useDeleteJob = () => {
   return useMutation(
     async (id) => {
       const response = await axios.delete(
-        "https://www.sczg.unizg.hr/wp-json/wp/v2/jobs/" + id,
+        `${WP_API}/jobs/` + id,
         {
           params: {
             force: true,

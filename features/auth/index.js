@@ -3,9 +3,10 @@ import axios from "axios";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { CATERING_ROLE, EVENTI_ROLE, TURIZAM_ROLE } from "../../lib/constants";
+import { JWT_API, WP_API } from "../../lib/wp";
 
 // const url = "https://www.sczg.unizg.hr/wp-json/jwt-auth/v1/token";
-const url = "https://www.sczg.unizg.hr/wp-json/jwt-auth/v1/token";
+const url = `${JWT_API}/token`;
 
 export const useLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -59,7 +60,7 @@ export const useCheckAuth = () => {
   return useMutation(
     async () => {
       const response = await axios.post(
-        "https://www.sczg.unizg.hr/wp-json/jwt-auth/v1/token/validate"
+        `${JWT_API}/token/validate`
       );
 
       return response.data;
@@ -78,7 +79,7 @@ export const useUser = (options) => {
     ["user"],
     async () => {
       const response = await axios.get(
-        "https://www.sczg.unizg.hr/wp-json/wp/v2/users/me"
+        `${WP_API}/users/me`
       );
       window.localStorage.setItem(
         "roles",
@@ -96,13 +97,13 @@ export const useResetEmail = () => {
   return useMutation(
     async (email) => {
       const responseUser = await axios.post(
-        "https://www.sczg.unizg.hr/wp-json/wp/v2/users/me",
+        `${WP_API}/users/me`,
         {
           email,
         }
       );
       const responseEmail = await axios.post(
-        "https://www.sczg.unizg.hr/wp-json/wp/v2/reset-password",
+        `${WP_API}/reset-password`,
         {
           user_login: email,
         }
@@ -127,7 +128,7 @@ export const useResetPassword = () => {
   return useMutation(
     async (email) => {
       const response = await axios.post(
-        "https://www.sczg.unizg.hr/wp-json/wp/v2/reset-password",
+        `${WP_API}/reset-password`,
         {
           user_login: email,
         }

@@ -16,6 +16,7 @@ import { useDeleteEvent } from "../../../features/events";
 import { useDeleteObavijest } from "../../../features/obavijesti";
 import Button from "../../Elements/Button";
 import MyDialog from "../../Elements/MyDialog";
+import { WP_SITE_URL } from "../../../lib/wp";
 
 const Preview = ({
   obavijest,
@@ -93,9 +94,9 @@ const Preview = ({
           to={
             isEvent
               ? from === "teatar-td"
-                ? `https://www.sczg.unizg.hr/teatar-td/predstave/${obavijest?.slug}`
-                : `https://www.sczg.unizg.hr/kultura/eventi/${obavijest?.slug}`
-              : `https://www.sczg.unizg.hr/obavijesti/${obavijest?.slug}`
+                ? `${WP_SITE_URL}/teatar-td/predstave/${obavijest?.slug}`
+                : `${WP_SITE_URL}/kultura/eventi/${obavijest?.slug}`
+              : `${WP_SITE_URL}/obavijesti/${obavijest?.slug}`
           }
           className="!ml-4"
         />
