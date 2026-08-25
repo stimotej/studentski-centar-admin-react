@@ -64,9 +64,14 @@ Prove the whole pipeline on one field before wiring the other eleven.
       the approach
 
 ### Remaining fields
-- [ ] All `yes` rows above wired
-- [ ] `image_groups_en` keeps array length and order identical to `image_groups`
+- [x] All `yes` rows above wired (2026-08-25): title, excerpt, content, kontakt,
+      radno vrijeme blagajni, tekst gumba akcije, natječaj naslov + opis, and
+      image-group captions.
+- [x] `image_groups_en` keeps array length and order identical to `image_groups`
+      — `ReorderImages` rebuilds the English array index-aligned on every edit,
+      so adding, removing or reordering a group cannot make them drift.
 - [ ] Toggling to EN and saving leaves every Croatian field byte-identical
+      (verify with a snapshot diff after the next save)
 
 ### Translate
 - [ ] Dry-run reviewed by a human who reads both languages — dormitory names and
