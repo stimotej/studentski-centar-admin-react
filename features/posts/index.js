@@ -220,6 +220,17 @@ export const useUpdatePost = () => {
       teatarTdEmail,
       teatarTdWebsiteUrl,
       teatarTdAddress,
+      titleEn,
+      excerptEn,
+      contentEn,
+      sadrzajEn,
+      kontaktEn,
+      radnoVrijemeBlagajniEn,
+      actionTitleEn,
+      accordionItemsEn,
+      imageGroupsEn,
+      featuresEn,
+      rentalOptionsEn,
     }) => {
       const response = await axios.post(
         `${WP_API}/posts/${id}`,
@@ -229,7 +240,11 @@ export const useUpdatePost = () => {
           content,
           status,
           featured_media: featuredMedia,
-          slug: slug || title,
+          // Only send a slug when the caller actually chose one. This used to
+          // be `slug || title`, which re-derived the slug from the Croatian
+          // title on every save — so editing a title silently changed the URL
+          // and broke the frontends that resolve pages by slug.
+          ...(slug ? { slug } : {}),
           meta: {
             documents,
             sadrzaj,
@@ -247,6 +262,17 @@ export const useUpdatePost = () => {
             teatar_td_email: teatarTdEmail,
             teatar_td_website_url: teatarTdWebsiteUrl,
             teatar_td_address: teatarTdAddress,
+            title_en: titleEn,
+            excerpt_en: excerptEn,
+            content_en: contentEn,
+            sadrzaj_en: sadrzajEn,
+            kontakt_en: kontaktEn,
+            radno_vrijeme_blagajni_en: radnoVrijemeBlagajniEn,
+            footnotes_en: actionTitleEn,
+            accordion_items_en: accordionItemsEn,
+            image_groups_en: imageGroupsEn,
+            features_en: featuresEn,
+            rental_options_en: rentalOptionsEn,
           },
         }
       );

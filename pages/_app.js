@@ -17,6 +17,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import hr from "dayjs/locale/hr";
 import { WP_API } from "../lib/wp";
+import { LocaleProvider } from "../lib/locale";
 
 dayjs.extend(minMax);
 dayjs.locale("hr");
@@ -36,6 +37,7 @@ function MyApp({ Component, pageProps }) {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <LocaleProvider>
       <IconContext.Provider value={{ size: 24 }}>
         <DndProvider backend={HTML5Backend}>
           <LocalizationProvider
@@ -68,6 +70,7 @@ function MyApp({ Component, pageProps }) {
           </LocalizationProvider>
         </DndProvider>
       </IconContext.Provider>
+      </LocaleProvider>
     </QueryClientProvider>
   );
 }

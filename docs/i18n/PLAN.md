@@ -80,10 +80,11 @@ Shared groundwork. Everything after this is repetition.
       Verified the composed URLs are byte-identical to the old literals.
       Override with `NEXT_PUBLIC_WORDPRESS_SITE_URL` or
       `NEXT_PUBLIC_WORDPRESS_API_BASE_URL`.
-- [ ] **Fix the slug rewrite.** `features/posts/index.js` sends
-      `slug: slug || title` on every update, so saving a post whose title
-      changed silently changes its slug and breaks frontend URLs. Send `slug`
-      only when a caller explicitly passes one.
+- [x] **Fix the slug rewrite.** Done 2026-08-20 — `useUpdatePost` now sends
+      `slug` only when a caller passes one. Evidence the bug was real: post
+      4156's title is `<p>SD Stjepan Radić</p>` and its slug is exactly
+      `sd-stjepan-radic`, which is what `sanitize_title` yields from that
+      string — the slug was being re-derived from the title on every save.
       - [ ] **Still unproven.** The 2026-08-20 restore drill edited post
             `58004` through *wp-admin*, which preserves slugs — so it did not
             exercise this path. Retest by editing a throwaway post's title
@@ -111,14 +112,22 @@ Phases 2–4. Deliberately excluded: `proizvodi`, `menus` (daily churn), `jobs`
 
 ### 1c. Admin plumbing
 
-- [ ] `LocaleContext` + a global HR/EN toggle in `components/Header.js`. The
-      toggle switches which language every field on screen is editing.
-- [ ] A `LocalizedField` wrapper around `QuillTextEditor` and MUI `TextField`
-      that reads/writes `value` or `value_en` based on context, and visibly
-      marks untranslated fields.
-- [ ] Extend `features/posts/format.js` to surface `_en` keys.
-- [ ] Extend the `useUpdatePost` payload to carry `_en` keys.
-- [ ] Decide and document how the toggle behaves on a page with unsaved changes.
+- [x] `LocaleContext` (`lib/locale.js`) + `LocaleToggle`, opted into per page
+      via `<Header localeToggle />` so pages with nothing translatable do not
+      show a switch that does nothing.
+- [x] `LocalizedField` (`components/Elements/LocalizedField.js`) — wraps any
+      `value`/`onChange` editor, so it works with `QuillTextEditor` and MUI
+      `TextField` alike. Shows the Croatian original for reference and marks
+      untranslated fields.
+- [x] Extend `features/posts/format.js` to surface `_en` keys.
+- [x] Extend the `useUpdatePost` payload to carry `_en` keys.
+- [x] Toggle semantics decided and documented in CONVENTIONS.md — separate
+      state per language, one Save button writing both, choice remembered in
+      `localStorage`.
+
+**Not yet proven.** No page uses `LocalizedField` yet; the Phase 2 vertical
+slice is what will show whether this design survives contact with a real
+editor.
 
 ### 1d. Bulk translation tooling
 

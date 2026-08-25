@@ -51,6 +51,23 @@ translated page must render, mixed, rather than showing holes.
 
 Never fall back the other way. English must never leak into the Croatian site.
 
+## How the editing-locale toggle behaves
+
+The toggle in the header switches which language every localized field on the
+page is editing. It is the *editing* locale — the admin chrome stays Croatian.
+
+- **Croatian and English are separate React state.** Toggling does not discard
+  unsaved work in either language; it only changes which one is on screen.
+- **Saving writes both languages at once.** A save made while the toggle is on
+  EN still persists unsaved Croatian edits, and vice versa. There is one Save
+  button, not one per language.
+- **The choice is remembered** in `localStorage` per browser, so an editor who
+  works in English stays in English across pages. It never leaves the browser.
+- **English fields show the Croatian original** behind a collapsible summary, so
+  translating does not require toggling back and forth to read the source.
+- **Untranslated fields are marked** with a "nije prevedeno" chip. Empty and
+  whitespace-only are treated identically, matching the fallback rule above.
+
 ## Writes are additive, always
 
 Production is the only environment. There is no staging. Therefore:
