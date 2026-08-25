@@ -48,6 +48,7 @@ import {
   useUpdatePost,
 } from "../../features/posts";
 import dynamic from "next/dynamic";
+import LocalizedField from "../../components/Elements/LocalizedField";
 const QuillTextEditor = dynamic(
   () => import("../../components/Elements/QuillTextEditor"),
   { ssr: false },
@@ -91,6 +92,7 @@ const Home = () => {
   const [excerpt, setExcerpt] = useState("");
   const [content, setContent] = useState("");
   const [sadrzaj, setSadrzaj] = useState("");
+  const [sadrzajEn, setSadrzajEn] = useState("");
   const [kontakt, setKontakt] = useState("");
   const [radnoVrijemeBlagajni, setRadnoVrijemeBlagajni] = useState("");
   const [lokacija, setLokacija] = useState("");
@@ -132,6 +134,7 @@ const Home = () => {
       setExcerpt(dormitory.excerpt);
       setContent(dormitory.content);
       setSadrzaj(dormitory.sadrzaj);
+      setSadrzajEn(dormitory.sadrzaj_en || "");
       setRadnoVrijemeBlagajni(dormitory.radno_vrijeme_blagajni);
       setKontakt(dormitory.kontakt);
       setLokacija(dormitory.lokacija);
@@ -155,6 +158,7 @@ const Home = () => {
     setExcerpt(dormitory.excerpt);
     setContent(dormitory.content);
     setSadrzaj(dormitory.sadrzaj);
+    setSadrzajEn(dormitory.sadrzaj_en || "");
     setKontakt(dormitory.kontakt);
     setRadnoVrijemeBlagajni(dormitory.radno_vrijeme_blagajni);
     setLokacija(dormitory.lokacija);
@@ -200,6 +204,7 @@ const Home = () => {
         excerpt: excerpt,
         content: content,
         sadrzaj: sadrzaj,
+        sadrzajEn: sadrzajEn,
         kontakt: kontakt,
         radno_vrijeme_blagajni: radnoVrijemeBlagajni,
         lokacija: lokacija !== dormitory.lokacija ? lokacija : undefined,
@@ -276,7 +281,7 @@ const Home = () => {
 
   return (
     <Layout>
-      <Header title="Početna" />
+      <Header title="Početna" localeToggle />
       <div className="px-5 md:px-10 pb-6">
         <div className="flex gap-10 flex-wrap md:flex-nowrap">
           <div>
@@ -499,9 +504,13 @@ const Home = () => {
                 "studentski-dom" ? (
                   <>
                     <h3 className="font-semibold mt-4 mb-2">Sadržaj</h3>
-                    <QuillTextEditor
+                    <LocalizedField
+                      as={QuillTextEditor}
+                      label="Sadržaj"
                       value={sadrzaj}
                       onChange={setSadrzaj}
+                      valueEn={sadrzajEn}
+                      onChangeEn={setSadrzajEn}
                       placeholder="Unesi sadržaj..."
                       mediaCategoryId={smjestajCategoryId}
                     />

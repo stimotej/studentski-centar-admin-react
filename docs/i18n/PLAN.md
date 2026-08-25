@@ -148,10 +148,16 @@ First real section. 26 posts under category `176`, the densest editor in the app
 (12 rich-text fields). Detailed checklist:
 [sections/smjestaj.md](./sections/smjestaj.md).
 
-- [ ] Do **one field end to end first** — `sadrzaj` only, through WP, admin, AI
-      pass, frontend, and verification — before wiring the other eleven. If the
-      approach is wrong, this is where it should hurt, and it should hurt
-      cheaply.
+- [~] Do **one field end to end first** — `sadrzaj` only, through WP, admin, AI
+      pass, frontend, and verification — before wiring the other eleven.
+      - [x] WordPress: `sadrzaj_en` registered
+      - [x] Admin: `/zaposlenici/smjestaj` has the HR/EN toggle and a localized
+            Sadržaj field
+      - [x] Frontend (`studentski-centar-zagreb`, branch `i18n/hr-en-smjestaj`):
+            `/en` routing, fallback rule, `sadrzaj_en` read on
+            `/smjestaj/domovi/[slug]`. Both locales verified rendering locally.
+      - [ ] **Translate one post and confirm English appears** — the last step,
+            and the first production write of the project
 - [ ] Then the remaining fields.
 - [ ] Then the frontend in `studentski-centar-zagreb`.
 - [ ] Write up what the pilot changed about the plan in HANDOFF.md, and fix this
@@ -184,6 +190,22 @@ Each one repeats the same checklist. Copy
 - [ ] eventi
 - [ ] catering
 - [ ] teatar-td
+
+---
+
+## Gap found during the pilot: frontend UI strings
+
+The migration as planned makes **content** bilingual. It does not touch the
+static Croatian strings baked into the frontends' own components — section
+headings ("Popratni sadržaj", "Kontakt"), navigation, buttons, form labels,
+error messages.
+
+So an `/en` page today renders English *content* inside Croatian *chrome*. That
+is honest and usable, but it is not a finished English site.
+
+This is a separate workstream of real size (four repos, every component) and is
+**not costed in this plan**. Decide before cutover whether it is in scope, and
+if so whether to use a library (`next-intl`) or a simple string map.
 
 ---
 
