@@ -41,6 +41,48 @@ there.
 
 ---
 
+## 2026-08-26 — Claude — Phases 3 and 4 complete; main frontend done
+
+**Done**
+- **Phase 3** — shared layouts: `ObavijestEditorLayout` (290 records, every
+  section), `EventEditorLayout` (460 records), `FAQLayout` (6 sections).
+- **Phase 4** — all nine remaining section pages in the admin.
+- **Frontend** `studentski-centar-zagreb` (branch `i18n/hr-en-smjestaj`,
+  through commit 6ee5ccd): every page that renders editable content now reads
+  its English twin — section pages, five FAQ pages, obavijesti, informacije,
+  mediji, restaurant detail. 30 route/locale combinations verified 200.
+
+**Next action**
+- The other three frontends: `teatar-td`, `turizam`, `sczg-eventi`. None has
+  locale routing yet. Copy the approach from `studentski-centar-zagreb`:
+  `next.config.js` i18n block, `src/utils/i18n.ts`, `_document` lang, and
+  explicit locales in every `getStaticPaths`.
+
+**Open questions / blocked on**
+- No frontend branch is deployed. Public site unchanged.
+- Frontend UI strings still Croatian on `/en`. Uncosted — needs a scope call.
+- Almost nothing is translated yet: one field on one post. The bulk translation
+  tooling (Phase 1d, `scripts/wp-translate.mjs`) was never built.
+
+**Gotchas**
+- **Two admin pages have state names that lie about where the data goes.**
+  kultura's single `excerpt` state saves to `sadrzaj` for teatar posts and to
+  `excerpt` otherwise; pocetna-stranica's `excerpt` state is stored as
+  `sadrzaj`, and only on the Opće informacije post. Mirror the Croatian
+  *behaviour*, not the field names.
+- A generated loader had a precedence bug worth watching for when mirroring
+  conditionals: `x ? a : b || ""` applies the fallback only to the false
+  branch. Parenthesise: `(x ? a : b) || ""`.
+- Event `location` and the structured editors (turizam `rental_options`, eventi
+  `features`) are still deferred — all three are non-trivial widgets rather
+  than plain value/onChange fields.
+- `poslovi` is intentionally excluded everywhere: employer-written adverts, no
+  `_en` registered for the `jobs` post type.
+- `/en/` (with trailing slash) returns 308 to `/en`. Normal Next behaviour, not
+  a routing fault.
+
+---
+
 ## 2026-08-25 — Timotej + Claude — Smještaj complete (admin + frontend)
 
 **Done**
