@@ -34,3 +34,6 @@ yarn-error.log*
 .vercel
 
 .env
+
+# content snapshots (large, and may contain unpublished drafts)
+/wp-snapshots
