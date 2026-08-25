@@ -41,6 +41,47 @@ there.
 
 ---
 
+## 2026-08-25 — Timotej + Claude — Smještaj complete (admin + frontend)
+
+**Done**
+- Admin: wired every remaining translatable field on `/zaposlenici/smjestaj` —
+  title, excerpt, content, kontakt, radno vrijeme blagajni, action button label,
+  natječaj title + description, and image-group captions.
+- `ReorderImages` now takes optional `imageGroupsEn`/`setImageGroupsEn`. Only
+  captions are bilingual; images are shared. The English array is rebuilt
+  index-aligned on every edit so the two can never drift.
+- Frontend (`studentski-centar-zagreb`, branch `i18n/hr-en-smjestaj`, commits
+  ff68f0e → 2a3da51): dormitory page and index page both read every English
+  twin with the fallback rule. `ImageGallery` takes optional `imageGroupsEn`.
+
+**Verification**
+- All four routes 200: `/smjestaj`, `/en/smjestaj`, `/smjestaj/domovi/sd-lascina`,
+  `/en/smjestaj/domovi/sd-lascina`.
+- On the one translated post: `/en` shows English `sadrzaj` while `kontakt`,
+  untranslated, still renders Croatian on both. Mixed rendering works.
+
+**Next action**
+- Either translate the rest of smještaj's content and deploy the frontend
+  branch, or start Phase 3 (the shared `ObavijestEditorLayout` and `FAQLayout`,
+  which light up obavijesti and FAQ editing across every section at once).
+
+**Open questions / blocked on**
+- The frontend branch is **not deployed**. Public site is unchanged.
+- Frontend UI strings are still Croatian on `/en` pages — see the gap noted in
+  PLAN.md. Not costed, needs a scope decision before cutover.
+- `npm run build` still fails locally in the admin repo on Node 25 (unrelated,
+  see the 2026-08-20 entry). Frontend repo builds fine.
+
+**Gotchas**
+- The smještaj index page shapes some data in `getStaticProps` (which receives
+  `locale` in its context) and some in the component (which uses
+  `useRouter().locale`). Both must be localized — doing only one leaves half the
+  page Croatian, and it is not obvious from reading either half alone.
+- `documents` on smještaj is still deferred: the titles are user-visible but the
+  records are shared media-library entries. Decide during Phase 3.
+
+---
+
 ## 2026-08-25 — Timotej + Claude — Phase 2 vertical slice PROVEN
 
 **Done**

@@ -79,9 +79,14 @@ Prove the whole pipeline on one field before wiring the other eleven.
 - [ ] Written for real, log kept
 
 ### Frontend
-- [ ] `/en/smjestaj/*` routes live
-- [ ] Fallback rule applied
-- [ ] Map embed, images, and documents identical in both languages
+`studentski-centar-zagreb`, branch `i18n/hr-en-smjestaj`. **Not deployed yet.**
+
+- [x] `/en/smjestaj/*` routes live — `/smjestaj`, `/en/smjestaj`,
+      `/smjestaj/domovi/[slug]` and `/en/smjestaj/domovi/[slug]` all verified
+- [x] Fallback rule applied via `src/utils/i18n.ts`
+- [x] Map embed, images and documents identical in both languages — `lokacija`
+      and media ids are shared, only captions have an English twin
+- [ ] Deploy the branch
 
 ### Verify
 - [ ] After-snapshot taken
