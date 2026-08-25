@@ -177,9 +177,23 @@ First real section. 26 posts under category `176`, the densest editor in the app
 These are used by *many* sections, so doing them once pays out everywhere.
 Worth taking straight after the pilot rather than section by section.
 
-- [ ] `components/ObavijestEditorLayout.js` — obavijesti, all sections (290 records)
-- [ ] `components/EventEditorLayout.js` — kultura + teatar-td (460 records)
-- [ ] `components/FAQLayout.js` — 6 sections
+- [x] `components/ObavijestEditorLayout.js` — obavijesti, all sections (290
+      records). Title, short description and content. English drafts persist to
+      `localStorage` alongside the Croatian ones, so a refresh mid-translation
+      does not lose one language while keeping the other.
+- [x] `components/EventEditorLayout.js` — kultura + teatar-td (460 records).
+      Title and content.
+      - [ ] `location` deferred: a MUI `Autocomplete` (`freeSolo`, dual
+            `onChange`/`onChangeCapture` handlers) over a shared option list, so
+            it is not a clean `value`/`onChange` swap. `location_en` is
+            registered and unused. Venue names are also often proper nouns —
+            decide whether it is worth translating at all.
+- [x] `components/FAQLayout.js` — 6 sections. Question and answer, plus the
+      read-only accordion list follows the toggle so English FAQs can be
+      reviewed without opening each entry.
+
+`useCreatePost` now carries English too, so a FAQ created directly in English
+keeps it.
 
 ---
 

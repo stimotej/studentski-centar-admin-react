@@ -21,6 +21,10 @@ const formatObavijest = (obavijest) => ({
   event_date: obavijest?.meta?.event_date,
   featured: obavijest?.meta?.featured,
   order: obavijest?.meta?.order,
+  // English twins (docs/i18n/CONVENTIONS.md)
+  titleEn: obavijest?.meta?.title_en,
+  descriptionEn: obavijest?.meta?.excerpt_en,
+  contentEn: obavijest?.meta?.content_en,
   documents: obavijest?.meta?.documents
     ? obavijest?.meta?.documents?.map((document) => ({
         id: document.id,

@@ -163,6 +163,9 @@ export const useCreateObavijest = () => {
             event_date: obavijest?.eventDate,
             documents: obavijest?.documents,
             featured: obavijest?.featured,
+            title_en: obavijest?.titleEn,
+            excerpt_en: obavijest?.descriptionEn,
+            content_en: obavijest?.contentEn,
           },
         }
       );
@@ -203,6 +206,9 @@ export const useUpdateObavijest = () => {
             event_date: obavijest?.eventDate,
             documents: obavijest?.documents,
             featured: obavijest?.featured,
+            title_en: obavijest?.titleEn,
+            excerpt_en: obavijest?.descriptionEn,
+            content_en: obavijest?.contentEn,
           },
         }
       );

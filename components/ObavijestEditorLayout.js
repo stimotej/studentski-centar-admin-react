@@ -12,6 +12,8 @@ const QuillTextEditor = dynamic(() => import("./Elements/QuillTextEditor"), {
   ssr: false,
 });
 import StoredPostNote from "./Obavijesti/Editor/StoredPostNote";
+import LocalizedField from "./Elements/LocalizedField";
+import LocaleToggle from "./Elements/LocaleToggle";
 import Layout from "./Layout";
 import {
   obavijestiCategoryId,
@@ -70,6 +72,9 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
       `${from}_editor_title`,
       `${from}_editor_content`,
       `${from}_editor_description`,
+      `${from}_editor_title_en`,
+      `${from}_editor_content_en`,
+      `${from}_editor_description_en`,
       `${from}_editor_category`,
       `${from}_editor_image_id`,
       `${from}_editor_image_src`,
@@ -104,6 +109,9 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [description, setDescription] = useState("");
+  const [titleEn, setTitleEn] = useState("");
+  const [contentEn, setContentEn] = useState("");
+  const [descriptionEn, setDescriptionEn] = useState("");
   const [category, setCategory] = useState(0);
   const [status, setStatus] = useState("publish");
   const [imageId, setImageId] = useState("");
@@ -130,6 +138,9 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
       setTitle(obavijest.title || "");
       setContent(obavijest.content || "");
       setDescription(obavijest.description || "");
+      setTitleEn(obavijest.titleEn || "");
+      setContentEn(obavijest.contentEn || "");
+      setDescriptionEn(obavijest.descriptionEn || "");
       setCategory(
         parseInt(
           obavijest.categories.filter((cat) => cat !== sliderCategoryId)[0]
@@ -151,6 +162,13 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
       );
       setTitle(window.localStorage.getItem(`${from}_editor_title`) || "");
       setContent(window.localStorage.getItem(`${from}_editor_content`) || "");
+      setTitleEn(window.localStorage.getItem(`${from}_editor_title_en`) || "");
+      setContentEn(
+        window.localStorage.getItem(`${from}_editor_content_en`) || ""
+      );
+      setDescriptionEn(
+        window.localStorage.getItem(`${from}_editor_description_en`) || ""
+      );
       setDescription(
         window.localStorage.getItem(`${from}_editor_description`) || ""
       );
@@ -192,6 +210,9 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
     setTitle("");
     setContent("");
     setDescription("");
+    setTitleEn("");
+    setContentEn("");
+    setDescriptionEn("");
     setCategory(null);
     setImageId(0);
     setStatus("publish");
@@ -215,6 +236,9 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
       title: title,
       content: content,
       description: description,
+      titleEn: titleEn,
+      contentEn: contentEn,
+      descriptionEn: descriptionEn,
       categories: [
         category || categoryId,
         ...(addToSlider && isUserSliderEditor ? [sliderCategoryId] : []),
@@ -346,12 +370,23 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
           )}
         </button>
         <div className="mt-4 mb-2">Kratki opis obavijesti:</div>
-        <QuillTextEditor
+        <LocalizedField
+          as={QuillTextEditor}
+          label="Kratki opis"
           value={description}
           onChange={(value) => {
             setDescription(value);
             !obavijestId &&
               window.localStorage.setItem(`${from}_editor_description`, value);
+          }}
+          valueEn={descriptionEn}
+          onChangeEn={(value) => {
+            setDescriptionEn(value);
+            !obavijestId &&
+              window.localStorage.setItem(
+                `${from}_editor_description_en`,
+                value
+              );
           }}
           placeholder="Unesi opis..."
           className="[&>div>div]:!min-h-[100px]"
@@ -534,25 +569,44 @@ const ObavijestEditorLayout = ({ categoryId, from }) => {
       </MyDialog>
       <div className="pr-0 lg:pr-72">
         <div className="px-5 py-10 md:p-12">
-          <QuillTextEditor
+          <div className="px-3 mt-14 sm:mt-12">
+            <LocaleToggle />
+          </div>
+          <LocalizedField
+            as={QuillTextEditor}
+            label="Naslov"
             value={title}
             onChange={(value) => {
               setTitle(value);
               !obavijestId &&
                 window.localStorage.setItem(`${from}_editor_title`, value);
             }}
+            valueEn={titleEn}
+            onChangeEn={(value) => {
+              setTitleEn(value);
+              !obavijestId &&
+                window.localStorage.setItem(`${from}_editor_title_en`, value);
+            }}
             formats={[]}
             placeholder="Naslov..."
-            containerClassName="!bg-transparent border-none px-3 mt-14 sm:mt-12 "
+            containerClassName="!bg-transparent border-none px-3 mt-2"
             className="[&>div>div]:p-0 [&>div>div]:!min-h-fit [&>div>div:before]:!left-0 [&>div>div:before]:text-2xl [&>div>div:before]:font-semibold [&>div>div>p]:text-2xl [&>div>div>p]:font-semibold"
             useToolbar={false}
           />
-          <QuillEditor
+          <LocalizedField
+            as={QuillEditor}
+            label="Sadržaj"
             value={content}
             onChange={(value) => {
               setContent(value);
               !obavijestId &&
                 window.localStorage.setItem(`${from}_editor_content`, value);
+            }}
+            valueEn={contentEn}
+            onChangeEn={(value) => {
+              setContentEn(value);
+              !obavijestId &&
+                window.localStorage.setItem(`${from}_editor_content_en`, value);
             }}
             addImageToolbar={addImageToolbar}
             addYoutubeVideo={addYoutubeVideo}

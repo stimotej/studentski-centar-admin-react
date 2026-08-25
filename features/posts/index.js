@@ -161,7 +161,18 @@ export const useCreatePost = () => {
   const queryClient = useQueryClient();
 
   return useMutation(
-    async ({ title, excerpt, content, status, categories, documents, slug }) => {
+    async ({
+      title,
+      excerpt,
+      content,
+      status,
+      categories,
+      documents,
+      slug,
+      titleEn,
+      excerptEn,
+      contentEn,
+    }) => {
       const response = await axios.post(
         `${WP_API}/posts`,
         {
@@ -173,6 +184,9 @@ export const useCreatePost = () => {
           categories: [adminPostsCategory, ...categories],
           meta: {
             documents,
+            title_en: titleEn,
+            excerpt_en: excerptEn,
+            content_en: contentEn,
           },
         }
       );

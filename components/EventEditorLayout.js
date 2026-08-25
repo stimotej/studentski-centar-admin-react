@@ -12,6 +12,8 @@ const QuillEditor = dynamic(() => import("./Obavijesti/Editor/QuillEditor"), {
 });
 import StoredPostNote from "./Obavijesti/Editor/StoredPostNote";
 import Layout from "./Layout";
+import LocalizedField from "./Elements/LocalizedField";
+import LocaleToggle from "./Elements/LocaleToggle";
 import {
   adminTeatarTdCategory,
   eventsCategoryId,
@@ -109,6 +111,8 @@ const EventEditorLayout = ({ location }) => {
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [titleEn, setTitleEn] = useState("");
+  const [contentEn, setContentEn] = useState("");
   const [imageId, setImageId] = useState("");
   const [status, setStatus] = useState("publish");
 
@@ -178,6 +182,8 @@ const EventEditorLayout = ({ location }) => {
       setImage({ src: event.image !== "false" ? event.image : null } || null);
       setTitle(event.title || "");
       setContent(event.content || "");
+      setTitleEn(event.titleEn || "");
+      setContentEn(event.contentEn || "");
       setImageId(event.imageId || "");
       setStatus(event.status || "publish");
       setEventDates(event.dates || []);
@@ -193,6 +199,8 @@ const EventEditorLayout = ({ location }) => {
     } else {
       setTitle(window.localStorage.getItem("event_title") || "");
       setContent(window.localStorage.getItem("event_content") || "");
+      setTitleEn(window.localStorage.getItem("event_title_en") || "");
+      setContentEn(window.localStorage.getItem("event_content_en") || "");
       setImageId(window.localStorage.getItem("event_image_id") || "");
       setImage({ src: window.localStorage.getItem("event_image_src") });
       setStatus(window.localStorage.getItem("event_status") || "publish");
@@ -220,6 +228,8 @@ const EventEditorLayout = ({ location }) => {
     setImage(null);
     setTitle("");
     setContent("");
+    setTitleEn("");
+    setContentEn("");
     setImageId(0);
     setStatus("publish");
     setEventLocation("");
@@ -240,6 +250,8 @@ const EventEditorLayout = ({ location }) => {
     const newEvent = {
       title: title,
       content: content,
+      titleEn: titleEn,
+      contentEn: contentEn,
       imageId: imageId || 0,
       status: status,
       dates: eventDates.map((date) => dayjs(date).toISOString()),
@@ -672,8 +684,13 @@ const EventEditorLayout = ({ location }) => {
       </MyDialog>
       <div className="pr-0 lg:pr-72">
         <div className="px-5 py-10 md:p-12">
-          <ReactQuill
-            className="w-full mt-14 sm:mt-12 text-2xl obavijest-title bg-transparent font-semibold border-transparent focus:border-transparent focus:ring-0"
+          <div className="mt-14 sm:mt-12">
+            <LocaleToggle />
+          </div>
+          <LocalizedField
+            as={ReactQuill}
+            label="Naslov"
+            className="w-full mt-2 text-2xl obavijest-title bg-transparent font-semibold border-transparent focus:border-transparent focus:ring-0"
             placeholder="Naslov..."
             modules={{
               toolbar: false,
@@ -683,6 +700,11 @@ const EventEditorLayout = ({ location }) => {
             onChange={(value) => {
               setTitle(value);
               !eventId && window.localStorage.setItem("event_title", value);
+            }}
+            valueEn={titleEn}
+            onChangeEn={(value) => {
+              setTitleEn(value);
+              !eventId && window.localStorage.setItem("event_title_en", value);
             }}
           />
           {/* <QuillEditor
@@ -695,11 +717,18 @@ const EventEditorLayout = ({ location }) => {
             }}
             className="w-full mt-14 sm:mt-12 text-2xl bg-transparent font-semibold border-transparent focus:border-transparent focus:ring-0"
           /> */}
-          <QuillEditor
+          <LocalizedField
+            as={QuillEditor}
+            label="Sadržaj"
             value={content}
             onChange={(value) => {
               setContent(value);
               !eventId && window.localStorage.setItem("event_content", value);
+            }}
+            valueEn={contentEn}
+            onChangeEn={(value) => {
+              setContentEn(value);
+              !eventId && window.localStorage.setItem("event_content_en", value);
             }}
             addImageToolbar={addImageToolbar}
             addYoutubeVideo={addYoutubeVideo}
