@@ -156,8 +156,15 @@ First real section. 26 posts under category `176`, the densest editor in the app
       - [x] Frontend (`studentski-centar-zagreb`, branch `i18n/hr-en-smjestaj`):
             `/en` routing, fallback rule, `sadrzaj_en` read on
             `/smjestaj/domovi/[slug]`. Both locales verified rendering locally.
-      - [ ] **Translate one post and confirm English appears** — the last step,
-            and the first production write of the project
+      - [x] **Translated one post and confirmed English appears.** Done
+            2026-08-25 on post 4200 (SD Lašćina). Verified additive: slug,
+            title, status, categories and every content meta field unchanged;
+            `documents`/`link`/`footnotes` confirmed to have had no rows before
+            the save (checked against the 2026-08-20 backup), so nothing was
+            cleared. `/smjestaj/domovi/sd-lascina` renders Croatian and
+            `/en/...` renders English, with no leakage either way.
+
+**The vertical slice is proven.** The design survives contact with production.
 - [ ] Then the remaining fields.
 - [ ] Then the frontend in `studentski-centar-zagreb`.
 - [ ] Write up what the pilot changed about the plan in HANDOFF.md, and fix this

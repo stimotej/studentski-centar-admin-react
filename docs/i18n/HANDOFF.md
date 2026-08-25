@@ -41,6 +41,45 @@ there.
 
 ---
 
+## 2026-08-25 — Timotej + Claude — Phase 2 vertical slice PROVEN
+
+**Done**
+- Wired `sadrzaj` end to end: WordPress `sadrzaj_en` → admin HR/EN toggle on
+  `/zaposlenici/smjestaj` → `/en` routing in `studentski-centar-zagreb` →
+  rendered English on the public page.
+- Timotej translated post 4200 (SD Lašćina) through the admin. First production
+  write of the project.
+- Frontend work is on branch `i18n/hr-en-smjestaj` in
+  `studentski-centar-zagreb`, commit ff68f0e. **Not deployed yet.**
+
+**Verification**
+- Additive: slug `sd-lascina`, title, status, categories and every content meta
+  field unchanged. `documents`/`link`/`footnotes` read empty afterwards, but the
+  2026-08-20 backup shows they had **no rows before the save either** — nothing
+  was cleared.
+- `/smjestaj/domovi/sd-lascina` → Croatian, `lang="hr"`.
+  `/en/smjestaj/domovi/sd-lascina` → English, `lang="en"`.
+  Neither leaks the other language into visible content.
+
+**Next action**
+- Wire the remaining 11 smještaj fields (see `sections/smjestaj.md`), then
+  decide whether to deploy the frontend branch.
+
+**Gotchas**
+- **`fallback: true` silently broke the English pages.** `getStaticPaths`
+  returned paths with no `locale`, so EN was only generated on demand and a
+  request without JS (crawler, curl, preview bot) got the loading shell. Fixed
+  by pre-rendering every locale explicitly. Any other dynamic route converted
+  later needs the same treatment — this would have shipped unnoticed.
+- `_document.tsx` hardcoded `<html lang="hr">`, mislabelling every `/en` page.
+- Both languages appear in the page's `__NEXT_DATA__` payload regardless of
+  locale — that is the serialised post object, not a render leak. Strip
+  `<script>` blocks before grepping a page to check for leakage.
+- The slug fix is confirmed working in production: saving 4200 left
+  `sd-lascina` untouched.
+
+---
+
 ## 2026-08-20 — Timotej + Claude — Phase 1a + 1b complete
 
 **Done**
