@@ -43,6 +43,7 @@ import {
   faTriangleExclamation,
 } from "@fortawesome/pro-regular-svg-icons";
 import MediaSelectDialog from "../../components/MediaSelectDialog";
+import LocalizedField from "../../components/Elements/LocalizedField";
 
 const QuillTextEditor = dynamic(
   () => import("../../components/Elements/QuillTextEditor"),
@@ -108,13 +109,16 @@ const PocetnaStranica = () => {
     updatePost({
       id: postData.id,
       title: postData.title,
+      titleEn: postData?.titleEn,
       sadrzaj: postData.sadrzaj,
+      sadrzajEn: postData?.sadrzajEn,
       teatarTdPhone: postData.teatarTdPhone,
       teatarTdEmail: postData.teatarTdEmail,
       teatarTdWebsiteUrl: postData.teatarTdWebsiteUrl,
       teatarTdAddress: postData.teatarTdAddress,
       excerpt: "<p></p>",
       content: postData.content,
+      contentEn: postData?.contentEn,
       status: "publish",
       link: postData.link,
       documents:
@@ -155,7 +159,7 @@ const PocetnaStranica = () => {
 
   return (
     <Layout>
-      <Header title="Teatar &TD" />
+      <Header localeToggle title="Teatar &TD" />
       <div className="flex items-start gap-10 flex-wrap md:flex-nowrap px-5 md:px-10 pb-6">
         <div>
           {isLoadingPosts ? (
@@ -261,10 +265,16 @@ const PocetnaStranica = () => {
               <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
                 Naslov
               </h4>
-              <QuillTextEditor
+              <LocalizedField
+                as={QuillTextEditor}
+                label="Naslov"
                 value={postData?.title}
                 onChange={(title) =>
                   setPostData((curr) => ({ ...curr, title }))
+                }
+                valueEn={postData?.titleEn}
+                onChangeEn={(titleEn) =>
+                  setPostData((curr) => ({ ...curr, titleEn }))
                 }
                 formats={["bold"]}
                 className="[&>div>div]:!min-h-fit [&>div>div]:line-clamp-1"
@@ -277,10 +287,16 @@ const PocetnaStranica = () => {
                 <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
                   Kratki opis
                 </h4>
-                <QuillTextEditor
+                <LocalizedField
+                  as={QuillTextEditor}
+                  label="Sadržaj"
                   value={postData?.sadrzaj}
                   onChange={(sadrzaj) =>
                     setPostData((curr) => ({ ...curr, sadrzaj }))
+                  }
+                  valueEn={postData?.sadrzajEn}
+                  onChangeEn={(sadrzajEn) =>
+                    setPostData((curr) => ({ ...curr, sadrzajEn }))
                   }
                   className="[&>div>div]:!min-h-[100px]"
                   placeholder="Unesi kratki opis..."
@@ -370,10 +386,16 @@ const PocetnaStranica = () => {
                   <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
                     Sadržaj
                   </h4>
-                  <QuillTextEditor
+                  <LocalizedField
+                    as={QuillTextEditor}
+                    label="Sadržaj"
                     value={postData?.content}
                     onChange={(content) =>
                       setPostData((curr) => ({ ...curr, content }))
+                    }
+                    valueEn={postData?.contentEn}
+                    onChangeEn={(contentEn) =>
+                      setPostData((curr) => ({ ...curr, contentEn }))
                     }
                     files={postData.documents}
                     mediaCategoryId={teatarTdCategoryId}

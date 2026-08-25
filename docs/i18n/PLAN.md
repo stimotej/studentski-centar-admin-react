@@ -202,15 +202,27 @@ keeps it.
 Each one repeats the same checklist. Copy
 [sections/_TEMPLATE.md](./sections/_TEMPLATE.md) per section.
 
-- [ ] sport
-- [ ] kultura
-- [ ] student-servis
-- [ ] pocetna-stranica
-- [ ] prehrana (page content only — not daily menus)
-- [ ] turizam
-- [ ] eventi
-- [ ] catering
-- [ ] teatar-td
+All nine done in the admin on 2026-08-25. **Frontends not yet done** — see below.
+
+- [x] sport — title, excerpt, content
+- [x] kultura — title, excerpt, content. Its single `excerpt` state maps to
+      `sadrzaj` for teatar posts and to `excerpt` otherwise; the English side
+      mirrors that branch.
+- [x] student-servis — title, excerpt, content
+- [x] pocetna-stranica — title, content, and `excerpt` state (stored as
+      `sadrzaj`, only on the Opće informacije post)
+- [x] prehrana — excerpt only (page content; daily menus stay out of scope)
+- [x] turizam — title, excerpt, content
+      - [ ] `rentalOptions` titles deferred (structured editor, like image groups)
+- [x] eventi — title, content
+      - [ ] `features` titles deferred (structured editor)
+- [x] catering — title, excerpt, content
+- [x] teatar-td — title, sadrzaj, content. The `teatar_td_*` contact fields are
+      a phone number, an email, a URL and a street address — not translated.
+
+**Still admin-only.** Each section's English content is invisible until its
+frontend reads the `_en` twins. Only `studentski-centar-zagreb`'s smještaj
+pages do so far; `teatar-td`, `turizam` and `sczg-eventi` are untouched.
 
 ---
 

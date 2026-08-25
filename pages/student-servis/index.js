@@ -42,6 +42,7 @@ import {
   studentskiServisCategoryId,
 } from "../../lib/constants";
 import SelectMediaInput from "../../components/Elements/SelectMediaInput";
+import LocalizedField from "../../components/Elements/LocalizedField";
 
 const Poslovi = () => {
   const {
@@ -77,8 +78,11 @@ const Poslovi = () => {
 
   const [mediaId, setMediaId] = useState("");
   const [title, setTitle] = useState("");
+  const [titleEn, setTitleEn] = useState("");
   const [excerpt, setExcerpt] = useState("");
+  const [excerptEn, setExcerptEn] = useState("");
   const [content, setContent] = useState("");
+  const [contentEn, setContentEn] = useState("");
   const [files, setFiles] = useState([]);
 
   useEffect(() => {
@@ -88,8 +92,11 @@ const Poslovi = () => {
       setPage(post.id);
       setMediaId(post.imageId);
       setTitle(post.title);
+      setTitleEn(post.titleEn || "");
       setExcerpt(post.excerpt);
+      setExcerptEn(post.excerptEn || "");
       setContent(post.content);
+      setContentEn(post.contentEn || "");
       setFiles(post.documents || []);
 
       if (categories && categories[0]) setCategory(categories[0].id);
@@ -102,9 +109,12 @@ const Poslovi = () => {
     setPage(postId);
     setCategory(categoryId);
     setTitle(post.title);
+    setTitleEn(post.titleEn || "");
     setMediaId(post.imageId);
     setExcerpt(post.excerpt);
+    setExcerptEn(post.excerptEn || "");
     setContent(post.content);
+    setContentEn(post.contentEn || "");
     setFiles(post.documents || []);
   };
 
@@ -138,6 +148,9 @@ const Poslovi = () => {
       title,
       excerpt,
       content,
+      titleEn,
+      excerptEn,
+      contentEn,
       status: "publish",
       featuredMedia: mediaId,
       documents:
@@ -165,7 +178,7 @@ const Poslovi = () => {
 
   return (
     <Layout>
-      <Header title="Početna" />
+      <Header localeToggle title="Početna" />
       <div className="px-5 md:px-10 pb-6">
         <div className="flex gap-10 flex-wrap md:flex-nowrap">
           <div>
@@ -269,9 +282,13 @@ const Poslovi = () => {
               <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
                 Naslov
               </h4>
-              <QuillTextEditor
+              <LocalizedField
+                as={QuillTextEditor}
+                label="Naslov"
                 value={title}
                 onChange={setTitle}
+                valueEn={titleEn}
+                onChangeEn={setTitleEn}
                 formats={["bold"]}
                 className="[&>div>div]:!min-h-fit [&>div>div]:line-clamp-1"
                 placeholder="Unesi naslov..."
@@ -285,9 +302,13 @@ const Poslovi = () => {
                   <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
                     Kratki opis
                   </h4>
-                  <QuillTextEditor
+                  <LocalizedField
+                    as={QuillTextEditor}
+                    label="Kratki opis"
                     value={excerpt}
                     onChange={setExcerpt}
+                    valueEn={excerptEn}
+                    onChangeEn={setExcerptEn}
                     useToolbar={false}
                     className="[&>div>div]:!min-h-[100px]"
                     placeholder="Unesi kratki opis..."
@@ -298,9 +319,13 @@ const Poslovi = () => {
               <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
                 Sadržaj
               </h4>
-              <QuillTextEditor
+              <LocalizedField
+                as={QuillTextEditor}
+                label="Sadržaj"
                 value={content}
                 onChange={setContent}
+                valueEn={contentEn}
+                onChangeEn={setContentEn}
                 files={files}
                 setFiles={setFiles}
                 placeholder="Unesi sadržaj..."

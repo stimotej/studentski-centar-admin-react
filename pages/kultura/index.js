@@ -38,6 +38,7 @@ import {
 } from "../../features/posts";
 import dynamic from "next/dynamic";
 import clearHtmlFromString from "../../lib/clearHtmlFromString";
+import LocalizedField from "../../components/Elements/LocalizedField";
 const QuillTextEditor = dynamic(
   () => import("../../components/Elements/QuillTextEditor"),
   { ssr: false }
@@ -90,8 +91,11 @@ const Home = () => {
 
   const [image, setImage] = useState(null);
   const [title, setTitle] = useState("");
+  const [titleEn, setTitleEn] = useState("");
   const [excerpt, setExcerpt] = useState("");
+  const [excerptEn, setExcerptEn] = useState("");
   const [content, setContent] = useState("");
+  const [contentEn, setContentEn] = useState("");
   const [link, setLink] = useState("");
   const [slug, setSlug] = useState("");
 
@@ -108,8 +112,11 @@ const Home = () => {
       setCategory(categoryId);
       setImage(post.imageId);
       setTitle(post.title);
+      setTitleEn(post.titleEn || "");
       setExcerpt(post.excerpt);
+      setExcerptEn(post.excerptEn || "");
       setContent(post.content);
+      setContentEn(post.contentEn || "");
       setLink(post.link);
       setSlug(post.slug);
       isDataSetForTheFirstTime.current = true;
@@ -126,8 +133,11 @@ const Home = () => {
     setCategory(categoryId);
     setImage(post.imageId);
     setTitle(post.title);
+    setTitleEn(post.titleEn || "");
     setExcerpt(isTeatarPost ? post.sadrzaj : post.excerpt);
+    setExcerptEn((isTeatarPost ? post.sadrzaj_en : post.excerptEn) || "");
     setContent(post.content);
+    setContentEn(post.contentEn || "");
     setLink(post.link);
     setSlug(post.slug);
   };
@@ -167,9 +177,13 @@ const Home = () => {
       {
         id: page,
         title: title,
+        titleEn: titleEn,
         sadrzaj: isTeatarPost ? excerpt : undefined,
         excerpt: isTeatarPost ? undefined : excerpt || "<p></p>",
         content: content,
+        sadrzajEn: isTeatarPost ? excerptEn : undefined,
+        excerptEn: isTeatarPost ? undefined : excerptEn,
+        contentEn: contentEn,
         link: isTeatarPost ? undefined : clearHtmlFromString(link || ""),
         status: "publish",
         ...(image ? { featuredMedia: image } : {}),
@@ -199,7 +213,7 @@ const Home = () => {
 
   return (
     <Layout>
-      <Header title="Početna" />
+      <Header localeToggle title="Početna" />
       <div className="px-5 md:px-10 pb-6">
         <div className="flex gap-10 flex-wrap md:flex-nowrap">
           <div>
@@ -383,9 +397,13 @@ const Home = () => {
             )}
 
             <h3 className="font-semibold mt-4 mb-2">Naslov</h3>
-            <QuillTextEditor
+            <LocalizedField
+              as={QuillTextEditor}
+              label="Naslov"
               value={title}
               onChange={setTitle}
+              valueEn={titleEn}
+              onChangeEn={setTitleEn}
               formats={[]}
               className="[&>div>div]:!min-h-fit [&>div>div]:line-clamp-1"
               placeholder="Unesi naslov..."
@@ -397,9 +415,13 @@ const Home = () => {
                 "lokacije") && (
               <>
                 <h3 className="font-semibold mt-4 mb-2">Opis</h3>
-                <QuillTextEditor
+                <LocalizedField
+                  as={QuillTextEditor}
+                  label="Kratki opis"
                   value={excerpt}
                   onChange={setExcerpt}
+                  valueEn={excerptEn}
+                  onChangeEn={setExcerptEn}
                   placeholder="Unesi opis..."
                   mediaCategoryId={kulturaCategoryId}
                 />
@@ -411,9 +433,13 @@ const Home = () => {
                 "stranice-kultura-admin") && (
               <>
                 <h3 className="font-semibold mt-4 mb-2">Sadržaj</h3>
-                <QuillTextEditor
+                <LocalizedField
+                  as={QuillTextEditor}
+                  label="Sadržaj"
                   value={content}
                   onChange={setContent}
+                  valueEn={contentEn}
+                  onChangeEn={setContentEn}
                   placeholder="Unesi sadržaj..."
                   mediaCategoryId={kulturaCategoryId}
                 />
