@@ -41,6 +41,55 @@ there.
 
 ---
 
+## 2026-08-26 — Timotej + Claude — translation finished; site compromise found and closed
+
+**Translation — done for `posts`**
+- 207 posts remain after cleanup; **200 carry English, 553 fields populated**.
+- Every run verified additive by snapshot diff. The one protected change ever
+  flagged was `date` on draft 36347, which WordPress floats on any save.
+- Cost ≈ $4 via Vercel AI Gateway (`anthropic/claude-opus-4.6`). About a third
+  of that was spent translating spam before we knew it was there.
+
+**Security incident — found while translating, now closed**
+- 95 casino spam posts, published, injected 2026-06-24 → 2026-08-26.
+- Cause: **stolen passwords** on four dormant accounts — `test` (deleted),
+  `lascina`, `express`, `poslovi`. The audit log shows successful logins to
+  each from many different IPs worldwide within minutes of each other; real
+  staff log in from `192.168.43.4`.
+- **No administrator account was ever reached** — only `sc-admin` from the
+  office IP. So no code execution, and `wp_snippets` (which holds the `sc/v1`
+  API) was never at risk.
+- Fixed: `test` deleted with its 25 posts, new generated passwords and forced
+  logout on the other three, 76 spam posts removed via
+  `scripts/wp-cleanup-spam.mjs`.
+- Verified after: 0 items dated 2026 remain under those accounts; all 50 of
+  their legitimate 2022–23 items intact.
+
+**Still open**
+- Those three accounts have been unused since Feb 2023. Safer to disable them
+  outright than to leave them with new passwords.
+- Post `58436` was attributed to the admin account though no admin logged in
+  externally. Unexplained.
+- Brute force against `wp-login.php` was ongoing. Restricting that path to the
+  office IP would end it.
+- Check in a day or two that no new spam appears. If it does, the passwords
+  were not the entry point.
+
+**Gotchas**
+- **Deleting a user with content can exhaust MySQL's connection pool.** Removing
+  `test` (25 posts) cascaded through postmeta, terms and a WSAL row each, the
+  request timed out, and WordPress showed "Error establishing a database
+  connection" — but the transaction completed server-side. Check whether the
+  work finished before retrying; retrying a half-done cascade is how a scare
+  becomes damage. `wp-cleanup-spam.mjs` batches five at a time with pauses.
+- **`{ type, ...post }` puts the WordPress object's own `type` last**, so
+  `"posts"` became `"post"` and every DELETE hit a non-existent route. All 76
+  failed harmlessly. Spread order matters when merging API responses.
+- Spam detection by keyword missed "Chicken Road" and "The Holyluck
+  Experience". The reliable rule was **dormant account + 2026 date**.
+
+---
+
 ## 2026-08-26 — Timotej + Claude — first bulk translation run (posts)
 
 **Done**

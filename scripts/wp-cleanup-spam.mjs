@@ -48,14 +48,17 @@ async function collect(headers) {
       const res = await fetch(url, { headers });
       if (!res.ok) continue;
       for (const p of await res.json()) {
-        if (p.date >= COMPROMISED_FROM) found.set(`${type}:${p.id}`, { type, ...p });
+        // `...p` last would let the post's own `type` ("post") overwrite the
+        // REST route segment ("posts"), which is what sent every DELETE to a
+        // non-existent endpoint the first time this ran.
+        if (p.date >= COMPROMISED_FROM) found.set(`${type}:${p.id}`, { ...p, type });
       }
     }
   }
 
   for (const id of EXTRA_IDS) {
     const res = await fetch(`${apiBase()}/wp/v2/posts/${id}?context=edit`, { headers });
-    if (res.ok) found.set(`posts:${id}`, { type: "posts", ...(await res.json()) });
+    if (res.ok) found.set(`posts:${id}`, { ...(await res.json()), type: "posts" });
   }
 
   return [...found.values()].sort((a, b) => (a.date < b.date ? 1 : -1));
@@ -100,7 +103,10 @@ async function main() {
       .filter((l) => l.trim() && !l.startsWith("#"))
       .map((l) => {
         const [ref, date, author, title] = l.split("\t");
-        const [type, id] = ref.split(":");
+        const [rawType, id] = ref.split(":");
+        // A review list produced before the fix says "post"/"page"; the REST
+        // routes are plural. Accept both rather than make anyone redo edits.
+        const type = { post: "posts", page: "pages", attachment: "media" }[rawType] ?? rawType;
         return { type, id: Number(id), date, author, title };
       });
   } catch {
