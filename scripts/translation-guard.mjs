@@ -45,11 +45,24 @@ export const PROTECTED_TERMS = [
  *
  * SN (Studentsko naselje, a student village) and SD (Studentski dom, a student
  * hall) are DIFFERENT places. A 2026-08-26 dry run had the model silently
- * "correcting" SN to SD in two fields out of four — listing only the SD forms
- * as protected names had biased it. Never list one form without the other, and
- * never rely on the prompt alone to hold this line.
+ * "correcting" SN to SD in two fields out of four.
+ *
+ * This is a curated list rather than "any capitalised token". The first version
+ * flagged every all-caps word, so a shouty Croatian sentence tripped it with
+ * DA, NA, TE and KOJI — ordinary words, not abbreviations. Add real
+ * abbreviations here; do not widen it back into a pattern.
  */
-const ACRONYM = /\b[A-ZŠĐČĆŽ]{2,5}\b/g;
+export const PROTECTED_ABBREVIATIONS = [
+  "SN", "SD", "SC", "TD",
+  "MZO", "PDV", "OIB", "IBAN",
+  "ECTS", "ISIC", "EU", "PDF", "FAQ",
+];
+
+// JS word boundaries are ASCII-only, so \b lands in the middle of words like
+// NAPIŠITE. Match on explicit letter neighbours instead, Croatian included.
+const LETTER = "A-Za-zŠĐČĆŽšđčćž";
+const standalone = (abbr) =>
+  new RegExp(`(?<![${LETTER}])${abbr}(?![${LETTER}])`, "g");
 
 /** Digits only — catches "same number, different spacing" separately from "different number". */
 const digitsOf = (s) => String(s).replace(/\D/g, "");
@@ -83,16 +96,15 @@ export function checkTranslation(source, translation) {
     }
   }
 
-  // Every acronym in the source must appear in the translation, unchanged and
-  // the same number of times — this is what catches SN silently becoming SD.
-  const sourceAcronyms = findAll(source, ACRONYM);
-  const counted = new Map();
-  for (const a of sourceAcronyms) counted.set(a, (counted.get(a) ?? 0) + 1);
-  for (const [acronym, times] of counted) {
-    const seen = findAll(translation, ACRONYM).filter((x) => x === acronym).length;
-    if (seen < times) {
+  // Each protected abbreviation must appear at least as often in the English as
+  // in the Croatian — this is what catches SN silently becoming SD.
+  for (const abbr of PROTECTED_ABBREVIATIONS) {
+    const inSource = findAll(source, standalone(abbr)).length;
+    if (!inSource) continue;
+    const inTranslation = findAll(translation, standalone(abbr)).length;
+    if (inTranslation < inSource) {
       errors.push(
-        `abbreviation lost or changed: ${acronym} appears ${times}x in Croatian, ${seen}x in English`
+        `abbreviation lost or changed: ${abbr} appears ${inSource}x in Croatian, ${inTranslation}x in English`
       );
     }
   }
