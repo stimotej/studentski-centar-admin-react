@@ -19,9 +19,16 @@
  *      corrections are not clobbered by a re-run.
  *   6. Every write is appended to a JSONL log so any run can be reversed.
  *
- * Environment:
- *   ANTHROPIC_API_KEY   for translation
- *   WP_USER / WP_APP_PASSWORD  WordPress application password, for writing
+ * Environment — one of these two for the model:
+ *   AI_GATEWAY_API_KEY  routes through Vercel AI Gateway (zero markup, and it
+ *                       spends Vercel credits rather than an Anthropic balance)
+ *   ANTHROPIC_API_KEY   calls Anthropic directly
+ * and, only to write:
+ *   WP_USER / WP_APP_PASSWORD  a WordPress application password
+ *
+ * Override the model with --model or TRANSLATE_MODEL. Gateway slugs use dots
+ * and a provider prefix (anthropic/claude-opus-4.6); the direct API uses bare
+ * ids (claude-opus-5). The default follows whichever route is active.
  */
 
 import fs from "node:fs/promises";
@@ -59,10 +66,23 @@ if (WRITE && !(wpUser && wpPass)) {
   console.error("--write needs WP_USER and WP_APP_PASSWORD (a WordPress application password).");
   process.exit(2);
 }
-if (!process.env.ANTHROPIC_API_KEY) {
-  console.error("ANTHROPIC_API_KEY is not set.");
+const GATEWAY_KEY = process.env.AI_GATEWAY_API_KEY;
+const USE_GATEWAY = Boolean(GATEWAY_KEY);
+
+if (!USE_GATEWAY && !process.env.ANTHROPIC_API_KEY) {
+  console.error(
+    "No model credentials. Set one of:\n" +
+      "  AI_GATEWAY_API_KEY   route via Vercel AI Gateway\n" +
+      "  ANTHROPIC_API_KEY    call Anthropic directly"
+  );
   process.exit(2);
 }
+
+// Gateway model ids are provider-prefixed and dot-versioned; direct ids are bare.
+const MODEL =
+  value("model") ||
+  process.env.TRANSLATE_MODEL ||
+  (USE_GATEWAY ? "anthropic/claude-opus-4.6" : "claude-opus-5");
 
 /**
  * What gets translated, and where the English goes.
@@ -112,7 +132,17 @@ Rules, in order of priority:
 
 Return ONLY the translated text. No commentary, no code fences, no explanation. If the input is empty or has nothing to translate, return it unchanged.`;
 
-const anthropic = new Anthropic();
+/**
+ * The gateway speaks the Anthropic Messages API, so the same SDK works for
+ * both routes — only the base URL and the credential change.
+ */
+const anthropic = USE_GATEWAY
+  ? new Anthropic({
+      baseURL: "https://ai-gateway.vercel.sh",
+      authToken: GATEWAY_KEY,
+      apiKey: null,
+    })
+  : new Anthropic();
 
 const headers = {
   Accept: "application/json",
@@ -124,10 +154,13 @@ const headers = {
 
 async function translate(text) {
   const response = await anthropic.messages.create({
-    model: "claude-opus-5",
+    model: MODEL,
     max_tokens: 16000,
-    thinking: { type: "adaptive" },
-    output_config: { effort: "low" },
+    // Provider-specific extras are sent only on the direct route. The gateway
+    // normalises across providers and may reject parameters it does not model.
+    ...(USE_GATEWAY
+      ? {}
+      : { thinking: { type: "adaptive" }, output_config: { effort: "low" } }),
     system: [{ type: "text", text: SYSTEM, cache_control: { type: "ephemeral" } }],
     messages: [{ role: "user", content: String(text) }],
   });
@@ -172,6 +205,7 @@ async function main() {
   const posts = await fetchPosts();
   const targets = LIMIT ? posts.slice(0, LIMIT) : posts;
 
+  console.log(`  model: ${MODEL} via ${USE_GATEWAY ? "Vercel AI Gateway" : "Anthropic direct"}`);
   console.log(
     `${WRITE ? "WRITING" : "DRY RUN"} — ${targets.length} ${TYPE}` +
       (CATEGORY ? ` in category ${CATEGORY}` : "") +
