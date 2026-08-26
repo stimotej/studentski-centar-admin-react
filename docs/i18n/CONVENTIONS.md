@@ -95,6 +95,37 @@ This keeps one post id ↔ one slug and avoids a translation-aware router in fou
 separate frontends. Revisit only if SEO requires localised slugs, and if so do
 it as its own project.
 
+## Machine translation must be verified, not trusted
+
+Content is translated by AI, with staff free to correct it in the admin later.
+That is fine for prose. It is **not** fine for the things inside the prose:
+across the site there are 194 email addresses, 227 phone numbers, 765 URLs,
+5 IBANs and 3 OIB numbers. A silently reformatted phone number or a localised
+IBAN is a real-world failure, not a typo.
+
+So every translation is checked mechanically before it is written, by
+`scripts/translation-guard.mjs`:
+
+| Check | Result if it fails |
+| --- | --- |
+| Emails, URLs, IBANs, OIB numbers, money amounts present verbatim | **blocked** |
+| Phone numbers present verbatim | **blocked** |
+| Phone present but reformatted (same digits) | warning |
+| Protected names (`PROTECTED_TERMS`) unchanged | **blocked** |
+| HTML opening-tag sequence identical | **blocked** |
+| Output at least half the source length | **blocked** |
+
+These are checks on the model's *output*, not instructions in its prompt — the
+model cannot decline to follow them.
+
+**What the guard does not catch**, and what review is therefore still for:
+
+- **Semantic errors in dates and rules written as words.** "15. ožujka" →
+  "15 May" keeps the digits and passes. A wrong deadline reads perfectly.
+- **Street and place names not in `PROTECTED_TERMS`.** Add any name whose
+  translation would send someone to the wrong place.
+- **Tone and register**, which no check can assess.
+
 ## What is explicitly out of scope
 
 - **Admin UI chrome.** Labels, buttons, and toasts in this repo stay Croatian.
