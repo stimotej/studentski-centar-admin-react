@@ -99,13 +99,21 @@ export function checkTranslation(source, translation) {
 
       // Present but reformatted (e.g. "01 4593 555" → "01-4593-555") is still a
       // change to a number a student will dial. Flag it rather than accept it.
+      const digits = digitsOf(item);
+
       // Date ranges like "01.01.- 31.12.2025" look like phone numbers to the
-      // pattern above. They are dates; the digits are checked anyway.
-      if (kind === "phone" && /\d{1,2}\.\s?\d{1,2}\.\s*-?\s*\d{1,2}\.\s?\d{1,2}\.\s?\d{4}/.test(item)) {
+      // pattern above. English typography turns the hyphen into an en dash,
+      // which is correct and not worth warning about — but the digits still
+      // have to survive, because a changed year is a changed deadline.
+      const looksLikeDateRange =
+        kind === "phone" &&
+        /\d{1,2}\s*\.\s*\d{1,2}\s*\.\s*[-–—]?\s*\d{1,2}\s*\.\s*\d{1,2}\s*\.\s*\d{4}/.test(item);
+      if (looksLikeDateRange) {
+        if (!digitsOf(translation).includes(digits)) {
+          errors.push(`date changed: ${item}`);
+        }
         continue;
       }
-
-      const digits = digitsOf(item);
       const reformatted =
         digits.length >= 6 && digitsOf(translation).includes(digits);
 
