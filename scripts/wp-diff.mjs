@@ -34,8 +34,11 @@ const ignoredPaths = new Set([
   "_embedded",
 ]);
 
+// `meta` is the writable view; an authenticated (context=edit) snapshot also
+// exposes the same values under `custom_fields`. Both are translation paths —
+// treating only `meta` as one made an additive run report FAIL.
 const isTranslationPath = (fieldPath) =>
-  /(^|\.)meta\.[A-Za-z0-9_]*_en(\.|$)/.test(fieldPath);
+  /(^|\.)(meta|custom_fields)\.[A-Za-z0-9_]*_en(\.|$)/.test(fieldPath);
 
 const isObject = (value) =>
   value !== null && typeof value === "object" && !Array.isArray(value);

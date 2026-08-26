@@ -11,7 +11,12 @@
 
 /** Things that must survive translation byte-for-byte. */
 const INVARIANTS = {
-  email: /[\w.+-]+@[\w-]+\.[\w.]+/g,
+  // The TLD is matched as lowercase and must not be followed by more
+  // lowercase. WordPress strips tags from excerpt.rendered, so
+  // "…@sczg.hr</p><p>Informacije" arrives as "…@sczg.hrInformacije" — a
+  // greedier pattern captures that whole mess as the address and then
+  // blocks every correct translation for "losing" it.
+  email: /[\w.+-]+@[\w-]+(?:\.[\w-]+)*\.[a-z]{2,24}(?![a-z])/g,
   url: /https?:\/\/[^\s"'<>]+/g,
   iban: /\bHR\d{2}[\dA-Z]{15,}\b/g,
   oib: /\b\d{11}\b/g,
