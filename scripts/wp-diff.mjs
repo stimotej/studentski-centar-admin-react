@@ -53,6 +53,13 @@ const isObject = (value) =>
 function diffValues(before, after, trail, out) {
   if (trail && isIgnored(trail)) return;
 
+  // WordPress returns [] for "no custom fields" and an object once there are
+  // some. Without this, adding the first _en key looks like the whole container
+  // changing type, and every key inside it goes unexamined.
+  const emptyArray = (v) => Array.isArray(v) && v.length === 0;
+  if (emptyArray(before) && isObject(after)) before = {};
+  if (isObject(before) && emptyArray(after)) after = {};
+
   if (isObject(before) && isObject(after)) {
     for (const key of new Set([
       ...Object.keys(before),

@@ -41,6 +41,54 @@ there.
 
 ---
 
+## 2026-08-26 — Timotej + Claude — first bulk translation run (posts)
+
+**Done**
+- Translated smještaj (cat 176) and the eleven other admin categories.
+  **884 English fields across ~180 posts.** Verified additive.
+- Cost so far ≈ $1.30 via Vercel AI Gateway on `anthropic/claude-opus-4.6`.
+
+**Verification**
+- `npm run wp:diff` against `2026-08-26T18-31-13-420Z_before-full`: 884
+  translation fields, and exactly two protected changes — `date` / `date_gmt`
+  on post 36347. That post is an unpublished **draft**; WordPress treats a
+  draft's date as floating and stamps it to now on any save. Our payload
+  contained only `meta`. Benign, and it will be set correctly on publish.
+
+**Next action**
+- The remaining `posts` outside the twelve admin categories: run categories
+  169 (Informacije, 178 posts), 32 (Restoran), 253, 254, 257, 1. Roughly 434
+  fields, ~$2.
+- Then decide about `--type obavijesti`: ~55 are live, 238 have expired, and
+  all 460 events are in the past.
+
+**Gotchas — every one of these came from running it, not reading it**
+- **A transient write failure silently discarded a whole post's work** while the
+  log recorded `wrote: true` with the full key list. Three posts (7633, 41058,
+  41057) lost nine fields this way. Writes now retry, and the log records the
+  real outcome plus the error. If a run reports `failed N`, cross-check the
+  live values — do not trust an old log.
+- **Six of the first seven blocks were the guard being wrong, not the model.**
+  Ordinary Croatian words in capitals (DA, NA, TE, KOJI, OPĆE, PRAVA, KVOTI)
+  tripped an over-broad acronym check; `NAPIŠ` matched out of the middle of
+  NAPIŠITE because JavaScript word boundaries are ASCII-only and break next to
+  Š. Read a block before believing it.
+- **`excerpt.rendered` has its tags stripped by WordPress**, so
+  `…@sczg.hr</p><p>Informacije` arrives as `…@sczg.hrInformacije`. The email
+  pattern captured the run-together mess and then blocked every correct
+  translation for "losing" it.
+- **Word-pasted content is fragmented across dozens of `<span>` tags** with
+  near-identical inline colours (post 13556 has 34 mid-sentence). Translation
+  consolidates a few. `<span>` and `<font>` are now excluded from the structural
+  comparison; links, lists and headings stay strict.
+- **wp-diff reported FAIL twice on runs that were entirely additive**: an
+  authenticated snapshot mirrors meta under `custom_fields`, and WordPress
+  returns `[]` for that container until the first key exists, so adding English
+  looked like the container changing type. Both handled.
+- WordPress sets `_pingme` / `_encloseme` on any post update. Bookkeeping.
+
+---
+
 ## 2026-08-26 — Claude — Phases 3 and 4 complete; main frontend done
 
 **Done**
