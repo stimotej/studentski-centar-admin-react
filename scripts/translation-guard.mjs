@@ -37,12 +37,19 @@ const tagSequence = (html) =>
  */
 export const PROTECTED_TERMS = [
   "Studentski centar",
-  "SD Stjepan Radić",
-  "SD Cvjetno naselje",
-  "SD Lašćina",
-  "SD Dr. Ante Starčević",
   "Teatar &TD",
 ];
+
+/**
+ * Abbreviations that must survive untouched.
+ *
+ * SN (Studentsko naselje, a student village) and SD (Studentski dom, a student
+ * hall) are DIFFERENT places. A 2026-08-26 dry run had the model silently
+ * "correcting" SN to SD in two fields out of four — listing only the SD forms
+ * as protected names had biased it. Never list one form without the other, and
+ * never rely on the prompt alone to hold this line.
+ */
+const ACRONYM = /\b[A-ZŠĐČĆŽ]{2,5}\b/g;
 
 /** Digits only — catches "same number, different spacing" separately from "different number". */
 const digitsOf = (s) => String(s).replace(/\D/g, "");
@@ -73,6 +80,20 @@ export function checkTranslation(source, translation) {
       } else {
         errors.push(`${kind} missing or altered: ${item}`);
       }
+    }
+  }
+
+  // Every acronym in the source must appear in the translation, unchanged and
+  // the same number of times — this is what catches SN silently becoming SD.
+  const sourceAcronyms = findAll(source, ACRONYM);
+  const counted = new Map();
+  for (const a of sourceAcronyms) counted.set(a, (counted.get(a) ?? 0) + 1);
+  for (const [acronym, times] of counted) {
+    const seen = findAll(translation, ACRONYM).filter((x) => x === acronym).length;
+    if (seen < times) {
+      errors.push(
+        `abbreviation lost or changed: ${acronym} appears ${times}x in Croatian, ${seen}x in English`
+      );
     }
   }
 

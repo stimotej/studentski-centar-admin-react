@@ -14,6 +14,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import crypto from "node:crypto";
+import { authenticate } from "./wp-auth.mjs";
 
 const base = (
   process.env.WP_API_BASE || "https://www.sczg.unizg.hr/wp-json"
@@ -54,16 +55,9 @@ if (unknown.length) {
   process.exit(2);
 }
 
-const headers = {
-  Accept: "application/json",
-  ...(authenticated
-    ? {
-        Authorization:
-          "Basic " +
-          Buffer.from(`${user}:${appPassword}`).toString("base64"),
-      }
-    : {}),
-};
+// Filled in by main() when credentials are present. Basic auth does not work
+// against this site — the JWT plugin owns the Authorization header.
+let headers = { Accept: "application/json" };
 
 const isTaxonomy = (type) =>
   type === "categories" || type === "tags" || type === "media_folder";
@@ -114,6 +108,12 @@ async function main() {
       "! No WP_USER / WP_APP_PASSWORD set — snapshotting published content only.\n" +
         "  Drafts and raw content will be missing. Not restore-grade.\n"
     );
+  }
+
+  if (authenticated) {
+    const auth = await authenticate({ user, password: appPassword });
+    headers = auth.headers;
+    console.log(`Authenticated as ${auth.user}\n`);
   }
 
   const startedAt = new Date();

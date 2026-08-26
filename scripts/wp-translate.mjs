@@ -35,6 +35,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import Anthropic from "@anthropic-ai/sdk";
 import { checkTranslation, PROTECTED_TERMS } from "./translation-guard.mjs";
+import { authenticate } from "./wp-auth.mjs";
 
 const argv = process.argv.slice(2);
 const flag = (name) => argv.includes(`--${name}`);
@@ -126,9 +127,10 @@ Rules, in order of priority:
 
 1. Preserve every phone number, email address, URL, IBAN, OIB and monetary amount EXACTLY as written. Do not reformat, re-space or localise them.
 2. Preserve the HTML markup exactly: the same tags, in the same order, with the same attributes. Translate only the human-readable text between tags.
-3. Do not translate proper names: ${PROTECTED_TERMS.join(", ")}, other dormitory names, street names, or personal names. Croatian street addresses stay in Croatian.
-4. Translate dates and opening hours faithfully. Never change a number, a day or a deadline.
-5. Use clear, plain British English suited to students. Match the register of the original.
+3. Do not translate proper names: \${PROTECTED_TERMS.join(", ")}, dormitory and student-village names, street names, or personal names. Croatian street addresses stay in Croatian.
+4. Copy every abbreviation EXACTLY as written. SN (Studentsko naselje) and SD (Studentski dom) are different places — never convert one into the other, never expand them, never "correct" them. The same applies to SC, MZO, PDV, OIB and any other abbreviation.
+5. Translate dates and opening hours faithfully. Never change a number, a day or a deadline.
+6. Use clear, plain British English suited to students. Match the register of the original.
 
 Return ONLY the translated text. No commentary, no code fences, no explanation. If the input is empty or has nothing to translate, return it unchanged.`;
 
@@ -144,13 +146,10 @@ const anthropic = USE_GATEWAY
     })
   : new Anthropic();
 
-const headers = {
-  Accept: "application/json",
-  "Content-Type": "application/json",
-  ...(wpUser && wpPass
-    ? { Authorization: "Basic " + Buffer.from(`${wpUser}:${wpPass}`).toString("base64") }
-    : {}),
-};
+// Populated by main() when credentials are present. The JWT plugin on this
+// site rejects Basic auth outright — see scripts/wp-auth.mjs.
+let headers = { Accept: "application/json", "Content-Type": "application/json" };
+let authenticated = false;
 
 async function translate(text) {
   const response = await anthropic.messages.create({
@@ -178,10 +177,10 @@ async function translate(text) {
 async function fetchPosts() {
   const url = new URL(`${base}/wp/v2/${TYPE}`);
   url.searchParams.set("per_page", "100");
-  url.searchParams.set("context", wpUser ? "edit" : "view");
+  url.searchParams.set("context", authenticated ? "edit" : "view");
   if (CATEGORY) url.searchParams.set("categories", CATEGORY);
   if (IDS.length) url.searchParams.set("include", IDS.join(","));
-  if (wpUser) url.searchParams.set("status", "any");
+  if (authenticated) url.searchParams.set("status", "any");
 
   const res = await fetch(url, { headers });
   if (!res.ok) throw new Error(`fetch ${TYPE}: HTTP ${res.status} ${await res.text()}`);
@@ -202,6 +201,13 @@ async function writeMeta(id, meta) {
 const isBlank = (v) => v === undefined || v === null || String(v).trim() === "";
 
 async function main() {
+  if (wpUser && wpPass) {
+    const auth = await authenticate();
+    headers = auth.headers;
+    authenticated = true;
+    console.log(`  wordpress: ${auth.user}`);
+  }
+
   const posts = await fetchPosts();
   const targets = LIMIT ? posts.slice(0, LIMIT) : posts;
 

@@ -118,6 +118,15 @@ So every translation is checked mechanically before it is written, by
 These are checks on the model's *output*, not instructions in its prompt — the
 model cannot decline to follow them.
 
+**Abbreviations are checked by count, not just presence.** Every acronym in the
+Croatian must appear the same number of times in the English. This exists
+because of a real incident: on 2026-08-26 the first dry run had the model
+silently rewriting **SN** (Studentsko naselje, a student village) to **SD**
+(Studentski dom, a student hall) in two fields out of four — different
+buildings. The cause was `PROTECTED_TERMS` listing only the `SD …` forms, which
+biased the model into "correcting" SN. Never list one form of a name without its
+siblings, and never rely on the prompt alone to hold that line.
+
 **What the guard does not catch**, and what review is therefore still for:
 
 - **Semantic errors in dates and rules written as words.** "15. ožujka" →
