@@ -5,6 +5,7 @@
  *   node scripts/wp-translate.mjs --category 176 --write
  *   node scripts/wp-translate.mjs --ids 4200,4156 --write
  *   node scripts/wp-translate.mjs --category 176 --limit 3 --write
+ *   node scripts/wp-translate.mjs --category 176 --write --concurrency 12
  *
  * Safety properties, in order of importance:
  *
@@ -50,6 +51,9 @@ const LIMIT = Number(value("limit") || 0);
 const CATEGORY = value("category");
 const IDS = (value("ids") || "").split(",").map((s) => s.trim()).filter(Boolean);
 const TYPE = value("type") || "posts";
+// Fields are translated in parallel. Fixed per-request overhead dominates,
+// so this is close to a linear speed-up until the provider rate-limits.
+const CONCURRENCY = Math.max(1, Number(value("concurrency") || process.env.TRANSLATE_CONCURRENCY || 8));
 
 const base = (process.env.WP_API_BASE || "https://www.sczg.unizg.hr/wp-json").replace(/\/$/, "");
 const wpUser = process.env.WP_USER;
@@ -200,6 +204,36 @@ async function writeMeta(id, meta) {
 
 const isBlank = (v) => v === undefined || v === null || String(v).trim() === "";
 
+/** Run `worker` over `items` with at most `limit` in flight. */
+async function pool(items, limit, worker) {
+  let next = 0;
+  const runners = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (true) {
+      const i = next++;
+      if (i >= items.length) return;
+      await worker(items[i], i);
+    }
+  });
+  await Promise.all(runners);
+}
+
+/** Retry transient failures — rate limits and provider hiccups. */
+async function withRetry(fn, attempts = 4) {
+  let lastError;
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error;
+      const status = error?.status ?? error?.statusCode;
+      const retryable = status === 429 || status === 408 || status >= 500 || !status;
+      if (!retryable || attempt === attempts) throw error;
+      await new Promise((r) => setTimeout(r, 1000 * 2 ** (attempt - 1)));
+    }
+  }
+  throw lastError;
+}
+
 async function main() {
   if (wpUser && wpPass) {
     const auth = await authenticate();
@@ -212,6 +246,7 @@ async function main() {
   const targets = LIMIT ? posts.slice(0, LIMIT) : posts;
 
   console.log(`  model: ${MODEL} via ${USE_GATEWAY ? "Vercel AI Gateway" : "Anthropic direct"}`);
+  console.log(`  concurrency: ${CONCURRENCY}`);
   console.log(
     `${WRITE ? "WRITING" : "DRY RUN"} — ${targets.length} ${TYPE}` +
       (CATEGORY ? ` in category ${CATEGORY}` : "") +
@@ -225,72 +260,121 @@ async function main() {
     `${new Date().toISOString().replace(/[:.]/g, "-")}${WRITE ? "" : "_dryrun"}.jsonl`
   );
 
-  let translated = 0, skipped = 0, blocked = 0, failed = 0;
+  // ---- Phase 1: plan every field, so nothing is decided mid-flight ---------
+  let skipped = 0;
+  const plans = [];
 
   for (const post of targets) {
-    const title = (post.title?.rendered || post.slug || post.id).toString().slice(0, 48);
-    const meta = {};
-    const notes = [];
+    const plan = { post, meta: {}, notes: [], jobs: [], dropped: new Set() };
 
     for (const field of FIELDS) {
-      try {
-        if (field.array) {
-          const source = field.array.read(post);
-          if (!Array.isArray(source) || source.length === 0) continue;
-          if (!FORCE && Array.isArray(post.meta?.[field.to]) && post.meta[field.to].length) {
-            skipped++; notes.push(`${field.label}: already translated`); continue;
-          }
-          const out = [];
-          for (const item of source) {
-            const entry = {};
-            for (const prop of field.array.props) {
-              const src = item?.[prop];
-              entry[prop] = isBlank(src) ? "" : await translate(src);
-              if (!isBlank(src)) {
-                const check = checkTranslation(src, entry[prop]);
-                if (!check.ok) {
-                  throw new Error(`${field.label}.${prop}: ${check.errors[0]}`);
-                }
-              }
-            }
-            out.push(entry);
-          }
-          meta[field.to] = out;   // index-aligned with the Croatian array
-          translated++;
-          notes.push(`${field.label}: ${out.length} item(s)`);
-          continue;
+      if (field.array) {
+        const source = field.array.read(post);
+        if (!Array.isArray(source) || source.length === 0) continue;
+        const existing = post.meta?.[field.to];
+        if (!FORCE && Array.isArray(existing) && existing.length) {
+          skipped++; plan.notes.push(`${field.label}: already translated`); continue;
         }
-
+        const shell = source.map(() => ({}));
+        let needed = 0;
+        source.forEach((item, index) => {
+          for (const prop of field.array.props) {
+            const src = item?.[prop];
+            if (isBlank(src)) { shell[index][prop] = ""; continue; }
+            needed++;
+            plan.jobs.push({ target: field.to, label: field.label, index, prop, source: src });
+          }
+        });
+        // An array whose translatable text is entirely empty is not a translation.
+        if (needed === 0) continue;
+        plan.meta[field.to] = shell;
+      } else {
         const source = field.read(post);
         if (isBlank(source)) continue;
         if (!FORCE && !isBlank(post.meta?.[field.to])) {
-          skipped++; notes.push(`${field.label}: already translated`); continue;
+          skipped++; plan.notes.push(`${field.label}: already translated`); continue;
         }
-
-        const out = await translate(source);
-        const check = checkTranslation(source, out);
-        if (!check.ok) {
-          blocked++;
-          notes.push(`${field.label}: BLOCKED — ${check.errors.join("; ")}`);
-          continue;                       // never written
-        }
-        for (const w of check.warnings) notes.push(`${field.label}: warning — ${w}`);
-        meta[field.to] = out;
-        translated++;
-        notes.push(`${field.label}: ok (${out.length} chars)`);
-      } catch (error) {
-        failed++;
-        notes.push(`${field.label}: FAILED — ${error.message}`);
+        plan.jobs.push({ target: field.to, label: field.label, source });
       }
     }
 
-    const keys = Object.keys(meta);
-    console.log(`  ${post.id}  ${title}`);
-    for (const n of notes) console.log(`      ${n}`);
+    plans.push(plan);
+  }
+
+  // ---- Phase 2: translate, many at a time ---------------------------------
+  // Attach the plan to each job in place — spreading into copies would leave
+  // phase 3 reading the originals, which never received a result.
+  const jobs = plans.flatMap((plan) => {
+    for (const job of plan.jobs) job.plan = plan;
+    return plan.jobs;
+  });
+  let done = 0;
+  const started = Date.now();
+
+  await pool(jobs, CONCURRENCY, async (job) => {
+    try {
+      const out = await withRetry(() => translate(job.source));
+      const check = checkTranslation(job.source, out);
+      if (!check.ok) {
+        job.blocked = check.errors;
+      } else {
+        job.result = out;
+        job.warnings = check.warnings;
+      }
+    } catch (error) {
+      job.failed = error.message;
+    }
+    done++;
+    if (done % 10 === 0 || done === jobs.length) {
+      const rate = done / ((Date.now() - started) / 1000);
+      const left = rate > 0 ? (jobs.length - done) / rate : 0;
+      process.stdout.write(
+        `\r  ${done}/${jobs.length} fields   ~${Math.ceil(left / 60)} min left        `
+      );
+    }
+  });
+  if (jobs.length) console.log("\n");
+
+  // ---- Phase 3: assemble, report, write ----------------------------------
+  let translated = 0, blocked = 0, failed = 0;
+
+  for (const plan of plans) {
+    for (const job of plan.jobs) {
+      if (job.blocked) {
+        blocked++;
+        plan.notes.push(`${job.label}: BLOCKED — ${job.blocked.join("; ")}`);
+        plan.dropped.add(job.target);
+        continue;
+      }
+      if (job.failed) {
+        failed++;
+        plan.notes.push(`${job.label}: FAILED — ${job.failed}`);
+        plan.dropped.add(job.target);
+        continue;
+      }
+      for (const w of job.warnings ?? []) plan.notes.push(`${job.label}: warning — ${w}`);
+
+      if (job.index === undefined) {
+        plan.meta[job.target] = job.result;
+        plan.notes.push(`${job.label}: ok (${job.result.length} chars)`);
+      } else {
+        plan.meta[job.target][job.index][job.prop] = job.result;
+      }
+      translated++;
+    }
+
+    // A partially blocked array cannot be written — it would no longer line up
+    // with the Croatian original. Drop the whole field rather than misalign it.
+    for (const target of plan.dropped) delete plan.meta[target];
+
+    const keys = Object.keys(plan.meta);
+    const title = (plan.post.title?.rendered || plan.post.slug || plan.post.id).toString().slice(0, 48);
+    console.log(`  ${plan.post.id}  ${title}`);
+    for (const n of plan.notes) console.log(`      ${n}`);
 
     if (keys.length && WRITE) {
       try {
-        await writeMeta(post.id, meta);
+        await writeMeta(plan.post.id, plan.meta);
         console.log(`      → wrote ${keys.length} field(s)`);
       } catch (error) {
         failed++;
@@ -304,14 +388,14 @@ async function main() {
       logPath,
       JSON.stringify({
         at: new Date().toISOString(),
-        id: post.id,
-        slug: post.slug,
+        id: plan.post.id,
+        slug: plan.post.slug,
         wrote: WRITE,
         keys,
         // The previous value of every key touched, so a run can be reversed.
-        previous: Object.fromEntries(keys.map((k) => [k, post.meta?.[k] ?? null])),
-        next: meta,
-        notes,
+        previous: Object.fromEntries(keys.map((k) => [k, plan.post.meta?.[k] ?? null])),
+        next: plan.meta,
+        notes: plan.notes,
       }) + "\n"
     );
   }
