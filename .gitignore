@@ -37,3 +37,6 @@ yarn-error.log*
 
 # content snapshots (large, and may contain unpublished drafts)
 /wp-snapshots
+
+# per-run translation write logs
+/translation-logs
