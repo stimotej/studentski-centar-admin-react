@@ -372,12 +372,19 @@ async function main() {
     console.log(`  ${plan.post.id}  ${title}`);
     for (const n of plan.notes) console.log(`      ${n}`);
 
+    let wroteOk = false;
+    let writeError = null;
     if (keys.length && WRITE) {
       try {
-        await writeMeta(plan.post.id, plan.meta);
+        // Retry like translations do. A transient blip here used to lose the
+        // whole post's work silently, while the log still claimed success.
+        await withRetry(() => writeMeta(plan.post.id, plan.meta));
+        wroteOk = true;
         console.log(`      → wrote ${keys.length} field(s)`);
       } catch (error) {
         failed++;
+        writeError = error.message;
+        plan.notes.push(`WRITE FAILED — ${error.message}`);
         console.log(`      → WRITE FAILED: ${error.message}`);
       }
     } else if (keys.length) {
@@ -390,7 +397,12 @@ async function main() {
         at: new Date().toISOString(),
         id: plan.post.id,
         slug: plan.post.slug,
-        wrote: WRITE,
+        // What actually happened, not what was attempted. This used to record
+        // `wrote: true` even when the POST failed, so the log lied about which
+        // fields existed.
+        wrote: WRITE ? wroteOk : false,
+        attempted: WRITE,
+        writeError,
         keys,
         // The previous value of every key touched, so a run can be reversed.
         previous: Object.fromEntries(keys.map((k) => [k, plan.post.meta?.[k] ?? null])),

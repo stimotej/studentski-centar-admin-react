@@ -27,11 +27,21 @@ const INVARIANTS = {
 const findAll = (text, rx) =>
   [...String(text ?? "").matchAll(rx)].map((m) => m[0].trim());
 
-/** Opening-tag sequence, so markup cannot be restructured or dropped. */
+/**
+ * Purely presentational wrappers, ignored when comparing structure.
+ *
+ * Content pasted from Word arrives fragmented across dozens of <span> tags
+ * carrying near-identical inline colours — post 13556 has 34 of them mid-
+ * sentence. A translation naturally consolidates a few, which is an
+ * improvement, not damage. Links, lists, headings and emphasis stay strict.
+ */
+const COSMETIC_TAGS = new Set(["span", "font"]);
+
+/** Opening-tag sequence, so meaningful markup cannot be restructured or dropped. */
 const tagSequence = (html) =>
-  [...String(html ?? "").matchAll(/<\s*([a-zA-Z][\w-]*)/g)].map((m) =>
-    m[1].toLowerCase()
-  );
+  [...String(html ?? "").matchAll(/<\s*([a-zA-Z][\w-]*)/g)]
+    .map((m) => m[1].toLowerCase())
+    .filter((tag) => !COSMETIC_TAGS.has(tag));
 
 /**
  * Names that must appear verbatim in the English text.
@@ -89,6 +99,12 @@ export function checkTranslation(source, translation) {
 
       // Present but reformatted (e.g. "01 4593 555" → "01-4593-555") is still a
       // change to a number a student will dial. Flag it rather than accept it.
+      // Date ranges like "01.01.- 31.12.2025" look like phone numbers to the
+      // pattern above. They are dates; the digits are checked anyway.
+      if (kind === "phone" && /\d{1,2}\.\s?\d{1,2}\.\s*-?\s*\d{1,2}\.\s?\d{1,2}\.\s?\d{4}/.test(item)) {
+        continue;
+      }
+
       const digits = digitsOf(item);
       const reformatted =
         digits.length >= 6 && digitsOf(translation).includes(digits);
