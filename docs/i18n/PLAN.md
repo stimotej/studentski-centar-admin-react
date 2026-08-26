@@ -131,14 +131,29 @@ editor.
 
 ### 1d. Bulk translation tooling
 
-- [ ] `scripts/wp-translate.mjs` — reads a section's posts, produces English via
-      AI, writes **only** `_en` meta keys. Minimal payload, never through
-      `useUpdatePost` (see CONVENTIONS.md).
-- [ ] `--dry-run` is the default. Writing requires an explicit flag.
-- [ ] Operates on an explicit id list or category, never "all posts".
-- [ ] Refuses to overwrite a non-empty `_en` value unless forced, so editor
-      corrections are never clobbered by a re-run.
-- [ ] Logs every write to a file so a bad run can be reversed post hoc.
+- [x] `scripts/wp-translate.mjs` — `npm run wp:translate`. Writes **only** `_en`
+      meta keys, via its own minimal payload rather than `useUpdatePost`.
+- [x] Dry run is the default; writing requires `--write`.
+- [x] Requires `--category` or `--ids`; refuses to run untargeted.
+- [x] Leaves a non-empty `_en` alone unless `--force`.
+- [x] Appends every write to `translation-logs/*.jsonl` with the prior value of
+      each key touched, so a run can be reversed post hoc.
+- [x] Every field passes `scripts/translation-guard.mjs` before it is written; a
+      field that fails is skipped and reported, never written.
+
+Verified offline end-to-end with both WordPress and the model stubbed. The
+WordPress request body was exactly:
+
+```json
+{ "meta": { "title_en": "…", "excerpt_en": "…", "kontakt_en": "…",
+            "image_groups_en": [ { "title": "Rooms" } ] } }
+```
+
+No title, slug, status, categories or content in the payload; every meta key
+ends in `_en`; the phone number and `mailto:` link survived byte-for-byte;
+`image_groups_en` carried captions only, index-aligned, no image ids duplicated;
+an already-translated field was skipped; and the log recorded the prior value of
+every key touched.
 
 ---
 
