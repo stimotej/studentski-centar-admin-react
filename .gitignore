@@ -40,3 +40,6 @@ yarn-error.log*
 
 # per-run translation write logs
 /translation-logs
+
+# spam cleanup review list and removed-content backup
+/spam-cleanup
