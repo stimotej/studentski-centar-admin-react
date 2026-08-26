@@ -51,6 +51,11 @@ that log is the only continuity this project has.
 
 ## Commands
 
+Run everything from the repo root **on your own machine** — these are HTTPS
+clients of the WordPress REST API, not server-side tools. The one exception is
+`scripts/server/wp-backup.sh`, which must run on www20 because it needs
+`mysqldump` and the filesystem.
+
 ```bash
 npm run dev
 npm run lint
@@ -58,4 +63,10 @@ npm run build
 
 npm run wp:snapshot -- <label>          # read-only content backup
 npm run wp:diff -- <before> <after>     # prove a change was additive
+npm run wp:translate -- --category 176  # dry run; add --write to persist
 ```
+
+Credentials live in `.env.local` (gitignored) — `cp .env.example .env.local`.
+The npm scripts load it automatically. `ANTHROPIC_API_KEY` is needed to
+translate; `WP_USER` + `WP_APP_PASSWORD` (a WordPress **application password**,
+not a login password) are needed only to write.

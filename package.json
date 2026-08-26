@@ -7,9 +7,9 @@
     "start": "npx next start",
     "lint": "npx next lint",
     "gmail:token": "node scripts/generate-gmail-refresh-token.mjs",
-    "wp:snapshot": "node scripts/wp-snapshot.mjs",
+    "wp:snapshot": "node --env-file-if-exists=.env.local scripts/wp-snapshot.mjs",
     "wp:diff": "node scripts/wp-diff.mjs",
-    "wp:translate": "node scripts/wp-translate.mjs"
+    "wp:translate": "node --env-file-if-exists=.env.local scripts/wp-translate.mjs"
   },
   "dependencies": {
     "@emotion/react": "^11.10.0",
