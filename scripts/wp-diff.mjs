@@ -32,7 +32,14 @@ const ignoredPaths = new Set([
   "modified_gmt",
   "_links",
   "_embedded",
+  // WordPress sets these on any post update to queue pingback and enclosure
+  // processing. Bookkeeping, not content.
+  "_pingme",
+  "_encloseme",
 ]);
+
+/** Ignore by leaf name, so nested copies (custom_fields._pingme) match too. */
+const isIgnored = (trail) => ignoredPaths.has(trail.split(".").pop());
 
 // `meta` is the writable view; an authenticated (context=edit) snapshot also
 // exposes the same values under `custom_fields`. Both are translation paths —
@@ -44,7 +51,7 @@ const isObject = (value) =>
   value !== null && typeof value === "object" && !Array.isArray(value);
 
 function diffValues(before, after, trail, out) {
-  if (ignoredPaths.has(trail)) return;
+  if (trail && isIgnored(trail)) return;
 
   if (isObject(before) && isObject(after)) {
     for (const key of new Set([
