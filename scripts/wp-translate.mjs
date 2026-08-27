@@ -6,6 +6,7 @@
  *   node scripts/wp-translate.mjs --ids 4200,4156 --write
  *   node scripts/wp-translate.mjs --category 176 --limit 3 --write
  *   node scripts/wp-translate.mjs --category 176 --write --concurrency 12
+ *   node scripts/wp-translate.mjs --from-file translations.json --write
  *
  * Safety properties, in order of importance:
  *
@@ -51,6 +52,10 @@ const LIMIT = Number(value("limit") || 0);
 const CATEGORY = value("category");
 const IDS = (value("ids") || "").split(",").map((s) => s.trim()).filter(Boolean);
 const TYPE = value("type") || "posts";
+// Translations supplied by hand instead of by the model. Same guard, same
+// skip rules, same log — it only replaces where the English comes from, so
+// no provider is called and no credits are spent.
+const FROM_FILE = value("from-file");
 // Fields are translated in parallel. Fixed per-request overhead dominates,
 // so this is close to a linear speed-up until the provider rate-limits.
 const CONCURRENCY = Math.max(1, Number(value("concurrency") || process.env.TRANSLATE_CONCURRENCY || 8));
@@ -74,7 +79,7 @@ if (WRITE && !(wpUser && wpPass)) {
 const GATEWAY_KEY = process.env.AI_GATEWAY_API_KEY;
 const USE_GATEWAY = Boolean(GATEWAY_KEY);
 
-if (!USE_GATEWAY && !process.env.ANTHROPIC_API_KEY) {
+if (!FROM_FILE && !USE_GATEWAY && !process.env.ANTHROPIC_API_KEY) {
   console.error(
     "No model credentials. Set one of:\n" +
       "  AI_GATEWAY_API_KEY   route via Vercel AI Gateway\n" +
@@ -135,6 +140,19 @@ Rules, in order of priority:
 4. Copy every abbreviation EXACTLY as written. SN (Studentsko naselje) and SD (Studentski dom) are different places — never convert one into the other, never expand them, never "correct" them. The same applies to SC, MZO, PDV, OIB and any other abbreviation.
 5. Translate dates and opening hours faithfully. Never change a number, a day or a deadline.
 6. Use clear, plain British English suited to students. Match the register of the original.
+7. Use these renderings consistently, every time — the same Croatian term must not appear as two different English words across a page or a site:
+   natječaj → call for applications
+   studentski dom → student hall
+   studentsko naselje → student village
+   smještaj → accommodation
+   prehrana → dining
+   student servis → student service
+   obavijest → notice
+   stanarina → rent
+   subvencionirani → subsidised
+   upisi → enrolment
+   potvrda → certificate
+   zahtjev → application
 
 Return ONLY the translated text. No commentary, no code fences, no explanation. If the input is empty or has nothing to translate, return it unchanged.`;
 
@@ -179,16 +197,29 @@ async function translate(text) {
 }
 
 async function fetchPosts() {
-  const url = new URL(`${base}/wp/v2/${TYPE}`);
-  url.searchParams.set("per_page", "100");
-  url.searchParams.set("context", authenticated ? "edit" : "view");
-  if (CATEGORY) url.searchParams.set("categories", CATEGORY);
-  if (IDS.length) url.searchParams.set("include", IDS.join(","));
-  if (authenticated) url.searchParams.set("status", "any");
+  // Paginate. A single per_page=100 request silently returns only the first
+  // hundred, which is how a 114-post category came out of an earlier run
+  // looking fully translated while fourteen posts had never been seen.
+  const all = [];
+  for (let page = 1; page <= 50; page++) {
+    const url = new URL(`${base}/wp/v2/${TYPE}`);
+    url.searchParams.set("per_page", "100");
+    url.searchParams.set("page", String(page));
+    url.searchParams.set("context", authenticated ? "edit" : "view");
+    if (CATEGORY) url.searchParams.set("categories", CATEGORY);
+    if (IDS.length) url.searchParams.set("include", IDS.join(","));
+    if (authenticated) url.searchParams.set("status", "any");
 
-  const res = await fetch(url, { headers });
-  if (!res.ok) throw new Error(`fetch ${TYPE}: HTTP ${res.status} ${await res.text()}`);
-  return res.json();
+    const res = await fetch(url, { headers });
+    if (res.status === 400 && page > 1) break; // past the last page
+    if (!res.ok) throw new Error(`fetch ${TYPE}: HTTP ${res.status} ${await res.text()}`);
+
+    const items = await res.json();
+    all.push(...items);
+    const totalPages = Number(res.headers.get("x-wp-totalpages") || 1);
+    if (page >= totalPages) break;
+  }
+  return all;
 }
 
 /** Minimal, additive payload. Never through features/posts — that rewrites slugs. */
@@ -234,7 +265,15 @@ async function withRetry(fn, attempts = 4) {
   throw lastError;
 }
 
+/** { "<postId>": { "title_en": "…", "content_en": "…" } } */
+let supplied = null;
+
 async function main() {
+  if (FROM_FILE) {
+    supplied = JSON.parse(await fs.readFile(FROM_FILE, "utf8"));
+    console.log(`  translations from ${FROM_FILE} (no model calls)`);
+  }
+
   if (wpUser && wpPass) {
     const auth = await authenticate();
     headers = auth.headers;
@@ -245,7 +284,8 @@ async function main() {
   const posts = await fetchPosts();
   const targets = LIMIT ? posts.slice(0, LIMIT) : posts;
 
-  console.log(`  model: ${MODEL} via ${USE_GATEWAY ? "Vercel AI Gateway" : "Anthropic direct"}`);
+  if (!FROM_FILE)
+    console.log(`  model: ${MODEL} via ${USE_GATEWAY ? "Vercel AI Gateway" : "Anthropic direct"}`);
   console.log(`  concurrency: ${CONCURRENCY}`);
   console.log(
     `${WRITE ? "WRITING" : "DRY RUN"} — ${targets.length} ${TYPE}` +
@@ -313,7 +353,19 @@ async function main() {
 
   await pool(jobs, CONCURRENCY, async (job) => {
     try {
-      const out = await withRetry(() => translate(job.source));
+      const out = supplied
+        ? supplied[String(job.plan.post.id)]?.[
+            job.index === undefined
+              ? job.target
+              : `${job.target}[${job.index}].${job.prop}`
+          ]
+        : await withRetry(() => translate(job.source));
+
+      if (supplied && out === undefined) {
+        job.skippedNoTranslation = true;
+        done++;
+        return;
+      }
       const check = checkTranslation(job.source, out);
       if (!check.ok) {
         job.blocked = check.errors;
@@ -340,6 +392,11 @@ async function main() {
 
   for (const plan of plans) {
     for (const job of plan.jobs) {
+      if (job.skippedNoTranslation) {
+        plan.notes.push(`${job.label}: no translation supplied`);
+        plan.dropped.add(job.target);
+        continue;
+      }
       if (job.blocked) {
         blocked++;
         plan.notes.push(`${job.label}: BLOCKED — ${job.blocked.join("; ")}`);

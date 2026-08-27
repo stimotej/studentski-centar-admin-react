@@ -41,6 +41,61 @@ there.
 
 ---
 
+## 2026-08-27 — Timotej + Claude — content complete; interface translated
+
+**Content — done**
+- **202 of 202 published posts** carry English. **57 of 57 live obavijesti** too.
+- Verified additive throughout. The only non-`_en` changes since the baseline
+  were: 100 spam deletions (deliberate), four draft `date` bumps (WordPress
+  floats a draft's date on any save), and five posts edited by staff in
+  wp-admin on the morning of 27 Aug.
+
+**Interface — done** (`studentski-centar-zagreb`)
+- `src/utils/ui.ts`: a typed Croatian dictionary with an English overlay. A
+  missing English entry falls back to Croatian, never to a key.
+- Called as `ui("key")`. Content translation stays `t(hr, en)` — the two must
+  not share a name, and several pages have both.
+- Navigation, page headings, buttons, empty states, allergen names, job-advert
+  field labels, the accessibility panel and the footer.
+
+**Vercel AI Gateway credits are exhausted** (402 `insufficient_funds`). Further
+script translation needs a top-up; `--from-file` still works with no credits.
+
+**Next**
+- Deploy `i18n/hr-en-smjestaj` in `studentski-centar-zagreb`. Nothing is public.
+- A Croatian speaker should review the English before it ships — all of it is
+  machine or Claude output, including the glossary in `wp-translate.mjs` that
+  propagates everywhere (`natječaj` → "call for applications", `studentski dom`
+  → "student hall").
+
+**Gotchas**
+- **`slides` and `faqs` in `src/utils/constants.ts` are dead code** — exported,
+  imported nowhere, 141 strings and 14 KB. The "Opći podaci" block they appear
+  to define actually comes from WordPress post **8585**; the constants are a
+  stale duplicate. Worth deleting.
+- **`fetchPosts` did not paginate.** `per_page=100` with no page loop meant a
+  114-post category returned 100 and fourteen posts were never seen — they
+  looked translated because they were never counted. Fixed.
+- **String scanning by regex under-counted badly.** Requiring JSX text to share
+  a line with its tags hid every string Prettier had wrapped: the real total was
+  351, not the 211 first reported. Measure rendered output, not source patterns.
+- **`>text<` also matches inside quoted attributes** that contain HTML
+  (`content="… <strong>x</strong> …"`), producing a `{` inside a string
+  attribute. Mask attribute values before any JSX-text pass.
+- **Module-level arrays cannot call hooks.** Nav links, home cards, meal types
+  and allergens all became `buildX(ui)` called inside the component. Keep the
+  literal-union types on the builder's return, or lookups that index into them
+  break.
+- **Sub-components need their own hook.** `SectionCard`, `IconCard` and
+  `SheetContent` sit below the main component in their files and were missed by
+  a once-per-file insertion.
+- Staff edited Croatian on two posts after they were translated, leaving the
+  English stating an old wage rate. Fixed by hand. Staleness detection was
+  considered and **deliberately not built** — once editors work with the HR/EN
+  toggle, updating both is the workflow, not an accident to be detected.
+
+---
+
 ## 2026-08-26 — Timotej + Claude — translation finished; site compromise found and closed
 
 **Translation — done for `posts`**
