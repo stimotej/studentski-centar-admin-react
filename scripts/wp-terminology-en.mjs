@@ -57,6 +57,17 @@ const RULES = [
   [/\bpupil\s+hall\b/gi, "pupil dormitory"],
   [/\bstudent\s+residences\b/gi, "student dormitories"],
   [/\bstudent\s+residence\b/gi, "student dormitory"],
+  // The Croatian building phrase, left untranslated by the first pass. SN and
+  // SD are different places, so "studentsko naselje" must become village and
+  // never dormitory — translation-guard.mjs protects the abbreviations for
+  // exactly this reason.
+  // Marked, not replaced outright: the article and capitalisation depend on
+  // where the phrase sits, and that has to be decided only for occurrences
+  // this pass creates. Resolving it for every "student dormitory" on the site
+  // rewrote SC's own English in post 7909.
+  [/\b[Ss]tudentsko\s+naselje\b/g, "\u0000village\u0000"],
+  [/\b[Ss]tudentski\s+dom\b/g, "\u0000dormitory\u0000"],
+
   // Bare "hall" that demonstrably means the dormitory, by phrase.
   [/\bhall\s+internet\b/gi, "dormitory internet"],
   [/\bHall\s+(Rules|Order)\b/g, "Dormitory $1"],
@@ -87,6 +98,43 @@ const retermed = (text) => {
       return matchCase(match, value);
     });
   }
+
+  // Resolve the marks. The Croatian proper name carried no article, so English
+  // needs one unless the surrounding text already supplies a determiner.
+  out = out.replace(/\u0000(dormitory|village)\u0000/g, (match, kind, offset, whole) => {
+    const before = whole.slice(0, offset);
+    const phrase = `student ${kind}`;
+
+    // A block boundary starts a sentence just as a full stop does. Without
+    // this, "…accommodated</p><p><strong>Studentski dom „Stjepan Radić”"
+    // reads as mid-sentence and gains a stray "the".
+    const atBlockStart =
+      /(?:<\/(?:p|li|h[1-6]|div|td|th)>|<(?:br|p|li|h[1-6]|div|td|th)[^>]*>)\s*(?:<[^>]*>\s*)*$/i.test(
+        before
+      );
+
+    const tail = before
+      .replace(/<[^>]*>/g, " ")
+      .replace(/&(?:[a-zA-Z]+|#\d+);/g, " ")
+      .trim();
+
+    // Only an OPENING quote starts a sentence. `Hall "SKUC" Studentski dom`
+    // ends in a closing one and is mid-sentence.
+    const afterOpeningQuote = /(?:^|[\s(])["“(]$/.test(tail);
+
+    if (atBlockStart || tail === "" || /[.!?:;]$/.test(tail) || afterOpeningQuote)
+      return `Student ${kind}`;
+
+    // A determiner in the last couple of words already governs the phrase, so
+    // a second one would read "in a the student dormitory". Prepositions are
+    // deliberately NOT in this list: "of student dormitory X" is exactly the
+    // case that needs an article supplied.
+    const lastWords = tail.split(/\s+/).slice(-2).join(" ");
+    if (/\b(?:the|a|an|its|our|their|this|your|each|one)\b/i.test(lastWords))
+      return phrase;
+
+    return `the ${phrase}`;
+  });
 
   // "SC Zagreb" is deliberately left alone. Of its six occurrences one is a
   // Croatian proper name ("Fb: Poslovnica za sport SC Zagreb") that must not
