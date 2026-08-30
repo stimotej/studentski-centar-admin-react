@@ -107,6 +107,30 @@ async function fetchWindow(type, offset, perPage, context) {
   };
 }
 
+/**
+ * Retry transport failures and gateway errors.
+ *
+ * A snapshot that gives up on a whole type because one request lost the
+ * connection is not a safety net. `fetch failed` (no HTTP status at all) once
+ * cost a `pages` capture that succeeded on the very next attempt. An HTTP 500
+ * is deliberately NOT retried here — that one is a size problem, and fetchAll
+ * answers it by asking for less rather than by asking again.
+ */
+async function withRetry(fn, attempts = 4) {
+  let lastError;
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error;
+      const retryable = !/HTTP (4\d\d|500)/.test(error.message);
+      if (!retryable || attempt === attempts) throw error;
+      await new Promise((r) => setTimeout(r, 1000 * 2 ** (attempt - 1)));
+    }
+  }
+  throw lastError;
+}
+
 async function fetchAll(type) {
   const context = authenticated ? "edit" : "view";
   const items = [];
@@ -119,7 +143,7 @@ async function fetchAll(type) {
 
   while (offset < total) {
     try {
-      const window = await fetchWindow(type, offset, size, context);
+      const window = await withRetry(() => fetchWindow(type, offset, size, context));
       total = window.total;
       if (window.items.length === 0) break;
       items.push(...window.items);

@@ -143,7 +143,7 @@ Rules, in order of priority:
 7. Use these renderings consistently, every time — the same Croatian term must not appear as two different English words across a page or a site:
    Studentski centar (u Zagrebu) → the University of Zagreb Student Centre
    natječaj → call for applications
-   studentski dom → student hall
+   studentski dom → student dormitory
    studentsko naselje → student village
    smještaj → accommodation
    prehrana → dining
