@@ -41,6 +41,72 @@ there.
 
 ---
 
+## 2026-08-30 — Timotej + Claude — events (kultura) localized end to end
+
+**Done**
+- **WordPress**: installed `docs/events-endpoints-snippet.php`, which adds
+  `title_en` / `content_en` / `location_en` to all four custom event endpoints
+  (`get_events`, the single-event branch of `get_all_events`, `get_slider_events`,
+  `get_courses`). The stock `/wp/v2/event` route already exposed the meta; the
+  custom routes hand-build their response arrays and so had to be extended by
+  hand — that is why the frontend saw no English until the snippet went live.
+- **Content**: the three events on the kultura slider (57738, 57081, 56411 —
+  1,392 words) were translated **by hand and loaded through
+  `--from-file`**, so no model was called and no gateway credits were spent.
+  All six fields passed `translation-guard.mjs`.
+- **Frontend** (`studentski-centar-zagreb`, commit `b5bd67f`): `Event` in
+  `src/features/types.ts` gained the three optional `_en` fields, and the
+  slider (`pages/kultura/index.tsx`), `components/kultura/EventCards.tsx`,
+  `pages/kultura/eventi/[slug].tsx` and
+  `pages/kultura/tecajevi-i-radionice/[slug].tsx` now read every event field
+  through `localized()`. Build clean, `tsc` 0 errors.
+- `location_en` was deliberately left empty. The venues are proper names
+  ("Galerija SC", "Teatar &TD"); the per-field fallback renders the Croatian,
+  which is the correct English too.
+
+**Snapshots**
+- before: `wp-snapshots/2026-08-30T19-17-03-757Z_before-slider-events`
+- after:  `wp-snapshots/2026-08-30T19-19-42-974Z_after2-slider-events`
+- diff:   PASS — 6 translation fields, nothing else touched.
+
+**Next action** (the single next thing, specific enough to start cold)
+- Deploy `i18n/hr-en-smjestaj` in `studentski-centar-zagreb`. Nothing from this
+  migration is public yet; every commit so far sits on that branch.
+
+**Open questions / blocked on**
+- **New events will keep appearing untranslated.** 460 events exist and only
+  these 3 carry English. There is no workflow yet for the culture team — either
+  they fill the English tab in the admin when they create an event, or a
+  scheduled `wp-translate` run picks up new ones. Needs a decision.
+- Vercel AI Gateway credits are exhausted (402 `insufficient_funds`). Any
+  further bulk translation needs either a top-up or `--from-file`.
+- 236 **expired** obavijesti (39,672 words) are still Croatian-only. They are
+  filtered out of every list but reachable by direct URL. Recommendation stands:
+  drop them from `getObavijestiPaths` rather than pay to translate them.
+- Nobody has read the English yet. A Croatian speaker should review it,
+  including the glossary in `scripts/wp-translate.mjs`.
+
+**Gotchas** (what surprised you — the most valuable field here)
+- **Registering `_en` meta is not enough for custom endpoints.** The `event`
+  post type is served to the frontend by hand-rolled routes under `events/v1`,
+  not by `/wp/v2/event`. Meta registered on the post type is invisible there
+  until each response array is extended. Expect the same for any other custom
+  endpoint (`jobs`, `menus`).
+- `get_courses()` in that snippet slices with `$number_of_events`, which is
+  **never defined** in the function. Pre-existing, untouched, and worth fixing
+  separately.
+- The event titles are stored as HTML (`<p>…</p>`), one of them wrapped in a
+  1.2 kB Tailwind inline-style block pasted from the editor. Translate by
+  substituting the inner text into the source's own opening tag — retyping the
+  tag fails the guard's structural check, and the style block is easy to
+  mangle.
+- Entities matter in the title field. `title` is rendered as HTML in the slider
+  but used as **plain text** in `alt=` and the page `<title>`, so `&#8211;`
+  shows up literally there. Match whatever the Croatian source uses: 57738 uses
+  the entity, 57081 uses a literal en dash. This cost one `--force` rewrite.
+
+---
+
 ## 2026-08-27 — Timotej + Claude — content complete; interface translated
 
 **Content — done**
