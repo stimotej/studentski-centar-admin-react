@@ -28,13 +28,15 @@ import {
   Tooltip,
 } from "@mui/material";
 import MyDialog from "../Elements/MyDialog";
+import LocalizedField, { EnglishFieldFrame } from "../Elements/LocalizedField";
+import { useLocale } from "../../lib/locale";
 import { useEffect } from "react";
 import { LoadingButton } from "@mui/lab";
 import SelectMediaInput from "../Elements/SelectMediaInput";
 import EditLocation from "../Elements/EditLocation";
 const QuillTextEditor = dynamic(
   () => import("../../components/Elements/QuillTextEditor"),
-  { ssr: false }
+  { ssr: false },
 );
 
 const iconList = [
@@ -58,6 +60,14 @@ const PrikazRestorana = ({ restaurant, page, setPage }) => {
 
   const [infoList, setInfoList] = useState([]);
 
+  // English twins. `lokacija` has none: it holds a Google Maps iframe.
+  const [descriptionEn, setDescriptionEn] = useState("");
+  const [workingHoursEn, setWorkingHoursEn] = useState("");
+  /** Index-aligned with `infoList` in its stored order, not the sorted one. */
+  const [infoListEn, setInfoListEn] = useState([]);
+
+  const { isEnglish } = useLocale();
+
   useEffect(() => {
     if (restaurant) {
       setImage(restaurant.imageId);
@@ -71,8 +81,11 @@ const PrikazRestorana = ({ restaurant, page, setPage }) => {
               ...item,
               icon: iconList.find((i) => i.name === item.icon),
             }))
-          : [{ icon: iconList[0], title: "", order: 1 }]
+          : [{ icon: iconList[0], title: "", order: 1 }],
       );
+      setDescriptionEn(restaurant.ponudaEn ?? "");
+      setWorkingHoursEn(restaurant.radnoVrijemeEn ?? "");
+      setInfoListEn(restaurant.infoEn ?? []);
     }
   }, [restaurant]);
 
@@ -91,7 +104,7 @@ const PrikazRestorana = ({ restaurant, page, setPage }) => {
         ],
       ],
     }),
-    []
+    [],
   );
 
   const [infoHovered, setInfoHovered] = useState(null);
@@ -112,6 +125,12 @@ const PrikazRestorana = ({ restaurant, page, setPage }) => {
       radnoVrijeme: workingHours,
       lokacija: lokacija,
       info: infoList.map((item) => ({ ...item, icon: item.icon.name })),
+      ponudaEn: descriptionEn,
+      radnoVrijemeEn: workingHoursEn,
+      // Only the title travels; icon and order are read from `info`.
+      infoEn: infoList.map((_, index) => ({
+        title: infoListEn[index]?.title ?? "",
+      })),
     });
   };
 
@@ -128,7 +147,7 @@ const PrikazRestorana = ({ restaurant, page, setPage }) => {
           setDeleteRestaurantDialog(false);
           setPage(0);
         },
-      }
+      },
     );
   };
 
@@ -157,9 +176,13 @@ const PrikazRestorana = ({ restaurant, page, setPage }) => {
         useToolbar={false}
       />
       <h3 className="font-semibold mt-4 mb-2">Ponuda</h3>
-      <QuillTextEditor
+      <LocalizedField
+        as={QuillTextEditor}
+        label="Ponuda"
         value={description}
         onChange={setDescription}
+        valueEn={descriptionEn}
+        onChangeEn={setDescriptionEn}
         className="[&>div>div]:!min-h-[120px]"
         placeholder="Unesi ponudu..."
         mediaCategoryId={prehranaCategoryId}
@@ -181,17 +204,38 @@ const PrikazRestorana = ({ restaurant, page, setPage }) => {
                   <infoItem.icon.Icon className="text-[#666666]" />
                 </IconButton>
               </Tooltip>
-              <input
-                value={infoItem.title}
-                onChange={(e) =>
-                  setInfoList([
-                    ...infoList.filter((item) => item.order !== infoItem.order),
-                    { ...infoItem, title: e.target.value },
-                  ])
-                }
-                placeholder="Unesi informaciju o restoranu"
-                className="p-0 bg-transparent flex-1"
-              />
+              {isEnglish ? (
+                <EnglishFieldFrame
+                  source={infoItem.title}
+                  value={infoListEn[infoList.indexOf(infoItem)]?.title}
+                >
+                  <input
+                    value={infoListEn[infoList.indexOf(infoItem)]?.title ?? ""}
+                    onChange={(e) => {
+                      const at = infoList.indexOf(infoItem);
+                      const next = [...infoListEn];
+                      next[at] = { title: e.target.value };
+                      setInfoListEn(next);
+                    }}
+                    placeholder="Enter the English line"
+                    className="p-0 bg-transparent w-full"
+                  />
+                </EnglishFieldFrame>
+              ) : (
+                <input
+                  value={infoItem.title}
+                  onChange={(e) =>
+                    setInfoList([
+                      ...infoList.filter(
+                        (item) => item.order !== infoItem.order,
+                      ),
+                      { ...infoItem, title: e.target.value },
+                    ])
+                  }
+                  placeholder="Unesi informaciju o restoranu"
+                  className="p-0 bg-transparent flex-1"
+                />
+              )}
               {infoHovered === infoItem.order ? (
                 <Tooltip
                   title={index !== infoList.length - 1 ? "Obriši" : "Dodaj"}
@@ -204,8 +248,8 @@ const PrikazRestorana = ({ restaurant, page, setPage }) => {
                         ? () =>
                             setInfoList(
                               infoList.filter(
-                                (item) => item.order !== infoItem.order
-                              )
+                                (item) => item.order !== infoItem.order,
+                              ),
                             )
                         : () =>
                             setInfoList([
@@ -216,7 +260,7 @@ const PrikazRestorana = ({ restaurant, page, setPage }) => {
                                 order:
                                   Math.max(
                                     ...infoList.map((item) => item.order),
-                                    1
+                                    1,
                                   ) + 1,
                               },
                             ])
@@ -264,9 +308,13 @@ const PrikazRestorana = ({ restaurant, page, setPage }) => {
       <h3 className="uppercase text-primary text-sm tracking-wider mt-6">
         Radno vrijeme
       </h3>
-      <QuillTextEditor
+      <LocalizedField
+        as={QuillTextEditor}
+        label="Radno vrijeme"
         value={workingHours}
         onChange={setWorkingHours}
+        valueEn={workingHoursEn}
+        onChangeEn={setWorkingHoursEn}
         containerClassName="mt-4"
         placeholder="Unesi radno vrijeme..."
         mediaCategoryId={prehranaCategoryId}

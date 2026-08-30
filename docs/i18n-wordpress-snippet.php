@@ -78,6 +78,18 @@ if (!function_exists('sc_i18n_registry')) {
                 // Historical naming — do not rename, four frontends read it.
                 'footnotes_en'              => sc_i18n_str(),
 
+                // Restaurants. `lokacija` is deliberately absent: it holds a
+                // Google Maps iframe with no translatable text in it.
+                'ponuda_en'                 => sc_i18n_str(),
+                'radno_vrijeme_en'          => sc_i18n_str(),
+
+                // Address and opening-hours lines under the restaurant cards.
+                // `icon` and `order` stay in `restaurant_info` — one copy
+                // serves both languages.
+                'restaurant_info_en' => sc_i18n_object_array(array(
+                    'title' => sc_i18n_str(),
+                )),
+
                 'accordion_items_en' => sc_i18n_object_array(array(
                     'title'       => sc_i18n_str(),
                     'description' => sc_i18n_str(),

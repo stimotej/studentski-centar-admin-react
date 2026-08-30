@@ -113,6 +113,14 @@ const FIELDS = [
     read: (p) => p.meta?.radno_vrijeme_blagajni,
   },
   { label: "footnotes", to: "footnotes_en", read: (p) => p.meta?.footnotes },
+  // Restaurants. `lokacija` is skipped: it is a Google Maps iframe.
+  { label: "ponuda", to: "ponuda_en", read: (p) => p.meta?.ponuda },
+  { label: "radno_vrijeme", to: "radno_vrijeme_en", read: (p) => p.meta?.radno_vrijeme },
+  {
+    label: "restaurant_info",
+    to: "restaurant_info_en",
+    array: { read: (p) => p.meta?.restaurant_info, props: ["title"] },
+  },
   {
     label: "accordion_items",
     to: "accordion_items_en",
