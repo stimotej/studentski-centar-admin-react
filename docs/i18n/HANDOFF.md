@@ -41,6 +41,70 @@ there.
 
 ---
 
+## 2026-08-30 — Timotej + Claude — jobs, categories, restaurants; two naming decisions
+
+**Done**
+- **Categories**: taxonomy terms have no `_en` twin, so the obavijesti and
+  poslovi filters and the card badges rendered Croatian. `src/utils/categoryName.ts`
+  maps the sections and the 12 job groups by name, falling back to Croatian.
+- **Jobs**: page 4757 title/excerpt translated; the Forms card was *already*
+  translated in WordPress (post 8861) but the page rendered `content.rendered`
+  unconditionally; "Prijave traju do" moved into `ui.ts`.
+- **Organisation name**: 213 occurrences of "Studentski centar" in English
+  fields became "University of Zagreb Student Centre" — SC's own English name,
+  used on post 7909. `scripts/wp-rename-org-en.mjs`.
+- **Dormitory wording**: "student hall" → "student dormitory" everywhere (SC's
+  own word, and already the majority), plus the 15 fields still saying
+  "Studentski dom". `scripts/wp-terminology-en.mjs`.
+- **Restaurants**: `ponuda_en`, `radno_vrijeme_en`, `restaurant_info_en` added
+  to the snippet, the translator, the admin editor and the frontend; all 13
+  restaurants translated (72 fields).
+
+**Snapshots**
+- Five before/after pairs this session, all diffed. **All PASS.**
+- The last pair: `2026-08-30T20-46-41-546Z_before-dorm-phrase` →
+  `2026-08-30T20-50-25-110Z_after-dorm-phrase`.
+
+**Next action** (the single next thing, specific enough to start cold)
+- Deploy `i18n/hr-en-smjestaj` in `studentski-centar-zagreb`. Nothing from this
+  migration is public yet, and there is now a lot of it.
+
+**Open questions / blocked on**
+- **Nobody has read the English yet.** Two terminology decisions were made from
+  evidence rather than a Croatian speaker's judgement, and articles were
+  inserted mechanically at 213 sites. This is the biggest outstanding risk.
+- New events still appear untranslated; no workflow decided.
+- 236 expired obavijesti remain Croatian-only.
+- `npm run build` in the admin fails on `/prehrana/dnevni-menu`. Pre-existing,
+  reproduces on a clean tree, unrelated to i18n.
+- Page 5684 (`sport`) cannot be served in `edit` context at all — WordPress
+  fatals on its raw content. Snapshots capture it in `view` context and flag it
+  `degraded`. Its raw content is therefore in no backup.
+
+**Gotchas** (what surprised you — the most valuable field here)
+- **A glossary rule in the prompt is not a rule.** Protected *names* are checked
+  mechanically by translation-guard and held perfectly; "studentski dom →
+  student hall" lived only in the prompt and held about a third of the time. If
+  a term must be consistent, it belongs in the guard.
+- **The guard is a straitjacket as well as a seatbelt.** "Studentski centar" in
+  PROTECTED_TERMS is the sole reason 213 English fields kept the Croatian name.
+  Protect what must not change; do not protect what merely looks like a name.
+- **Verify bulk writes against the site, not the script's own report.** A run
+  exited 0 having silently dropped 5 occurrences. Counting against WordPress
+  afterwards is the only check that has actually caught things.
+- **Unregistered meta writes return HTTP 200 and are discarded.** Check the
+  endpoint schema (`OPTIONS .../wp/v2/posts`), never a write's status code.
+- **Grep the built HTML, not the source.** A case-sensitive substitution left
+  "Student halls" and "STUDENT HALLS" in `ui.ts`; only the built pages showed it.
+- Mechanical article insertion is where this kind of pass goes wrong. Every
+  defect found was an article: markup or an `&nbsp;` between the article and the
+  noun, an existing determiner a few words back, address lines, closing quotes
+  read as opening ones, and prepositions wrongly treated as determiners.
+- `_fields=id,slug,meta` is what makes heavy posts fetchable at all; asking for
+  the whole record 500s on the big ones.
+
+---
+
 ## 2026-08-30 — Timotej + Claude — events (kultura) localized end to end
 
 **Done**
