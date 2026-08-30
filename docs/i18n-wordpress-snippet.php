@@ -7,16 +7,23 @@
  *
  * Nothing here touches existing Croatian data. It only adds new meta keys.
  *
- * INSTALL (Code Snippets plugin):
- *   1. Snippets → Add New
- *   2. Paste everything BELOW the closing of this comment — do NOT include the
- *      opening <?php tag; Code Snippets adds it.
- *   3. Scope: "Run everywhere" (REST requests are neither admin nor frontend).
+ * INSTALL / UPDATE (Code Snippets plugin):
+ *   This already lives on the site as snippet 185, "i18n fields" (active,
+ *   scope "Run everywhere"). UPDATE THAT ONE — do not add a second snippet,
+ *   because registering the same meta keys twice collides.
+ *
+ *   1. Snippets → find "i18n fields" → Edit
+ *   2. Select all, and replace with everything BELOW this comment — do NOT
+ *      include the opening <?php tag; Code Snippets adds it.
+ *   3. Scope stays "Run everywhere" (REST requests are neither admin nor
+ *      frontend).
  *   4. Save Changes and Activate.
  *
- * VERIFY afterwards:
+ * VERIFY afterwards — a registered key appears in the endpoint's schema, and
+ * an unregistered one is accepted with HTTP 200 and silently discarded, so
+ * check the schema rather than trusting a write:
  *   curl -s -X OPTIONS https://www.sczg.unizg.hr/wp-json/wp/v2/posts \
- *     | grep -o '"sadrzaj_en"'
+ *     | grep -o '"ponuda_en"'
  *
  * See docs/i18n/CONVENTIONS.md for the naming and fallback rules this follows.
  */
