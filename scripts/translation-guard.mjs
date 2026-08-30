@@ -51,9 +51,17 @@ const tagSequence = (html) =>
  * translation would send a student to the wrong place.
  */
 export const PROTECTED_TERMS = [
-  "Studentski centar",
   "Teatar &TD",
 ];
+
+/**
+ * "Studentski centar" used to be listed above, which mechanically rejected any
+ * translation that rendered it in English. That is why 213 occurrences of the
+ * Croatian name ended up in English fields. It is not an untranslatable proper
+ * name: the organisation calls itself "The University of Zagreb Student
+ * Centre" on its own English page for international students (post 7909), and
+ * that is the rendering the glossary in wp-translate.mjs now requires.
+ */
 
 /**
  * Abbreviations that must survive untouched.

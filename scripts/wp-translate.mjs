@@ -130,7 +130,7 @@ const FIELDS = [
   },
 ];
 
-const SYSTEM = `You translate Croatian web content for Studentski centar Zagreb into English for international students.
+const SYSTEM = `You translate Croatian web content for the University of Zagreb Student Centre (Studentski centar u Zagrebu) into English for international students.
 
 Rules, in order of priority:
 
@@ -141,6 +141,7 @@ Rules, in order of priority:
 5. Translate dates and opening hours faithfully. Never change a number, a day or a deadline.
 6. Use clear, plain British English suited to students. Match the register of the original.
 7. Use these renderings consistently, every time — the same Croatian term must not appear as two different English words across a page or a site:
+   Studentski centar (u Zagrebu) → the University of Zagreb Student Centre
    natječaj → call for applications
    studentski dom → student hall
    studentsko naselje → student village
