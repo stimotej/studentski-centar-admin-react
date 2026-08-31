@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Button from "../../Elements/Button";
 import Toggle from "./Toggle";
 import { MdClose } from "react-icons/md";
+import LocaleToggle from "../../Elements/LocaleToggle";
 
 const Sidebar = ({
   saveObavijest,
@@ -32,6 +33,7 @@ const Sidebar = ({
           <MdClose />
         </button>
         <h3 className="text-lg font-medium mt-2 lg:mt-20">Postavi</h3>
+        <LocaleToggle className="mt-3 mb-1" />
         <div className="mb-8">{children}</div>
         <div className="flex justify-evenly w-full mt-auto">
           {/* <button

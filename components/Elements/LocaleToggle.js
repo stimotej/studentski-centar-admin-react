@@ -9,7 +9,12 @@ import clsx from "clsx";
  * you are typing into and overwrite the wrong one.
  */
 const LocaleToggle = ({ className }) => {
-  const { locale, setLocale } = useLocale();
+  const { locale, setLocale, sectionIsBilingual } = useLocale();
+
+  // Hidden where the section's frontend cannot display English, so nobody is
+  // invited to translate text that will not appear. The fields underneath stay
+  // wired; see BILINGUAL_SECTIONS in lib/locale.js.
+  if (!sectionIsBilingual) return null;
 
   const option = (value, label, title) => (
     <button
