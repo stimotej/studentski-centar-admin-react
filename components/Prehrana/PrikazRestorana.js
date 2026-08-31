@@ -61,6 +61,7 @@ const PrikazRestorana = ({ restaurant, page, setPage }) => {
   const [infoList, setInfoList] = useState([]);
 
   // English twins. `lokacija` has none: it holds a Google Maps iframe.
+  const [titleEn, setTitleEn] = useState("");
   const [descriptionEn, setDescriptionEn] = useState("");
   const [workingHoursEn, setWorkingHoursEn] = useState("");
   /** Index-aligned with `infoList` in its stored order, not the sorted one. */
@@ -83,6 +84,7 @@ const PrikazRestorana = ({ restaurant, page, setPage }) => {
             }))
           : [{ icon: iconList[0], title: "", order: 1 }],
       );
+      setTitleEn(restaurant.titleEn ?? "");
       setDescriptionEn(restaurant.ponudaEn ?? "");
       setWorkingHoursEn(restaurant.radnoVrijemeEn ?? "");
       setInfoListEn(restaurant.infoEn ?? []);
@@ -125,6 +127,7 @@ const PrikazRestorana = ({ restaurant, page, setPage }) => {
       radnoVrijeme: workingHours,
       lokacija: lokacija,
       info: infoList.map((item) => ({ ...item, icon: item.icon.name })),
+      titleEn: titleEn,
       ponudaEn: descriptionEn,
       radnoVrijemeEn: workingHoursEn,
       // Only the title travels; icon and order are read from `info`.
@@ -167,9 +170,13 @@ const PrikazRestorana = ({ restaurant, page, setPage }) => {
       />
 
       <h3 className="font-semibold mt-4 mb-2">Naziv</h3>
-      <QuillTextEditor
+      <LocalizedField
+        as={QuillTextEditor}
+        label="Naziv"
         value={title}
         onChange={setTitle}
+        valueEn={titleEn}
+        onChangeEn={setTitleEn}
         formats={[]}
         className="[&>div>div]:!min-h-fit [&>div>div]:line-clamp-1"
         placeholder="Unesi naslov..."

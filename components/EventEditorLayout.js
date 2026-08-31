@@ -12,7 +12,8 @@ const QuillEditor = dynamic(() => import("./Obavijesti/Editor/QuillEditor"), {
 });
 import StoredPostNote from "./Obavijesti/Editor/StoredPostNote";
 import Layout from "./Layout";
-import LocalizedField from "./Elements/LocalizedField";
+import LocalizedField, { EnglishFieldFrame } from "./Elements/LocalizedField";
+import { useLocale } from "../lib/locale";
 import LocaleToggle from "./Elements/LocaleToggle";
 import {
   adminTeatarTdCategory,
@@ -113,6 +114,11 @@ const EventEditorLayout = ({ location }) => {
   const [content, setContent] = useState("");
   const [titleEn, setTitleEn] = useState("");
   const [contentEn, setContentEn] = useState("");
+  // Venue names are proper names, so this is usually left empty and the
+  // Croatian falls through. It exists for the ones that do differ.
+  const [eventLocationEn, setEventLocationEn] = useState("");
+
+  const { isEnglish } = useLocale();
   const [imageId, setImageId] = useState("");
   const [status, setStatus] = useState("publish");
 
@@ -145,31 +151,31 @@ const EventEditorLayout = ({ location }) => {
       },
       {
         enabled: location === "Teatar &TD",
-      }
+      },
     );
 
   const archivePosts = useMemo(
     () =>
       teatarTdPosts
         ? teatarTdPosts.filter((p) =>
-            p.categories.includes(teatarTdArchiveCategoryId)
+            p.categories.includes(teatarTdArchiveCategoryId),
           )
         : [],
-    [teatarTdPosts]
+    [teatarTdPosts],
   );
 
   useEffect(() => {
     if (archivePosts?.length) {
       if (event?.archive_id) {
         const foundArchive = archivePosts.find(
-          (a) => a.id === event.archive_id
+          (a) => a.id === event.archive_id,
         );
         setArchive(foundArchive ?? null);
       } else {
         const storedArchiveId = window.localStorage.getItem("event_archive_id");
         if (storedArchiveId) {
           const foundArchive = archivePosts.find(
-            (a) => a.id === Number(storedArchiveId)
+            (a) => a.id === Number(storedArchiveId),
           );
           setArchive(foundArchive ?? null);
         }
@@ -184,6 +190,7 @@ const EventEditorLayout = ({ location }) => {
       setContent(event.content || "");
       setTitleEn(event.titleEn || "");
       setContentEn(event.contentEn || "");
+      setEventLocationEn(event.locationEn || "");
       setImageId(event.imageId || "");
       setStatus(event.status || "publish");
       setEventDates(event.dates || []);
@@ -191,7 +198,7 @@ const EventEditorLayout = ({ location }) => {
       setEventType(event.type || "");
       setAddToSlider(event.show_on_slider || false);
       setAddToTeatarTDSlider(
-        !!event.categories.includes(teatarTDsliderCategoryId)
+        !!event.categories.includes(teatarTDsliderCategoryId),
       );
       setShowEvent(!!event.end_showing);
       setEndShowing(event.end_showing || null);
@@ -206,12 +213,12 @@ const EventEditorLayout = ({ location }) => {
       setStatus(window.localStorage.getItem("event_status") || "publish");
       setEventLocation(window.localStorage.getItem("event_location") || "");
       setEventDates(
-        window.localStorage.getItem("event_dates")?.split(",") || []
+        window.localStorage.getItem("event_dates")?.split(",") || [],
       );
       setEventType(window.localStorage.getItem("event_type") || "");
       setAddToSlider(window.localStorage.getItem("event_slider") || false);
       setAddToTeatarTDSlider(
-        window.localStorage.getItem("event_slider_teatar_td") || false
+        window.localStorage.getItem("event_slider_teatar_td") || false,
       );
       setShowEvent(window.localStorage.getItem("event_show_event") === "true");
       setEndShowing(window.localStorage.getItem("event_end_showing") || null);
@@ -252,6 +259,7 @@ const EventEditorLayout = ({ location }) => {
       content: content,
       titleEn: titleEn,
       contentEn: contentEn,
+      locationEn: eventLocationEn,
       imageId: imageId || 0,
       status: status,
       dates: eventDates.map((date) => dayjs(date).toISOString()),
@@ -309,7 +317,7 @@ const EventEditorLayout = ({ location }) => {
       if (!eventId) {
         window.localStorage.setItem(
           "event_files",
-          JSON.stringify([...files, value])
+          JSON.stringify([...files, value]),
         );
       }
     }
@@ -408,10 +416,26 @@ const EventEditorLayout = ({ location }) => {
               !eventId &&
                 window.localStorage.setItem(
                   "event_location",
-                  val !== null ? val : ""
+                  val !== null ? val : "",
                 );
             }}
           />
+        )}
+        {!location && isEnglish && (
+          <EnglishFieldFrame
+            label="Lokacija"
+            source={eventLocation}
+            value={eventLocationEn}
+            className="mt-2"
+          >
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Leave empty if the venue name is the same"
+              value={eventLocationEn}
+              onChange={(e) => setEventLocationEn(e.target.value)}
+            />
+          </EnglishFieldFrame>
         )}
         {/* <div className="mt-4">Program:</div>
         <input
@@ -440,7 +464,7 @@ const EventEditorLayout = ({ location }) => {
             !eventId &&
               window.localStorage.setItem(
                 "event_type",
-                val !== null ? val : ""
+                val !== null ? val : "",
               );
           }}
         />
@@ -469,7 +493,7 @@ const EventEditorLayout = ({ location }) => {
                 !eventId &&
                   window.localStorage.setItem(
                     "event_archive_id",
-                    val !== null ? val.id : ""
+                    val !== null ? val.id : "",
                   );
               }}
             />
@@ -486,7 +510,7 @@ const EventEditorLayout = ({ location }) => {
                       !eventId &&
                         window.localStorage.setItem(
                           "event_show_event",
-                          e.target.checked
+                          e.target.checked,
                         );
                     }}
                   />
@@ -537,7 +561,7 @@ const EventEditorLayout = ({ location }) => {
                 !eventId &&
                   window.localStorage.setItem(
                     "event_slider_teatar_td",
-                    e.target.checked
+                    e.target.checked,
                   );
               }}
             />
@@ -609,7 +633,7 @@ const EventEditorLayout = ({ location }) => {
                       eventDates.length - 1 > 0
                         ? window.localStorage.setItem(
                             "event_dates",
-                            eventDates.filter((item) => item !== date)
+                            eventDates.filter((item) => item !== date),
                           )
                         : window.localStorage.removeItem("event_dates");
                     }
@@ -728,7 +752,8 @@ const EventEditorLayout = ({ location }) => {
             valueEn={contentEn}
             onChangeEn={(value) => {
               setContentEn(value);
-              !eventId && window.localStorage.setItem("event_content_en", value);
+              !eventId &&
+                window.localStorage.setItem("event_content_en", value);
             }}
             addImageToolbar={addImageToolbar}
             addYoutubeVideo={addYoutubeVideo}

@@ -9,6 +9,7 @@ const formatRestaurant = (restaurant) => ({
   radnoVrijeme: restaurant.meta.radno_vrijeme,
   lokacija: restaurant.meta.lokacija,
   // English twins. `lokacija` has none — it holds a Google Maps iframe.
+  titleEn: restaurant.meta.title_en,
   ponudaEn: restaurant.meta.ponuda_en,
   radnoVrijemeEn: restaurant.meta.radno_vrijeme_en,
   infoEn: restaurant.meta.restaurant_info_en,

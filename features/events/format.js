@@ -21,6 +21,7 @@ const formatEvent = (event) => ({
   documents: event.meta.documents,
   titleEn: event.meta.title_en,
   contentEn: event.meta.content_en,
+  locationEn: event.meta.location_en,
 });
 
 export default formatEvent;

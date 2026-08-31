@@ -103,6 +103,7 @@ export const useUpdateRestaurant = () => {
           radno_vrijeme: restaurant?.radnoVrijeme,
           lokacija: restaurant?.lokacija,
           restaurant_info: restaurant?.info,
+          title_en: restaurant?.titleEn,
           ponuda_en: restaurant?.ponudaEn,
           radno_vrijeme_en: restaurant?.radnoVrijemeEn,
           restaurant_info_en: restaurant?.infoEn,
