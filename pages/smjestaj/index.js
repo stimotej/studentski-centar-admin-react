@@ -48,6 +48,7 @@ import {
   useUpdatePost,
 } from "../../features/posts";
 import dynamic from "next/dynamic";
+import LocalizedField from "../../components/Elements/LocalizedField";
 const QuillTextEditor = dynamic(
   () => import("../../components/Elements/QuillTextEditor"),
   { ssr: false },
@@ -88,15 +89,23 @@ const Home = () => {
 
   const [image, setImage] = useState(null);
   const [title, setTitle] = useState("");
+  const [titleEn, setTitleEn] = useState("");
   const [excerpt, setExcerpt] = useState("");
+  const [excerptEn, setExcerptEn] = useState("");
   const [content, setContent] = useState("");
+  const [contentEn, setContentEn] = useState("");
   const [sadrzaj, setSadrzaj] = useState("");
+  const [sadrzajEn, setSadrzajEn] = useState("");
   const [kontakt, setKontakt] = useState("");
+  const [kontaktEn, setKontaktEn] = useState("");
   const [radnoVrijemeBlagajni, setRadnoVrijemeBlagajni] = useState("");
+  const [radnoVrijemeBlagajniEn, setRadnoVrijemeBlagajniEn] = useState("");
   const [lokacija, setLokacija] = useState("");
   const [imageGroups, setImageGroups] = useState([]);
+  const [imageGroupsEn, setImageGroupsEn] = useState([]);
   const [status, setStatus] = useState(false);
   const [actionTitle, setActionTitle] = useState("");
+  const [actionTitleEn, setActionTitleEn] = useState("");
   const [actionType, setActionType] = useState("link");
   const [actionLink, setActionLink] = useState("");
   const [actionDocuments, setActionDocuments] = useState([]);
@@ -108,13 +117,17 @@ const Home = () => {
 
   const [editingNatjecajDokument, setEditingNatjecajDokument] = useState(false);
   const [natjecajTitle, setNatjecajTitle] = useState("");
+  const [natjecajTitleEn, setNatjecajTitleEn] = useState("");
   const [natjecajOpis, setNatjecajOpis] = useState("");
+  const [natjecajOpisEn, setNatjecajOpisEn] = useState("");
   const [natjecajDocuments, setNatjecajDocuments] = useState([]);
   const [natjecajMediaDialog, setNatjecajMediaDialog] = useState(false);
 
   useEffect(() => {
     setNatjecajTitle(natjecajDokumentPost?.title || "");
+    setNatjecajTitleEn(natjecajDokumentPost?.titleEn || "");
     setNatjecajOpis(natjecajDokumentPost?.excerpt || "");
+    setNatjecajOpisEn(natjecajDokumentPost?.excerptEn || "");
     setNatjecajDocuments(natjecajDokumentPost?.documents || []);
   }, [natjecajDokumentPost]);
 
@@ -129,15 +142,23 @@ const Home = () => {
       setCategory(categoryId);
       setImage(dormitory.imageId);
       setTitle(dormitory.title);
+      setTitleEn(dormitory.titleEn || "");
       setExcerpt(dormitory.excerpt);
+      setExcerptEn(dormitory.excerptEn || "");
       setContent(dormitory.content);
+      setContentEn(dormitory.contentEn || "");
       setSadrzaj(dormitory.sadrzaj);
+      setSadrzajEn(dormitory.sadrzaj_en || "");
       setRadnoVrijemeBlagajni(dormitory.radno_vrijeme_blagajni);
+      setRadnoVrijemeBlagajniEn(dormitory.radno_vrijeme_blagajni_en || "");
       setKontakt(dormitory.kontakt);
+      setKontaktEn(dormitory.kontakt_en || "");
       setLokacija(dormitory.lokacija);
       setImageGroups(dormitory.image_groups || []);
+      setImageGroupsEn(dormitory.image_groups_en || []);
       setStatus(dormitory.status == "publish");
       setActionTitle(dormitory.actionTitle || "");
+      setActionTitleEn(dormitory.actionTitleEn || "");
       setActionLink(dormitory.link || "");
       setActionDocuments(dormitory.documents || []);
       setActionType(dormitory.documents?.length > 0 ? "document" : "link");
@@ -152,15 +173,23 @@ const Home = () => {
     setCategory(categoryId);
     setImage(dormitory.imageId);
     setTitle(dormitory.title);
+    setTitleEn(dormitory.titleEn || "");
     setExcerpt(dormitory.excerpt);
+    setExcerptEn(dormitory.excerptEn || "");
     setContent(dormitory.content);
+    setContentEn(dormitory.contentEn || "");
     setSadrzaj(dormitory.sadrzaj);
+    setSadrzajEn(dormitory.sadrzaj_en || "");
     setKontakt(dormitory.kontakt);
+    setKontaktEn(dormitory.kontakt_en || "");
     setRadnoVrijemeBlagajni(dormitory.radno_vrijeme_blagajni);
+    setRadnoVrijemeBlagajniEn(dormitory.radno_vrijeme_blagajni_en || "");
     setLokacija(dormitory.lokacija);
     setImageGroups(dormitory.image_groups || []);
+    setImageGroupsEn(dormitory.image_groups_en || []);
     setStatus(dormitory.status == "publish");
     setActionTitle(dormitory.actionTitle || "");
+    setActionTitleEn(dormitory.actionTitleEn || "");
     setActionLink(dormitory.link || "");
     setActionDocuments(dormitory.documents || []);
     setActionType(dormitory.documents?.length > 0 ? "document" : "link");
@@ -200,10 +229,18 @@ const Home = () => {
         excerpt: excerpt,
         content: content,
         sadrzaj: sadrzaj,
+        sadrzajEn: sadrzajEn,
+        titleEn: titleEn,
+        excerptEn: excerptEn,
+        contentEn: contentEn,
+        kontaktEn: kontaktEn,
+        radnoVrijemeBlagajniEn: radnoVrijemeBlagajniEn,
+        actionTitleEn: actionTitleEn,
         kontakt: kontakt,
         radno_vrijeme_blagajni: radnoVrijemeBlagajni,
         lokacija: lokacija !== dormitory.lokacija ? lokacija : undefined,
         image_groups: imageGroups,
+        imageGroupsEn: imageGroupsEn,
         status: dormitory?.categories?.includes(infoSmjestajNatjecajCategory)
           ? status
             ? "publish"
@@ -244,6 +281,8 @@ const Home = () => {
         id: natjecajDokumentPost.id,
         title: natjecajTitle,
         excerpt: natjecajOpis,
+        titleEn: natjecajTitleEn,
+        excerptEn: natjecajOpisEn,
         status: "publish",
         slug: smjestajNatjecajDokumentSlug,
         documents,
@@ -276,7 +315,7 @@ const Home = () => {
 
   return (
     <Layout>
-      <Header title="Početna" />
+      <Header title="Početna" localeToggle />
       <div className="px-5 md:px-10 pb-6">
         <div className="flex gap-10 flex-wrap md:flex-nowrap">
           <div>
@@ -383,9 +422,13 @@ const Home = () => {
             {editingNatjecajDokument ? (
               <>
                 <h3 className="font-semibold mt-4 mb-2">Naslov</h3>
-                <QuillTextEditor
+                <LocalizedField
+                  as={QuillTextEditor}
+                  label="Naslov"
                   value={natjecajTitle}
                   onChange={setNatjecajTitle}
+                  valueEn={natjecajTitleEn}
+                  onChangeEn={setNatjecajTitleEn}
                   formats={[]}
                   className="[&>div>div]:!min-h-fit [&>div>div]:line-clamp-1"
                   placeholder="Unesi naslov..."
@@ -393,9 +436,13 @@ const Home = () => {
                 />
 
                 <h3 className="font-semibold mt-4 mb-2">Opis</h3>
-                <QuillTextEditor
+                <LocalizedField
+                  as={QuillTextEditor}
+                  label="Opis"
                   value={natjecajOpis}
                   onChange={setNatjecajOpis}
+                  valueEn={natjecajOpisEn}
+                  onChangeEn={setNatjecajOpisEn}
                   placeholder="Unesi opis..."
                 />
 
@@ -473,9 +520,13 @@ const Home = () => {
                   </>
                 )}
                 <h3 className="font-semibold mt-4 mb-2">Naziv</h3>
-                <QuillTextEditor
+                <LocalizedField
+                  as={QuillTextEditor}
+                  label="Naziv"
                   value={title}
                   onChange={setTitle}
+                  valueEn={titleEn}
+                  onChangeEn={setTitleEn}
                   formats={[]}
                   className="[&>div>div]:!min-h-fit [&>div>div]:line-clamp-1"
                   placeholder="Unesi naslov..."
@@ -486,9 +537,13 @@ const Home = () => {
                   category !== infoSmjestajCardsCategory && (
                     <>
                       <h3 className="font-semibold mt-4 mb-2">Opis</h3>
-                      <QuillTextEditor
+                      <LocalizedField
+                        as={QuillTextEditor}
+                        label="Opis"
                         value={excerpt}
                         onChange={setExcerpt}
+                        valueEn={excerptEn}
+                        onChangeEn={setExcerptEn}
                         placeholder="Unesi opis..."
                         mediaCategoryId={smjestajCategoryId}
                       />
@@ -499,17 +554,25 @@ const Home = () => {
                 "studentski-dom" ? (
                   <>
                     <h3 className="font-semibold mt-4 mb-2">Sadržaj</h3>
-                    <QuillTextEditor
+                    <LocalizedField
+                      as={QuillTextEditor}
+                      label="Sadržaj"
                       value={sadrzaj}
                       onChange={setSadrzaj}
+                      valueEn={sadrzajEn}
+                      onChangeEn={setSadrzajEn}
                       placeholder="Unesi sadržaj..."
                       mediaCategoryId={smjestajCategoryId}
                     />
 
                     <h3 className="font-semibold mt-4 mb-2">Kontakt</h3>
-                    <QuillTextEditor
+                    <LocalizedField
+                      as={QuillTextEditor}
+                      label="Kontakt"
                       value={kontakt}
                       onChange={setKontakt}
+                      valueEn={kontaktEn}
+                      onChangeEn={setKontaktEn}
                       placeholder="Unesi kontakt..."
                       mediaCategoryId={smjestajCategoryId}
                     />
@@ -517,9 +580,13 @@ const Home = () => {
                     <h3 className="font-semibold mt-4 mb-2">
                       Radno vrijeme blagajni
                     </h3>
-                    <QuillTextEditor
+                    <LocalizedField
+                      as={QuillTextEditor}
+                      label="Radno vrijeme blagajni"
                       value={radnoVrijemeBlagajni}
                       onChange={setRadnoVrijemeBlagajni}
+                      valueEn={radnoVrijemeBlagajniEn}
+                      onChangeEn={setRadnoVrijemeBlagajniEn}
                       placeholder="Unesi radno vrijeme blagajni..."
                       mediaCategoryId={smjestajCategoryId}
                     />
@@ -528,6 +595,8 @@ const Home = () => {
                     <ReorderImages
                       imageGroups={imageGroups}
                       setImageGroups={setImageGroups}
+                      imageGroupsEn={imageGroupsEn}
+                      setImageGroupsEn={setImageGroupsEn}
                       mediaCategoryId={smjestajCategoryId}
                     />
 
@@ -537,9 +606,13 @@ const Home = () => {
                 ) : (
                   <>
                     <h3 className="font-semibold mt-4 mb-2">Sadržaj</h3>
-                    <QuillTextEditor
+                    <LocalizedField
+                      as={QuillTextEditor}
+                      label="Sadržaj"
                       value={content}
                       onChange={setContent}
+                      valueEn={contentEn}
+                      onChangeEn={setContentEn}
                       placeholder="Unesi sadržaj..."
                       mediaCategoryId={smjestajCategoryId}
                     />
@@ -548,11 +621,15 @@ const Home = () => {
                 {category === infoSmjestajCardsCategory && (
                   <div className="mt-4">
                     <h3 className="font-semibold mb-2">Tekst gumba akcije</h3>
-                    <TextField
+                    <LocalizedField
+                      as={TextField}
+                      label="Tekst gumba akcije"
                       variant="outlined"
                       className="w-full"
                       value={actionTitle}
                       onChange={(e) => setActionTitle(e.target.value)}
+                      valueEn={actionTitleEn}
+                      onChangeEn={(e) => setActionTitleEn(e.target.value)}
                       placeholder="npr. Saznaj više"
                     />
 

@@ -13,6 +13,8 @@ import {
   DialogTitle,
 } from "@mui/material";
 import { Fragment, useState } from "react";
+import { useLocale } from "../lib/locale";
+import LocalizedField from "./Elements/LocalizedField";
 import Header from "./Header";
 import Layout from "./Layout";
 import MediaSelectDialog from "./MediaSelectDialog";
@@ -41,6 +43,7 @@ const FAQLayout = ({
   return (
     <Layout>
       <Header
+        localeToggle
         title={title || "Često postavljana pitanja"}
         text={actionText || "Dodaj pitanje"}
         icon={<FontAwesomeIcon icon={faPlus} />}
@@ -85,6 +88,13 @@ export const FAQList = ({
   const [faqId, setFaqId] = useState("");
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
+  const [questionEn, setQuestionEn] = useState("");
+  const [answerEn, setAnswerEn] = useState("");
+
+  // The read-only accordion list follows the toggle too, so an editor can
+  // review the English FAQ without opening every entry.
+  const { isEnglish } = useLocale();
+  const pick = (hr, en) => (isEnglish && en?.trim() ? en : hr);
 
   const { mutate: createFAQPost, isLoading: isCreatingFaq } = useCreatePost();
   const { mutate: updateFAQPost, isLoading: isUpdatingFaq } = useUpdatePost();
@@ -96,6 +106,8 @@ export const FAQList = ({
       id: faqId,
       title: question,
       content: answer,
+      titleEn: questionEn,
+      contentEn: answerEn,
       status: "publish",
       categories: [faqCategoryId, faqPageCategoryId],
     };
@@ -107,6 +119,8 @@ export const FAQList = ({
           setFaqId("");
           setQuestion("");
           setAnswer("");
+          setQuestionEn("");
+          setAnswerEn("");
         },
       });
     else
@@ -116,6 +130,8 @@ export const FAQList = ({
           setFaqId("");
           setQuestion("");
           setAnswer("");
+          setQuestionEn("");
+          setAnswerEn("");
         },
       });
   };
@@ -125,6 +141,8 @@ export const FAQList = ({
     setFaqId(faq.id);
     setQuestion(faq.title);
     setAnswer(faq.content);
+    setQuestionEn(faq.titleEn || "");
+    setAnswerEn(faq.contentEn || "");
   };
 
   const handleDeletePostFaq = () => {
@@ -171,7 +189,7 @@ export const FAQList = ({
                 expandIcon={<FontAwesomeIcon icon={faChevronDown} />}
               >
                 <QuillTextEditor
-                  value={faq.title}
+                  value={pick(faq.title, faq.titleEn)}
                   className="[&>div>div>p]:hover:cursor-pointer"
                   formats={[]}
                   includeStyles={false}
@@ -180,7 +198,7 @@ export const FAQList = ({
               </AccordionSummary>
               <AccordionDetails>
                 <QuillTextEditor
-                  value={faq.content}
+                  value={pick(faq.content, faq.contentEn)}
                   containerClassName="bg-white border-none"
                   className="[&>div>div]:p-0 [&>div>div]:pb-4 [&>div>div]:!min-h-fit"
                   readOnly
@@ -211,6 +229,8 @@ export const FAQList = ({
           setFaqId("");
           setQuestion("");
           setAnswer("");
+          setQuestionEn("");
+          setAnswerEn("");
         }}
       >
         <DialogTitle>
@@ -231,18 +251,26 @@ export const FAQList = ({
             fullWidth
             variant="outlined"
           /> */}
-          <QuillTextEditor
+          <LocalizedField
+            as={QuillTextEditor}
+            label="Pitanje"
             value={question}
             onChange={setQuestion}
+            valueEn={questionEn}
+            onChangeEn={setQuestionEn}
             formats={[]}
             className="[&>div>div]:!min-h-fit"
             useToolbar={false}
             placeholder="Pitanje"
           />
-          <QuillTextEditor
+          <LocalizedField
+            as={QuillTextEditor}
+            label="Odgovor"
             containerClassName="mt-2"
             value={answer}
             onChange={setAnswer}
+            valueEn={answerEn}
+            onChangeEn={setAnswerEn}
             mediaCategoryId={mediaCategoryId}
             // files={files}
             // setFiles={setFiles}

@@ -6,10 +6,11 @@ import { useEffect, useState } from "react";
 import { LoadingButton } from "@mui/lab";
 import { usePost, useUpdatePost } from "../../features/posts";
 import { CircularProgress } from "@mui/material";
+import LocalizedField from "../../components/Elements/LocalizedField";
 
 const QuillTextEditor = dynamic(
   () => import("../../components/Elements/QuillTextEditor"),
-  { ssr: false }
+  { ssr: false },
 );
 
 export default function MedijiPage() {
@@ -18,12 +19,16 @@ export default function MedijiPage() {
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [titleEn, setTitleEn] = useState("");
+  const [contentEn, setContentEn] = useState("");
   const [files, setFiles] = useState([]);
 
   useEffect(() => {
     if (data) {
       setTitle(data.title);
       setContent(data.content);
+      setTitleEn(data.titleEn || "");
+      setContentEn(data.contentEn || "");
       setFiles(data.documents);
     }
   }, [data]);
@@ -36,6 +41,8 @@ export default function MedijiPage() {
       title,
       excerpt: "<p></p>",
       content,
+      titleEn,
+      contentEn,
       status: "publish",
       documents:
         files.length > 0 &&
@@ -51,7 +58,7 @@ export default function MedijiPage() {
 
   return (
     <Layout>
-      <Header title="Mediji" />
+      <Header localeToggle title="Mediji" />
       <div className="flex flex-col items-start gap-4 w-full px-5 md:px-10 pb-6">
         {isLoading ? (
           <div className="flex items-center justify-center py-2">
@@ -75,9 +82,13 @@ export default function MedijiPage() {
               <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
                 Naslov
               </h4>
-              <QuillTextEditor
+              <LocalizedField
+                as={QuillTextEditor}
+                label="Naslov"
                 value={title}
                 onChange={setTitle}
+                valueEn={titleEn}
+                onChangeEn={setTitleEn}
                 formats={["bold"]}
                 className="[&>div>div]:!min-h-fit [&>div>div]:line-clamp-1"
                 placeholder="Unesi naslov..."
@@ -88,9 +99,13 @@ export default function MedijiPage() {
               <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
                 Sadržaj
               </h4>
-              <QuillTextEditor
+              <LocalizedField
+                as={QuillTextEditor}
+                label="Sadržaj"
                 value={content}
                 onChange={setContent}
+                valueEn={contentEn}
+                onChangeEn={setContentEn}
                 files={files}
                 mediaCategoryId={pocetnaStranicaCategoryId}
                 setFiles={setFiles}

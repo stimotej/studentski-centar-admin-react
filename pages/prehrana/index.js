@@ -25,6 +25,7 @@ import { faPlus } from "@fortawesome/pro-regular-svg-icons";
 import { LoadingButton } from "@mui/lab";
 import DraggableMenuItems from "../../components/Prehrana/DraggableMenuItems";
 import { prehranaCategoryId, prehranaLinksPostId } from "../../lib/constants";
+import LocalizedField from "../../components/Elements/LocalizedField";
 const QuillTextEditor = dynamic(
   () => import("../../components/Elements/QuillTextEditor"),
   { ssr: false }
@@ -55,6 +56,8 @@ const Home = () => {
 
   const [excerpt, setExcerpt] = useState("");
 
+  const [excerptEn, setExcerptEn] = useState("");
+
   const restaurant = restaurants?.find((r) => r.id === page);
 
   useEffect(() => {
@@ -69,6 +72,7 @@ const Home = () => {
       const post = posts.find((p) => p.id === page);
       if (!post) return;
       setExcerpt(post?.excerpt);
+      setExcerptEn(post?.excerptEn || "");
     }
   }, [posts, page]);
 
@@ -98,6 +102,7 @@ const Home = () => {
       {
         id: page,
         excerpt: excerpt,
+        excerptEn: excerptEn,
         status: "publish",
       },
       {
@@ -108,7 +113,7 @@ const Home = () => {
 
   return (
     <Layout>
-      <Header title="Početna" />
+      <Header localeToggle title="Početna" />
       <div className="px-5 md:px-10 pb-6">
         <div className="flex gap-10 flex-wrap md:flex-nowrap">
           <div>
@@ -210,9 +215,13 @@ const Home = () => {
             {page === prehranaLinksPostId ? (
               <div className="flex-1">
                 <h3 className="font-semibold mb-2">Sadržaj</h3>
-                <QuillTextEditor
+                <LocalizedField
+                  as={QuillTextEditor}
+                  label="Kratki opis"
                   value={excerpt}
                   onChange={setExcerpt}
+                  valueEn={excerptEn}
+                  onChangeEn={setExcerptEn}
                   placeholder="Unesi opis..."
                   mediaCategoryId={prehranaCategoryId}
                 />

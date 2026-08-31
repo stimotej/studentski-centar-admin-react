@@ -27,6 +27,7 @@ import Layout from "../../components/Layout";
 import DeleteDialog from "../../components/Prehrana/jobs/DeleteDialog";
 import { useJobs, useUpdateJob } from "../../features/jobs/index";
 import { useRouter } from "next/router";
+import { WP_SITE_URL } from "../../lib/wp";
 
 const headCells = [
   {
@@ -357,7 +358,7 @@ const SviPoslovi = () => {
                       onClick={(e) => {
                         e.stopPropagation();
                         window.open(
-                          `https://www.sczg.unizg.hr/poslovi/${row.slug}`
+                          `${WP_SITE_URL}/poslovi/${row.slug}`
                         );
                       }}
                     >

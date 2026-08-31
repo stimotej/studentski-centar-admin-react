@@ -7,13 +7,14 @@ import {
   dormitoryDefaultMediaId,
 } from "../../lib/constants";
 import formatDormitory from "./format";
+import { WP_API } from "../../lib/wp";
 
 export const useDormitories = (options) => {
   return useQuery(
     dormitoryKeys.dormitories,
     async () => {
       const response = await axios.get(
-        "https://www.sczg.unizg.hr/wp-json/wp/v2/posts",
+        `${WP_API}/posts`,
         {
           params: {
             categories: dormitoryCategoryId,
@@ -39,7 +40,7 @@ export const useDormitory = (id, options) => {
     dormitoryKeys.dormitory(id),
     async () => {
       const response = await axios.get(
-        `https://www.sczg.unizg.hr/wp-json/wp/v2/posts/${id}`,
+        `${WP_API}/posts/${id}`,
         {
           params: {
             timestamp: new Date().getTime(),
@@ -61,7 +62,7 @@ export const useCreateDormitory = () => {
   return useMutation(
     async ({ title, status }) => {
       const response = await axios.post(
-        `https://www.sczg.unizg.hr/wp-json/wp/v2/posts`,
+        `${WP_API}/posts`,
         {
           title,
           status,
@@ -92,7 +93,7 @@ export const useUpdateDormitory = () => {
   return useMutation(
     async (dormitory) => {
       const response = await axios.post(
-        `https://www.sczg.unizg.hr/wp-json/wp/v2/posts/${dormitory.id}`,
+        `${WP_API}/posts/${dormitory.id}`,
         {
           title: dormitory?.title,
           excerpt: dormitory?.excerpt,
@@ -128,7 +129,7 @@ export const useDeleteDormitory = () => {
   return useMutation(
     async ({ id }) => {
       const response = await axios.delete(
-        `https://www.sczg.unizg.hr/wp-json/wp/v2/posts/${id}`,
+        `${WP_API}/posts/${id}`,
         {
           params: {
             force: true,

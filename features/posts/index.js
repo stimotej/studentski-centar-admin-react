@@ -4,13 +4,14 @@ import { toast } from "react-toastify";
 import { adminPostsCategory } from "../../lib/constants";
 import formatPost from "./format";
 import postsKeys from "./queries";
+import { WP_API } from "../../lib/wp";
 
 export const usePosts = (filters, options) => {
   return useQuery(
     postsKeys.postsFiltered(filters),
     async () => {
       const response = await axios.get(
-        "https://www.sczg.unizg.hr/wp-json/wp/v2/posts",
+        `${WP_API}/posts`,
         {
           params: {
             order: "asc",
@@ -35,7 +36,7 @@ export const useAdminCategories = (filters, options) => {
     postsKeys.categoriesFiltered(filters),
     async () => {
       const response = await axios.get(
-        "https://www.sczg.unizg.hr/wp-json/wp/v2/categories",
+        `${WP_API}/categories`,
         {
           params: {
             order: "asc",
@@ -59,7 +60,7 @@ export const useCreateCategory = () => {
   return useMutation(
     async ({ name, parent }) => {
       const response = await axios.post(
-        `https://www.sczg.unizg.hr/wp-json/wp/v2/categories`,
+        `${WP_API}/categories`,
         {
           name,
           parent,
@@ -87,7 +88,7 @@ export const useUpdateCategory = () => {
   return useMutation(
     async ({ id, name, parent, meta }) => {
       const response = await axios.post(
-        `https://www.sczg.unizg.hr/wp-json/wp/v2/categories/${id}`,
+        `${WP_API}/categories/${id}`,
         {
           name,
           parent,
@@ -116,7 +117,7 @@ export const useDeleteCategory = () => {
   return useMutation(
     async ({ id }) => {
       const response = await axios.delete(
-        `https://www.sczg.unizg.hr/wp-json/wp/v2/categories/${id}`,
+        `${WP_API}/categories/${id}`,
         {
           params: {
             force: true,
@@ -144,7 +145,7 @@ export const usePost = (id, options) => {
     postsKeys.post(id),
     async () => {
       const response = await axios.get(
-        `https://www.sczg.unizg.hr/wp-json/wp/v2/posts/${id}`
+        `${WP_API}/posts/${id}`
       );
       return response.data;
     },
@@ -160,9 +161,20 @@ export const useCreatePost = () => {
   const queryClient = useQueryClient();
 
   return useMutation(
-    async ({ title, excerpt, content, status, categories, documents, slug }) => {
+    async ({
+      title,
+      excerpt,
+      content,
+      status,
+      categories,
+      documents,
+      slug,
+      titleEn,
+      excerptEn,
+      contentEn,
+    }) => {
       const response = await axios.post(
-        `https://www.sczg.unizg.hr/wp-json/wp/v2/posts`,
+        `${WP_API}/posts`,
         {
           title,
           excerpt,
@@ -172,6 +184,9 @@ export const useCreatePost = () => {
           categories: [adminPostsCategory, ...categories],
           meta: {
             documents,
+            title_en: titleEn,
+            excerpt_en: excerptEn,
+            content_en: contentEn,
           },
         }
       );
@@ -219,16 +234,31 @@ export const useUpdatePost = () => {
       teatarTdEmail,
       teatarTdWebsiteUrl,
       teatarTdAddress,
+      titleEn,
+      excerptEn,
+      contentEn,
+      sadrzajEn,
+      kontaktEn,
+      radnoVrijemeBlagajniEn,
+      actionTitleEn,
+      accordionItemsEn,
+      imageGroupsEn,
+      featuresEn,
+      rentalOptionsEn,
     }) => {
       const response = await axios.post(
-        `https://www.sczg.unizg.hr/wp-json/wp/v2/posts/${id}`,
+        `${WP_API}/posts/${id}`,
         {
           title,
           excerpt,
           content,
           status,
           featured_media: featuredMedia,
-          slug: slug || title,
+          // Only send a slug when the caller actually chose one. This used to
+          // be `slug || title`, which re-derived the slug from the Croatian
+          // title on every save — so editing a title silently changed the URL
+          // and broke the frontends that resolve pages by slug.
+          ...(slug ? { slug } : {}),
           meta: {
             documents,
             sadrzaj,
@@ -246,6 +276,17 @@ export const useUpdatePost = () => {
             teatar_td_email: teatarTdEmail,
             teatar_td_website_url: teatarTdWebsiteUrl,
             teatar_td_address: teatarTdAddress,
+            title_en: titleEn,
+            excerpt_en: excerptEn,
+            content_en: contentEn,
+            sadrzaj_en: sadrzajEn,
+            kontakt_en: kontaktEn,
+            radno_vrijeme_blagajni_en: radnoVrijemeBlagajniEn,
+            footnotes_en: actionTitleEn,
+            accordion_items_en: accordionItemsEn,
+            image_groups_en: imageGroupsEn,
+            features_en: featuresEn,
+            rental_options_en: rentalOptionsEn,
           },
         }
       );
@@ -271,7 +312,7 @@ export const useDeletePost = () => {
   return useMutation(
     async ({ id }) => {
       const response = await axios.delete(
-        `https://www.sczg.unizg.hr/wp-json/wp/v2/posts/${id}`,
+        `${WP_API}/posts/${id}`,
         {
           params: {
             force: true,

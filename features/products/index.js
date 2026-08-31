@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import formatProduct from "./format";
 import productKeys from "./queries";
+import { WP_API } from "../../lib/wp";
 
 export const useProducts = (filters, options) => {
   const queryClient = useQueryClient();
@@ -14,7 +15,7 @@ export const useProducts = (filters, options) => {
 
   const fetchProducts = async (newFilters) => {
     const response = await axios.get(
-      "https://www.sczg.unizg.hr/wp-json/wp/v2/proizvodi",
+      `${WP_API}/proizvodi`,
       {
         params: {
           orderby: newFilters?.orderby,
@@ -69,7 +70,7 @@ export const useCreateProduct = () => {
   return useMutation(
     async (product) => {
       const response = await axios.post(
-        "https://www.sczg.unizg.hr/wp-json/wp/v2/proizvodi",
+        `${WP_API}/proizvodi`,
         {
           title: product?.name,
           status: "publish",
@@ -105,7 +106,7 @@ export const useUpdateProduct = (displayToasts = true) => {
   return useMutation(
     async (product) => {
       const response = await axios.post(
-        "https://www.sczg.unizg.hr/wp-json/wp/v2/proizvodi/" + product.id,
+        `${WP_API}/proizvodi/` + product.id,
         {
           title: product?.name,
           excerpt: product?.description,
@@ -142,7 +143,7 @@ export const useDeleteProduct = (displayToasts = true) => {
   return useMutation(
     async (id) => {
       const response = await axios.delete(
-        "https://www.sczg.unizg.hr/wp-json/wp/v2/proizvodi/" + id,
+        `${WP_API}/proizvodi/` + id,
         {
           params: {
             force: true,

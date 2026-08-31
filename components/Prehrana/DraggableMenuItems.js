@@ -13,6 +13,7 @@ import { replaceElements } from "../Elements/ReorderImages";
 import clsx from "clsx";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { WP_API } from "../../lib/wp";
 const QuillTextEditor = dynamic(
   () => import("../../components/Elements/QuillTextEditor"),
   { ssr: false }
@@ -38,7 +39,7 @@ const DraggableMenuItems = ({
   const handleOnDrop = () => {
     const promises = innerItems.map((item, index) => {
       return axios.post(
-        `https://www.sczg.unizg.hr/wp-json/wp/v2/${endpoint}/${item.id}`,
+        `${WP_API}/${endpoint}/${item.id}`,
         {
           meta: {
             order: index,

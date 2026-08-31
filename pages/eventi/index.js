@@ -44,6 +44,7 @@ import SelectMediaInput from "../../components/Elements/SelectMediaInput";
 import { useUser } from "../../features/auth";
 import FeaturesEditor from "../../components/Elements/FeaturesEditor";
 import MultiImageSelect from "../../components/Elements/MultiImageSelect";
+import LocalizedField from "../../components/Elements/LocalizedField";
 
 const QuillTextEditor = dynamic(
   () => import("../../components/Elements/QuillTextEditor"),
@@ -109,7 +110,9 @@ const PocetnaStranica = () => {
     updatePost({
       id: postData.id,
       title: postData.title,
+      titleEn: postData?.titleEn,
       content: postData.content,
+      contentEn: postData?.contentEn,
       featuredMedia: postData.imageId,
       images: postData.images,
       features: postData.features,
@@ -142,7 +145,7 @@ const PocetnaStranica = () => {
 
   return (
     <Layout>
-      <Header title="Najam prostora" />
+      <Header localeToggle title="Najam prostora" />
       <div className="flex items-start gap-10 flex-wrap md:flex-nowrap px-5 md:px-10 pb-6">
         <div>
           {isLoadingPosts ? (
@@ -255,9 +258,15 @@ const PocetnaStranica = () => {
             <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
               Naslov
             </h4>
-            <QuillTextEditor
+            <LocalizedField
+              as={QuillTextEditor}
+              label="Naslov"
               value={postData?.title}
               onChange={(title) => setPostData((curr) => ({ ...curr, title }))}
+              valueEn={postData?.titleEn}
+              onChangeEn={(titleEn) =>
+                setPostData((curr) => ({ ...curr, titleEn }))
+              }
               formats={["bold"]}
               className="[&>div>div]:!min-h-fit [&>div>div]:line-clamp-1"
               placeholder="Unesi naslov..."
@@ -270,10 +279,16 @@ const PocetnaStranica = () => {
               <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
                 Sadržaj
               </h4>
-              <QuillTextEditor
+              <LocalizedField
+                as={QuillTextEditor}
+                label="Sadržaj"
                 value={postData?.content}
                 onChange={(content) =>
                   setPostData((curr) => ({ ...curr, content }))
+                }
+                valueEn={postData?.contentEn}
+                onChangeEn={(contentEn) =>
+                  setPostData((curr) => ({ ...curr, contentEn }))
                 }
                 placeholder="Unesi sadržaj..."
                 mediaCategoryId={eventiCategoryId}

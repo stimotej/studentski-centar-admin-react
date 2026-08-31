@@ -19,6 +19,9 @@ const formatEvent = (event) => ({
   archive_id: event.meta.archive_id,
   end_showing: event.meta.end_showing,
   documents: event.meta.documents,
+  titleEn: event.meta.title_en,
+  contentEn: event.meta.content_en,
+  locationEn: event.meta.location_en,
 });
 
 export default formatEvent;

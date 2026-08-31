@@ -43,6 +43,7 @@ import {
 } from "@fortawesome/pro-regular-svg-icons";
 import MediaSelectDialog from "../../components/MediaSelectDialog";
 import getIconByMimeType from "../../lib/getIconbyMimeType";
+import LocalizedField from "../../components/Elements/LocalizedField";
 
 const PocetnaStranica = () => {
   const {
@@ -69,8 +70,11 @@ const PocetnaStranica = () => {
 
   const [slug, setSlug] = useState("");
   const [title, setTitle] = useState("");
+  const [titleEn, setTitleEn] = useState("");
   const [excerpt, setExcerpt] = useState("");
+  const [excerptEn, setExcerptEn] = useState("");
   const [content, setContent] = useState("");
+  const [contentEn, setContentEn] = useState("");
   const [files, setFiles] = useState([]);
 
   const [addPostDialog, setAddPostDialog] = useState(false);
@@ -89,8 +93,11 @@ const PocetnaStranica = () => {
       if (!post) return;
       setSlug(post.slug);
       setTitle(post.title);
+      setTitleEn(post.titleEn || "");
       setExcerpt(post.sadrzaj);
+      setExcerptEn(post.sadrzaj_en || "");
       setContent(post.content);
+      setContentEn(post.contentEn || "");
       setFiles(post.documents || []);
     }
   }, [posts, pages, page]);
@@ -106,8 +113,11 @@ const PocetnaStranica = () => {
     setPage(postId);
     setSlug(post.slug);
     setTitle(post.title);
+    setTitleEn(post.titleEn || "");
     setExcerpt(post.sadrzaj);
+    setExcerptEn(post.sadrzaj_en || "");
     setContent(post.content);
+    setContentEn(post.contentEn || "");
     setFiles(post.documents || []);
   };
 
@@ -140,6 +150,10 @@ const PocetnaStranica = () => {
       sadrzaj: page === pocetnaOpceInformacijePost ? excerpt : undefined,
       excerpt: "<p></p>",
       content,
+      titleEn,
+      sadrzajEn:
+        page === pocetnaOpceInformacijePost ? excerptEn : undefined,
+      contentEn,
       status: "publish",
       documents:
         files.length > 0 &&
@@ -172,7 +186,7 @@ const PocetnaStranica = () => {
 
   return (
     <Layout>
-      <Header title="Početna stranica" />
+      <Header localeToggle title="Početna stranica" />
       <div className="flex items-start gap-10 flex-wrap md:flex-nowrap px-5 md:px-10 pb-6">
         <div className="flex flex-col">
           <Paper className="md:!min-w-[260px] md:!max-w-[400px]">
@@ -290,9 +304,13 @@ const PocetnaStranica = () => {
               <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
                 Naslov
               </h4>
-              <QuillTextEditor
+              <LocalizedField
+                as={QuillTextEditor}
+                label="Naslov"
                 value={title}
                 onChange={setTitle}
+                valueEn={titleEn}
+                onChangeEn={setTitleEn}
                 formats={["bold"]}
                 className="[&>div>div]:!min-h-fit [&>div>div]:line-clamp-1"
                 placeholder="Unesi naslov..."
@@ -304,9 +322,13 @@ const PocetnaStranica = () => {
                 <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
                   Kratki opis
                 </h4>
-                <QuillTextEditor
+                <LocalizedField
+                  as={QuillTextEditor}
+                  label="Kratki opis"
                   value={excerpt}
                   onChange={setExcerpt}
+                  valueEn={excerptEn}
+                  onChangeEn={setExcerptEn}
                   className="[&>div>div]:!min-h-[100px]"
                   placeholder="Unesi kratki opis..."
                   mediaCategoryId={pocetnaStranicaCategoryId}
@@ -318,9 +340,13 @@ const PocetnaStranica = () => {
                 <h4 className="uppercase text-sm font-semibold tracking-wide mb-2">
                   Sadržaj
                 </h4>
-                <QuillTextEditor
+                <LocalizedField
+                  as={QuillTextEditor}
+                  label="Sadržaj"
                   value={content}
                   onChange={setContent}
+                  valueEn={contentEn}
+                  onChangeEn={setContentEn}
                   files={files}
                   mediaCategoryId={pocetnaStranicaCategoryId}
                   setFiles={setFiles}

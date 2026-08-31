@@ -8,6 +8,7 @@ import { useRef, useState } from "react";
 import { useDrag, useDrop } from "react-dnd";
 import { toast } from "react-toastify";
 import { ItemTypesDnD } from "../../lib/constants";
+import { useLocale } from "../../lib/locale";
 import MediaSelectDialog from "../MediaSelectDialog";
 
 export function replaceElements(arrayState, dragIndex, hoverIndex) {
@@ -22,7 +23,30 @@ export function replaceElements(arrayState, dragIndex, hoverIndex) {
   return array;
 }
 
-const ReorderImages = ({ mediaCategoryId, imageGroups, setImageGroups }) => {
+const ReorderImages = ({
+  mediaCategoryId,
+  imageGroups,
+  setImageGroups,
+  // Optional. When provided, group captions become bilingual — the images
+  // themselves stay shared, only the caption has an English twin.
+  imageGroupsEn,
+  setImageGroupsEn,
+}) => {
+  const { isEnglish } = useLocale();
+  const localizeCaptions = isEnglish && !!setImageGroupsEn;
+
+  /**
+   * Rebuild the English captions index-aligned with the Croatian groups, so
+   * the two arrays never drift in length or order when a group is added,
+   * removed or reordered (docs/i18n/CONVENTIONS.md).
+   */
+  const setCaptionEn = (index, value) => {
+    const next = imageGroups.map((_, i) => ({
+      title: i === index ? value : imageGroupsEn?.[i]?.title ?? "",
+    }));
+    setImageGroupsEn(next);
+  };
+
   const [mediaDialog, setMediaDialog] = useState({
     opened: false,
     group: null,
@@ -85,15 +109,32 @@ const ReorderImages = ({ mediaCategoryId, imageGroups, setImageGroups }) => {
         <div key={group.id} className="p-2 border rounded-md mb-2">
           <input
             type="text"
-            value={group.title || ""}
+            value={
+              localizeCaptions
+                ? imageGroupsEn?.[index]?.title ?? ""
+                : group.title || ""
+            }
             onChange={(e) => {
+              if (localizeCaptions) {
+                setCaptionEn(index, e.target.value);
+                return;
+              }
               const newImageGroups = [...imageGroups];
               const newGroup = newImageGroups.find((g) => g.id === group.id);
               newGroup.title = e.target.value;
               setImageGroups(newImageGroups);
             }}
-            className="font-medium text-sm mb-2 border rounded bg-transparent w-full"
-            placeholder="Naslov grupe"
+            className={clsx(
+              "font-medium text-sm mb-2 border rounded bg-transparent w-full",
+              localizeCaptions && "border-sky-400",
+            )}
+            placeholder={
+              localizeCaptions
+                ? group.title
+                  ? `EN — hrvatski: ${group.title}`
+                  : "Naslov grupe (EN)"
+                : "Naslov grupe"
+            }
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 w-full">
             {group.images.map((image, i) => (

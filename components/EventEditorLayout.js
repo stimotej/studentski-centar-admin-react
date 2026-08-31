@@ -12,6 +12,9 @@ const QuillEditor = dynamic(() => import("./Obavijesti/Editor/QuillEditor"), {
 });
 import StoredPostNote from "./Obavijesti/Editor/StoredPostNote";
 import Layout from "./Layout";
+import LocalizedField, { EnglishFieldFrame } from "./Elements/LocalizedField";
+import { useLocale } from "../lib/locale";
+import LocaleToggle from "./Elements/LocaleToggle";
 import {
   adminTeatarTdCategory,
   eventsCategoryId,
@@ -109,6 +112,13 @@ const EventEditorLayout = ({ location }) => {
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [titleEn, setTitleEn] = useState("");
+  const [contentEn, setContentEn] = useState("");
+  // Venue names are proper names, so this is usually left empty and the
+  // Croatian falls through. It exists for the ones that do differ.
+  const [eventLocationEn, setEventLocationEn] = useState("");
+
+  const { isEnglish } = useLocale();
   const [imageId, setImageId] = useState("");
   const [status, setStatus] = useState("publish");
 
@@ -141,31 +151,31 @@ const EventEditorLayout = ({ location }) => {
       },
       {
         enabled: location === "Teatar &TD",
-      }
+      },
     );
 
   const archivePosts = useMemo(
     () =>
       teatarTdPosts
         ? teatarTdPosts.filter((p) =>
-            p.categories.includes(teatarTdArchiveCategoryId)
+            p.categories.includes(teatarTdArchiveCategoryId),
           )
         : [],
-    [teatarTdPosts]
+    [teatarTdPosts],
   );
 
   useEffect(() => {
     if (archivePosts?.length) {
       if (event?.archive_id) {
         const foundArchive = archivePosts.find(
-          (a) => a.id === event.archive_id
+          (a) => a.id === event.archive_id,
         );
         setArchive(foundArchive ?? null);
       } else {
         const storedArchiveId = window.localStorage.getItem("event_archive_id");
         if (storedArchiveId) {
           const foundArchive = archivePosts.find(
-            (a) => a.id === Number(storedArchiveId)
+            (a) => a.id === Number(storedArchiveId),
           );
           setArchive(foundArchive ?? null);
         }
@@ -178,6 +188,9 @@ const EventEditorLayout = ({ location }) => {
       setImage({ src: event.image !== "false" ? event.image : null } || null);
       setTitle(event.title || "");
       setContent(event.content || "");
+      setTitleEn(event.titleEn || "");
+      setContentEn(event.contentEn || "");
+      setEventLocationEn(event.locationEn || "");
       setImageId(event.imageId || "");
       setStatus(event.status || "publish");
       setEventDates(event.dates || []);
@@ -185,7 +198,7 @@ const EventEditorLayout = ({ location }) => {
       setEventType(event.type || "");
       setAddToSlider(event.show_on_slider || false);
       setAddToTeatarTDSlider(
-        !!event.categories.includes(teatarTDsliderCategoryId)
+        !!event.categories.includes(teatarTDsliderCategoryId),
       );
       setShowEvent(!!event.end_showing);
       setEndShowing(event.end_showing || null);
@@ -193,17 +206,19 @@ const EventEditorLayout = ({ location }) => {
     } else {
       setTitle(window.localStorage.getItem("event_title") || "");
       setContent(window.localStorage.getItem("event_content") || "");
+      setTitleEn(window.localStorage.getItem("event_title_en") || "");
+      setContentEn(window.localStorage.getItem("event_content_en") || "");
       setImageId(window.localStorage.getItem("event_image_id") || "");
       setImage({ src: window.localStorage.getItem("event_image_src") });
       setStatus(window.localStorage.getItem("event_status") || "publish");
       setEventLocation(window.localStorage.getItem("event_location") || "");
       setEventDates(
-        window.localStorage.getItem("event_dates")?.split(",") || []
+        window.localStorage.getItem("event_dates")?.split(",") || [],
       );
       setEventType(window.localStorage.getItem("event_type") || "");
       setAddToSlider(window.localStorage.getItem("event_slider") || false);
       setAddToTeatarTDSlider(
-        window.localStorage.getItem("event_slider_teatar_td") || false
+        window.localStorage.getItem("event_slider_teatar_td") || false,
       );
       setShowEvent(window.localStorage.getItem("event_show_event") === "true");
       setEndShowing(window.localStorage.getItem("event_end_showing") || null);
@@ -220,6 +235,8 @@ const EventEditorLayout = ({ location }) => {
     setImage(null);
     setTitle("");
     setContent("");
+    setTitleEn("");
+    setContentEn("");
     setImageId(0);
     setStatus("publish");
     setEventLocation("");
@@ -240,6 +257,9 @@ const EventEditorLayout = ({ location }) => {
     const newEvent = {
       title: title,
       content: content,
+      titleEn: titleEn,
+      contentEn: contentEn,
+      locationEn: eventLocationEn,
       imageId: imageId || 0,
       status: status,
       dates: eventDates.map((date) => dayjs(date).toISOString()),
@@ -297,7 +317,7 @@ const EventEditorLayout = ({ location }) => {
       if (!eventId) {
         window.localStorage.setItem(
           "event_files",
-          JSON.stringify([...files, value])
+          JSON.stringify([...files, value]),
         );
       }
     }
@@ -396,10 +416,26 @@ const EventEditorLayout = ({ location }) => {
               !eventId &&
                 window.localStorage.setItem(
                   "event_location",
-                  val !== null ? val : ""
+                  val !== null ? val : "",
                 );
             }}
           />
+        )}
+        {!location && isEnglish && (
+          <EnglishFieldFrame
+            label="Lokacija"
+            source={eventLocation}
+            value={eventLocationEn}
+            className="mt-2"
+          >
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Leave empty if the venue name is the same"
+              value={eventLocationEn}
+              onChange={(e) => setEventLocationEn(e.target.value)}
+            />
+          </EnglishFieldFrame>
         )}
         {/* <div className="mt-4">Program:</div>
         <input
@@ -428,7 +464,7 @@ const EventEditorLayout = ({ location }) => {
             !eventId &&
               window.localStorage.setItem(
                 "event_type",
-                val !== null ? val : ""
+                val !== null ? val : "",
               );
           }}
         />
@@ -457,7 +493,7 @@ const EventEditorLayout = ({ location }) => {
                 !eventId &&
                   window.localStorage.setItem(
                     "event_archive_id",
-                    val !== null ? val.id : ""
+                    val !== null ? val.id : "",
                   );
               }}
             />
@@ -474,7 +510,7 @@ const EventEditorLayout = ({ location }) => {
                       !eventId &&
                         window.localStorage.setItem(
                           "event_show_event",
-                          e.target.checked
+                          e.target.checked,
                         );
                     }}
                   />
@@ -525,7 +561,7 @@ const EventEditorLayout = ({ location }) => {
                 !eventId &&
                   window.localStorage.setItem(
                     "event_slider_teatar_td",
-                    e.target.checked
+                    e.target.checked,
                   );
               }}
             />
@@ -597,7 +633,7 @@ const EventEditorLayout = ({ location }) => {
                       eventDates.length - 1 > 0
                         ? window.localStorage.setItem(
                             "event_dates",
-                            eventDates.filter((item) => item !== date)
+                            eventDates.filter((item) => item !== date),
                           )
                         : window.localStorage.removeItem("event_dates");
                     }
@@ -672,8 +708,13 @@ const EventEditorLayout = ({ location }) => {
       </MyDialog>
       <div className="pr-0 lg:pr-72">
         <div className="px-5 py-10 md:p-12">
-          <ReactQuill
-            className="w-full mt-14 sm:mt-12 text-2xl obavijest-title bg-transparent font-semibold border-transparent focus:border-transparent focus:ring-0"
+          <div className="mt-14 sm:mt-12">
+            <LocaleToggle />
+          </div>
+          <LocalizedField
+            as={ReactQuill}
+            label="Naslov"
+            className="w-full mt-2 text-2xl obavijest-title bg-transparent font-semibold border-transparent focus:border-transparent focus:ring-0"
             placeholder="Naslov..."
             modules={{
               toolbar: false,
@@ -683,6 +724,11 @@ const EventEditorLayout = ({ location }) => {
             onChange={(value) => {
               setTitle(value);
               !eventId && window.localStorage.setItem("event_title", value);
+            }}
+            valueEn={titleEn}
+            onChangeEn={(value) => {
+              setTitleEn(value);
+              !eventId && window.localStorage.setItem("event_title_en", value);
             }}
           />
           {/* <QuillEditor
@@ -695,11 +741,19 @@ const EventEditorLayout = ({ location }) => {
             }}
             className="w-full mt-14 sm:mt-12 text-2xl bg-transparent font-semibold border-transparent focus:border-transparent focus:ring-0"
           /> */}
-          <QuillEditor
+          <LocalizedField
+            as={QuillEditor}
+            label="Sadržaj"
             value={content}
             onChange={(value) => {
               setContent(value);
               !eventId && window.localStorage.setItem("event_content", value);
+            }}
+            valueEn={contentEn}
+            onChangeEn={(value) => {
+              setContentEn(value);
+              !eventId &&
+                window.localStorage.setItem("event_content_en", value);
             }}
             addImageToolbar={addImageToolbar}
             addYoutubeVideo={addYoutubeVideo}

@@ -8,24 +8,22 @@ import {
   restaurantCategoryId,
   restaurantDefaultMediaId,
 } from "../../lib/constants";
+import { WP_API } from "../../lib/wp";
 
 export const useRestaurants = (options) => {
   return useQuery(
     restaurantKeys.restaurants,
     async () => {
-      const response = await axios.get(
-        "https://www.sczg.unizg.hr/wp-json/wp/v2/posts",
-        {
-          params: {
-            categories: restaurantCategoryId,
-            orderby: "order",
-            order: "asc",
-            timestamp: new Date().getTime(),
-            status: ["publish", "draft"],
-            per_page: 100,
-          },
-        }
-      );
+      const response = await axios.get(`${WP_API}/posts`, {
+        params: {
+          categories: restaurantCategoryId,
+          orderby: "order",
+          order: "asc",
+          timestamp: new Date().getTime(),
+          status: ["publish", "draft"],
+          per_page: 100,
+        },
+      });
       return response.data;
     },
     {
@@ -34,7 +32,7 @@ export const useRestaurants = (options) => {
         console.log(error.response.data);
       },
       ...options,
-    }
+    },
   );
 };
 
@@ -45,22 +43,19 @@ export const useRestaurant = (options) => {
       const token = window.localStorage.getItem("access_token");
       var currentUserId = jwt.decode(token).id;
 
-      const response = await axios.get(
-        "https://www.sczg.unizg.hr/wp-json/wp/v2/posts",
-        {
-          params: {
-            author: currentUserId,
-            categories: restaurantCategoryId,
-            timestamp: new Date().getTime(),
-          },
-        }
-      );
+      const response = await axios.get(`${WP_API}/posts`, {
+        params: {
+          author: currentUserId,
+          categories: restaurantCategoryId,
+          timestamp: new Date().getTime(),
+        },
+      });
       return response.data;
     },
     {
       select: (data) => formatRestaurant(data[0]),
       ...options,
-    }
+    },
   );
 };
 
@@ -69,19 +64,16 @@ export const useCreateRestaurant = () => {
 
   return useMutation(
     async ({ title, status, order }) => {
-      const response = await axios.post(
-        `https://www.sczg.unizg.hr/wp-json/wp/v2/posts`,
-        {
-          title,
-          status,
-          categories: [restaurantCategoryId],
-          featured_media: restaurantDefaultMediaId,
-          status: "draft",
-          meta: {
-            order,
-          },
-        }
-      );
+      const response = await axios.post(`${WP_API}/posts`, {
+        title,
+        status,
+        categories: [restaurantCategoryId],
+        featured_media: restaurantDefaultMediaId,
+        status: "draft",
+        meta: {
+          order,
+        },
+      });
       return formatRestaurant(response.data);
     },
     {
@@ -94,7 +86,7 @@ export const useCreateRestaurant = () => {
           toast.error("Nemate dopuštenje za dodavanje restorana.");
         else toast.error("Greška kod dodavanja restorana.");
       },
-    }
+    },
   );
 };
 
@@ -103,22 +95,23 @@ export const useUpdateRestaurant = () => {
 
   return useMutation(
     async (restaurant) => {
-      const response = await axios.post(
-        "https://www.sczg.unizg.hr/wp-json/wp/v2/posts/" + restaurant.id,
-        {
-          title: restaurant?.title,
-          featured_media: restaurant?.imageId,
-          meta: {
-            ponuda: restaurant?.ponuda,
-            radno_vrijeme: restaurant?.radnoVrijeme,
-            lokacija: restaurant?.lokacija,
-            restaurant_info: restaurant?.info,
-            linije: restaurant?.linije,
-          },
-          tags: restaurant?.tags,
-          status: "publish",
-        }
-      );
+      const response = await axios.post(`${WP_API}/posts/` + restaurant.id, {
+        title: restaurant?.title,
+        featured_media: restaurant?.imageId,
+        meta: {
+          ponuda: restaurant?.ponuda,
+          radno_vrijeme: restaurant?.radnoVrijeme,
+          lokacija: restaurant?.lokacija,
+          restaurant_info: restaurant?.info,
+          title_en: restaurant?.titleEn,
+          ponuda_en: restaurant?.ponudaEn,
+          radno_vrijeme_en: restaurant?.radnoVrijemeEn,
+          restaurant_info_en: restaurant?.infoEn,
+          linije: restaurant?.linije,
+        },
+        tags: restaurant?.tags,
+        status: "publish",
+      });
       return formatRestaurant(response.data);
     },
     {
@@ -131,7 +124,7 @@ export const useUpdateRestaurant = () => {
           toast.error("Nemate dopuštenje za izmjenu ovoga restorana.");
         else toast.error("Greška kod spremanja restorana.");
       },
-    }
+    },
   );
 };
 
@@ -140,14 +133,11 @@ export const useDeleteRestaurant = () => {
 
   return useMutation(
     async ({ id }) => {
-      const response = await axios.delete(
-        `https://www.sczg.unizg.hr/wp-json/wp/v2/posts/${id}`,
-        {
-          params: {
-            force: true,
-          },
-        }
-      );
+      const response = await axios.delete(`${WP_API}/posts/${id}`, {
+        params: {
+          force: true,
+        },
+      });
       return response.data;
     },
     {
@@ -160,6 +150,6 @@ export const useDeleteRestaurant = () => {
           toast.error("Nemate dopuštenje za brisanje restorana.");
         else toast.error("Greška kod brisanja restorana.");
       },
-    }
+    },
   );
 };

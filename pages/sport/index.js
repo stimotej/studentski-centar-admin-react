@@ -37,6 +37,7 @@ import {
 import { adminSportCategory, sportCategoryId } from "../../lib/constants";
 import dynamic from "next/dynamic";
 import ReorderImages from "../../components/Elements/ReorderImages";
+import LocalizedField from "../../components/Elements/LocalizedField";
 const QuillTextEditor = dynamic(
   () => import("../../components/Elements/QuillTextEditor"),
   { ssr: false }
@@ -94,8 +95,12 @@ const SmjestajPage = () => {
   );
 
   const [title, setTitle] = useState("");
+
+  const [titleEn, setTitleEn] = useState("");
   const [excerpt, setExcerpt] = useState("");
+  const [excerptEn, setExcerptEn] = useState("");
   const [content, setContent] = useState("");
+  const [contentEn, setContentEn] = useState("");
   const [imageGroups, setImageGroups] = useState([]);
   const [files, setFiles] = useState([]);
 
@@ -105,15 +110,21 @@ const SmjestajPage = () => {
       if (!post) {
         setPage(0);
         setTitle("");
+        setTitleEn("");
         setExcerpt("");
+        setExcerptEn("");
         setContent("");
+        setContentEn("");
         setFiles([]);
         return;
       }
       setPage(post.id);
       setTitle(post.title);
+      setTitleEn(post.titleEn || "");
       setExcerpt(post.excerpt);
+      setExcerptEn(post.excerptEn || "");
       setContent(post.content);
+      setContentEn(post.contentEn || "");
       setFiles(post.documents || []);
     }
   }, [posts, page]);
@@ -182,6 +193,9 @@ const SmjestajPage = () => {
           title: title,
           excerpt: excerpt,
           content: content,
+          titleEn: titleEn,
+          excerptEn: excerptEn,
+          contentEn: contentEn,
           status: "publish",
           documents:
             files.length > 0 &&
@@ -218,7 +232,7 @@ const SmjestajPage = () => {
 
   return (
     <Layout>
-      <Header title="Početna" />
+      <Header localeToggle title="Početna" />
       <div className="px-5 md:px-10 pb-6">
         <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
           <Tabs value={activeCategory} onChange={handleChange}>
@@ -335,9 +349,13 @@ const SmjestajPage = () => {
                 ) : (
                   <>
                     <h3 className="font-semibold mb-2">Naziv</h3>
-                    <QuillTextEditor
+                    <LocalizedField
+                      as={QuillTextEditor}
+                      label="Naslov"
                       value={title}
                       onChange={setTitle}
+                      valueEn={titleEn}
+                      onChangeEn={setTitleEn}
                       formats={[]}
                       className="[&>div>div]:!min-h-fit [&>div>div]:line-clamp-1"
                       placeholder="Unesi naslov..."
@@ -345,17 +363,25 @@ const SmjestajPage = () => {
                     />
 
                     <h3 className="font-semibold mt-4 mb-2">Opis</h3>
-                    <QuillTextEditor
+                    <LocalizedField
+                      as={QuillTextEditor}
+                      label="Kratki opis"
                       value={excerpt}
                       onChange={setExcerpt}
+                      valueEn={excerptEn}
+                      onChangeEn={setExcerptEn}
                       placeholder="Unesi opis..."
                       mediaCategoryId={sportCategoryId}
                     />
 
                     <h3 className="font-semibold mt-4 mb-2">Sadržaj</h3>
-                    <QuillTextEditor
+                    <LocalizedField
+                      as={QuillTextEditor}
+                      label="Sadržaj"
                       value={content}
                       onChange={setContent}
+                      valueEn={contentEn}
+                      onChangeEn={setContentEn}
                       placeholder="Unesi sadržaj..."
                       files={files}
                       setFiles={setFiles}

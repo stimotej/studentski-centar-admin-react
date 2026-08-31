@@ -2,13 +2,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { toast } from "react-toastify";
 import pageKeys from "./queries";
+import { WP_API } from "../../lib/wp";
 
 export const usePage = (id, options) => {
   return useQuery(
     pageKeys.page(id),
     async () => {
       const response = await axios.get(
-        `https://www.sczg.unizg.hr/wp-json/wp/v2/pages/${id}`
+        `${WP_API}/pages/${id}`
       );
       return response.data;
     },
@@ -24,7 +25,7 @@ export const useUpdatePage = () => {
   return useMutation(
     async ({ id, data }) => {
       const response = await axios.post(
-        `https://www.sczg.unizg.hr/wp-json/wp/v2/pages/${id}`,
+        `${WP_API}/pages/${id}`,
         data
       );
       return response.data;
@@ -49,7 +50,7 @@ export const useCreatePageFAQ = () => {
   return useMutation(
     async ({ id, question, answer }) => {
       const response = await axios.post(
-        `https://www.sczg.unizg.hr/wp-json/wp/v2/pages/${id}/faq`,
+        `${WP_API}/pages/${id}/faq`,
         {
           question,
           answer,
@@ -77,7 +78,7 @@ export const useUpdatePageFAQ = () => {
   return useMutation(
     async ({ id, faqId, question, answer }) => {
       const response = await axios.put(
-        `https://www.sczg.unizg.hr/wp-json/wp/v2/pages/${id}/faq/${faqId}`,
+        `${WP_API}/pages/${id}/faq/${faqId}`,
         {
           question,
           answer,
@@ -105,7 +106,7 @@ export const useDeletePageFAQ = () => {
   return useMutation(
     async ({ id, faqId }) => {
       const response = await axios.delete(
-        `https://www.sczg.unizg.hr/wp-json/wp/v2/pages/${id}/faq/${faqId}`
+        `${WP_API}/pages/${id}/faq/${faqId}`
       );
       return response.data;
     },

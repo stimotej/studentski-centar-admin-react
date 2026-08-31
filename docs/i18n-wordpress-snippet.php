@@ -1,0 +1,176 @@
+<?php
+/**
+ * HR → EN bilingual content fields for sczg.unizg.hr
+ *
+ * Registers an `<key>_en` twin for every translatable field so the React admin
+ * and the headless frontends can read and write English over the REST API.
+ *
+ * Nothing here touches existing Croatian data. It only adds new meta keys.
+ *
+ * INSTALL / UPDATE (Code Snippets plugin):
+ *   This already lives on the site as snippet 185, "i18n fields" (active,
+ *   scope "Run everywhere"). UPDATE THAT ONE — do not add a second snippet,
+ *   because registering the same meta keys twice collides.
+ *
+ *   1. Snippets → find "i18n fields" → Edit
+ *   2. Select all, and replace with everything BELOW this comment — do NOT
+ *      include the opening <?php tag; Code Snippets adds it.
+ *   3. Scope stays "Run everywhere" (REST requests are neither admin nor
+ *      frontend).
+ *   4. Save Changes and Activate.
+ *
+ * VERIFY afterwards — a registered key appears in the endpoint's schema, and
+ * an unregistered one is accepted with HTTP 200 and silently discarded, so
+ * check the schema rather than trusting a write:
+ *   curl -s -X OPTIONS https://www.sczg.unizg.hr/wp-json/wp/v2/posts \
+ *     | grep -o '"ponuda_en"'
+ *
+ * See docs/i18n/CONVENTIONS.md for the naming and fallback rules this follows.
+ */
+
+if (!function_exists('sc_i18n_can_edit')) {
+    /**
+     * Who may write English fields. Same bar as editing the post itself.
+     */
+    function sc_i18n_can_edit() {
+        return current_user_can('edit_posts');
+    }
+}
+
+if (!function_exists('sc_i18n_object_array')) {
+    /**
+     * Schema helper for an array of objects with a fixed set of properties.
+     */
+    function sc_i18n_object_array($properties) {
+        return array(
+            'type'  => 'array',
+            'items' => array(
+                'type'                 => 'object',
+                'properties'           => $properties,
+                'additionalProperties' => false,
+            ),
+        );
+    }
+}
+
+if (!function_exists('sc_i18n_str')) {
+    function sc_i18n_str() {
+        return array('type' => 'string');
+    }
+}
+
+if (!function_exists('sc_i18n_registry')) {
+    /**
+     * Which `_en` keys exist on which post type.
+     *
+     * Structured fields carry ONLY their translatable sub-properties, index
+     * aligned with the Croatian original. Media ids, prices, URLs and dates are
+     * never duplicated — one copy serves both languages (CONVENTIONS.md).
+     */
+    function sc_i18n_registry() {
+        $core_mirrors = array(
+            // The core fields have no meta twin by default, so mirror them.
+            'title_en'   => sc_i18n_str(),
+            'excerpt_en' => sc_i18n_str(),
+            'content_en' => sc_i18n_str(),
+        );
+
+        return array(
+
+            'post' => array_merge($core_mirrors, array(
+                'sadrzaj_en'                => sc_i18n_str(),
+                'kontakt_en'                => sc_i18n_str(),
+                'radno_vrijeme_blagajni_en' => sc_i18n_str(),
+                // `footnotes` holds the action-button label, not footnotes.
+                // Historical naming — do not rename, four frontends read it.
+                'footnotes_en'              => sc_i18n_str(),
+
+                // Restaurants. `lokacija` is deliberately absent: it holds a
+                // Google Maps iframe with no translatable text in it.
+                'ponuda_en'                 => sc_i18n_str(),
+                'radno_vrijeme_en'          => sc_i18n_str(),
+
+                // Address and opening-hours lines under the restaurant cards.
+                // `icon` and `order` stay in `restaurant_info` — one copy
+                // serves both languages.
+                'restaurant_info_en' => sc_i18n_object_array(array(
+                    'title' => sc_i18n_str(),
+                )),
+
+                'accordion_items_en' => sc_i18n_object_array(array(
+                    'title'       => sc_i18n_str(),
+                    'description' => sc_i18n_str(),
+                )),
+
+                // Group captions only. Image ids stay in `image_groups`.
+                'image_groups_en' => sc_i18n_object_array(array(
+                    'title' => sc_i18n_str(),
+                )),
+
+                // image_url stays in `features`.
+                'features_en' => sc_i18n_object_array(array(
+                    'title'       => sc_i18n_str(),
+                    'description' => sc_i18n_str(),
+                )),
+
+                // Prices stay in `rental_options`.
+                'rental_options_en' => sc_i18n_object_array(array(
+                    'title'    => sc_i18n_str(),
+                    'subtitle' => sc_i18n_str(),
+                    'items'    => sc_i18n_object_array(array(
+                        'title' => sc_i18n_str(),
+                    )),
+                )),
+            )),
+
+            // Only one screen uses this type: the Student servis "Poslovi"
+            // page (id 4757), which edits title and excerpt.
+            'page' => $core_mirrors,
+
+            'obavijesti' => array_merge($core_mirrors, array(
+                'accordion_items_en' => sc_i18n_object_array(array(
+                    'title'       => sc_i18n_str(),
+                    'description' => sc_i18n_str(),
+                )),
+            )),
+
+            'event' => array_merge($core_mirrors, array(
+                // Venue/room names ("Velika dvorana"), not addresses.
+                'location_en'        => sc_i18n_str(),
+                'accordion_items_en' => sc_i18n_object_array(array(
+                    'title'       => sc_i18n_str(),
+                    'description' => sc_i18n_str(),
+                )),
+            )),
+
+            // NOT registered on purpose:
+            //   proizvodi / menus — 327 products and 9,700+ daily menus,
+            //     regenerated by kitchen staff. Translating them is an ongoing
+            //     operational burden, not a migration. Deferred by decision.
+            //   jobs — employer-submitted adverts, written by third parties.
+        );
+    }
+}
+
+if (!function_exists('sc_i18n_register_en_meta')) {
+    function sc_i18n_register_en_meta() {
+        foreach (sc_i18n_registry() as $post_type => $fields) {
+            foreach ($fields as $key => $schema) {
+
+                $is_array = isset($schema['type']) && $schema['type'] === 'array';
+
+                register_post_meta($post_type, $key, array(
+                    'type'          => $is_array ? 'array' : 'string',
+                    'single'        => true,
+                    'default'       => $is_array ? array() : '',
+                    'show_in_rest'  => $is_array
+                        ? array('schema' => $schema)
+                        : true,
+                    'auth_callback' => 'sc_i18n_can_edit',
+                ));
+            }
+        }
+    }
+}
+
+add_action('init', 'sc_i18n_register_en_meta', 20);

@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import formatMenu from "./format";
 import menuKeys from "./queries";
 import dayjs from "dayjs";
+import { WP_API } from "../../lib/wp";
 
 export const useMenus = (filters, options) => {
   const queryClient = useQueryClient();
@@ -15,7 +16,7 @@ export const useMenus = (filters, options) => {
 
   const fetchMenus = async (newFilters) => {
     const response = await axios.get(
-      "https://www.sczg.unizg.hr/wp-json/wp/v2/menus",
+      `${WP_API}/menus`,
       {
         params: {
           orderby: newFilters?.orderby,
@@ -70,7 +71,7 @@ export const useMenusByDate = ({ date, restaurantId }, options) => {
     menuKeys.menuByDate({ date, restaurantId }),
     async () => {
       const response = await axios.get(
-        "https://www.sczg.unizg.hr/wp-json/wp/v2/menus",
+        `${WP_API}/menus`,
         {
           params: {
             menu_date: date,
@@ -97,7 +98,7 @@ export const useCreateMenu = () => {
   return useMutation(
     async (menu) => {
       const response = await axios.post(
-        "https://www.sczg.unizg.hr/wp-json/wp/v2/menus",
+        `${WP_API}/menus`,
         {
           title: menu.title,
           status: "draft",
@@ -130,7 +131,7 @@ export const useUpdateMenu = (displayToasts = true) => {
   return useMutation(
     async (menu) => {
       const response = await axios.post(
-        "https://www.sczg.unizg.hr/wp-json/wp/v2/menus/" + menu.id,
+        `${WP_API}/menus/` + menu.id,
         {
           title: menu?.title,
           slug: menu?.title,
@@ -167,7 +168,7 @@ export const useDeleteMenu = (displayToasts = true) => {
   return useMutation(
     async (id) => {
       const response = await axios.delete(
-        "https://www.sczg.unizg.hr/wp-json/wp/v2/menus/" + id,
+        `${WP_API}/menus/` + id,
         {
           params: {
             force: true,

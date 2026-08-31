@@ -34,3 +34,12 @@ yarn-error.log*
 .vercel
 
 .env
+
+# content snapshots (large, and may contain unpublished drafts)
+/wp-snapshots
+
+# per-run translation write logs
+/translation-logs
+
+# spam cleanup review list and removed-content backup
+/spam-cleanup

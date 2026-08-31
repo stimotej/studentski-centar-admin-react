@@ -16,6 +16,8 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import hr from "dayjs/locale/hr";
+import { WP_API } from "../lib/wp";
+import { LocaleProvider } from "../lib/locale";
 
 dayjs.extend(minMax);
 dayjs.locale("hr");
@@ -24,7 +26,7 @@ const queryClient = new QueryClient();
 
 // axios.defaults.baseURL = "https://unaprijedi.com/wp-json/wp/v2"
 // axios.defaults.baseURL = "http://161.53.174.14/wp-json/wp/v2/";
-axios.defaults.baseURL = "https://www.sczg.unizg.hr/wp-json/wp/v2/";
+axios.defaults.baseURL = `${WP_API}/`;
 
 function MyApp({ Component, pageProps }) {
   useEffect(() => {
@@ -35,6 +37,7 @@ function MyApp({ Component, pageProps }) {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <LocaleProvider>
       <IconContext.Provider value={{ size: 24 }}>
         <DndProvider backend={HTML5Backend}>
           <LocalizationProvider
@@ -67,6 +70,7 @@ function MyApp({ Component, pageProps }) {
           </LocalizationProvider>
         </DndProvider>
       </IconContext.Provider>
+      </LocaleProvider>
     </QueryClientProvider>
   );
 }

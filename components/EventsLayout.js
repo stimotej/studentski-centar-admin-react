@@ -14,6 +14,7 @@ import SearchHeader from "./Elements/SearchHeader";
 import Loader from "./Elements/Loader";
 import ObavijestPreview from "./Obavijesti/Home/Preview";
 import ObavijestSelect from "./Obavijesti/Home/Select";
+import { WP_API } from "../lib/wp";
 
 const EventsLayout = ({ location, from }) => {
   const [event, setEvent] = useState(null);
@@ -58,7 +59,7 @@ const EventsLayout = ({ location, from }) => {
     setIsDeleting(true);
     try {
       const sameEventsRes = await axios.get(
-        "https://www.sczg.unizg.hr/wp-json/wp/v2/event",
+        `${WP_API}/event`,
         {
           params: {
             tags: event.tags?.[0],

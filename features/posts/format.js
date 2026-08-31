@@ -40,6 +40,20 @@ const formatPost = (post) => ({
   teatarTdEmail: post.meta.teatar_td_email,
   teatarTdWebsiteUrl: post.meta.teatar_td_website_url,
   teatarTdAddress: post.meta.teatar_td_address,
+
+  // English twins. Naming mirrors each Croatian key's existing style rather
+  // than imposing a new one — see docs/i18n/CONVENTIONS.md.
+  titleEn: post.meta.title_en,
+  excerptEn: post.meta.excerpt_en,
+  contentEn: post.meta.content_en,
+  sadrzaj_en: post.meta.sadrzaj_en,
+  kontakt_en: post.meta.kontakt_en,
+  radno_vrijeme_blagajni_en: post.meta.radno_vrijeme_blagajni_en,
+  actionTitleEn: post.meta.footnotes_en,
+  accordionItemsEn: post.meta.accordion_items_en || [],
+  image_groups_en: post.meta.image_groups_en || [],
+  featuresEn: post.meta.features_en || [],
+  rentalOptionsEn: post.meta.rental_options_en || [],
 });
 
 export default formatPost;

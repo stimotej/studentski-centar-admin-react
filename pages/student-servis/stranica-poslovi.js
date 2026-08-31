@@ -34,9 +34,10 @@ import {
 } from "../../lib/constants";
 import dynamic from "next/dynamic";
 import { usePage, useUpdatePage } from "../../features/page";
+import LocalizedField from "../../components/Elements/LocalizedField";
 const QuillTextEditor = dynamic(
   () => import("../../components/Elements/QuillTextEditor"),
-  { ssr: false }
+  { ssr: false },
 );
 
 const StranicaPage = () => {
@@ -69,6 +70,10 @@ const StranicaPage = () => {
   const [pageTitle, setPageTitle] = useState(pageData?.title || "");
   const [pageExcerpt, setPageExcerpt] = useState(pageData?.excerpt || "");
 
+  const [pageTitleEn, setPageTitleEn] = useState("");
+  const [pageExcerptEn, setPageExcerptEn] = useState("");
+  const [obrasciContentEn, setObrasciContentEn] = useState("");
+
   const [files, setFiles] = useState([]);
   const [obrasciContent, setObrasciContent] = useState(pageData?.excerpt || "");
 
@@ -92,12 +97,15 @@ const StranicaPage = () => {
     if (pageData) {
       setPageTitle(pageData.title.rendered);
       setPageExcerpt(pageData.excerpt.rendered);
+      setPageTitleEn(pageData.meta?.title_en || "");
+      setPageExcerptEn(pageData.meta?.excerpt_en || "");
     }
   }, [pageData]);
 
   useEffect(() => {
     if (obrasciPost) {
       setObrasciContent(obrasciPost.content);
+      setObrasciContentEn(obrasciPost.contentEn || "");
       setFiles(obrasciPost.documents || []);
     }
   }, [obrasciPost]);
@@ -108,6 +116,7 @@ const StranicaPage = () => {
     updatePost({
       id: jobsObrasciPostId,
       content: obrasciContent,
+      contentEn: obrasciContentEn,
       documents:
         files.length > 0 &&
         files.map((file) => ({
@@ -135,6 +144,10 @@ const StranicaPage = () => {
       data: {
         title: pageTitle,
         excerpt: pageExcerpt,
+        meta: {
+          title_en: pageTitleEn,
+          excerpt_en: pageExcerptEn,
+        },
       },
     });
   };
@@ -155,7 +168,7 @@ const StranicaPage = () => {
           setDialogTitle("");
           setPage(data.id);
         },
-      }
+      },
     );
   };
   const handleSaveCategory = () => {
@@ -172,13 +185,13 @@ const StranicaPage = () => {
           setDeleteCategoryDialog(false);
           setPage(0);
         },
-      }
+      },
     );
   };
 
   return (
     <Layout>
-      <Header title="Stranica poslovi" />
+      <Header localeToggle title="Stranica poslovi" />
       <div className="px-5 md:px-10 pb-6">
         <h3 className="text-lg font-semibold mb-3 text-primary">
           Naslov i podnaslov stranice
@@ -201,17 +214,25 @@ const StranicaPage = () => {
           </div>
         ) : (
           <>
-            <QuillTextEditor
+            <LocalizedField
+              as={QuillTextEditor}
+              label="Naslov"
               value={pageTitle}
               onChange={setPageTitle}
+              valueEn={pageTitleEn}
+              onChangeEn={setPageTitleEn}
               useToolbar={false}
               formats={["bold"]}
               className="obavijest-title font-semibold [&>div>div]:!min-h-fit [&>div>div]:line-clamp-1"
               placeholder="Unesi naslov..."
             />
-            <QuillTextEditor
+            <LocalizedField
+              as={QuillTextEditor}
+              label="Podnaslov"
               value={pageExcerpt}
               onChange={setPageExcerpt}
+              valueEn={pageExcerptEn}
+              onChangeEn={setPageExcerptEn}
               containerClassName="mt-4"
               className="[&>div>div]:!min-h-[120px]"
               placeholder="Unesi podnaslov..."
@@ -248,9 +269,13 @@ const StranicaPage = () => {
           </div>
         ) : (
           <>
-            <QuillTextEditor
+            <LocalizedField
+              as={QuillTextEditor}
+              label="Sadržaj"
               value={obrasciContent}
               onChange={setObrasciContent}
+              valueEn={obrasciContentEn}
+              onChangeEn={setObrasciContentEn}
               containerClassName="mt-4"
               className="[&>div>div]:!min-h-[120px]"
               placeholder="Unesi sadržaj..."
