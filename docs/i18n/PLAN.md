@@ -259,12 +259,27 @@ if so whether to use a library (`next-intl`) or a simple string map.
 
 ## Phase 5 — Cutover
 
-- [ ] Language switcher visible on each public site.
-- [ ] `<html lang>` follows the active locale (currently hard-coded `hr`).
-- [ ] `hreflang` tags pairing each HR page with its EN counterpart.
-- [ ] Decide what `/en` does for a page with zero translated fields — render
-      Croatian, or 404. (Recommendation: render Croatian; a mixed page beats a
-      dead link.)
+- [ ] **Language switcher visible on each public site.** Nothing in the UI
+      switches language yet, so `/en` is reachable only by typing it. Two
+      things exist *only* because it is missing and must be undone with it —
+      both are noted in `studentski-centar-zagreb/CLAUDE.md`:
+      - [ ] Remove the `noindex` on English pages in
+            `src/components/shared/Layout.tsx`. It is there so Google does not
+            index unreviewed English that no visitor can navigate to. Keep the
+            `hreflang` and canonical tags beside it; those are correct.
+      - [ ] Decide what the switcher does on `/poslovi` and `/kultura/eventi`,
+            which stay Croatian by decision (~726 jobs, ~460 events). Hide it
+            there, or translate that content first.
+- [x] `<html lang>` follows the active locale.
+- [x] `hreflang` tags pairing each HR page with its EN counterpart, plus a
+      self-referencing canonical and `x-default` → Croatian.
+- [x] Decided what `/en` does for a page with zero translated fields: renders
+      Croatian. The fallback is per field, so a partly translated page renders
+      mixed rather than dead.
+- [ ] **A Croatian speaker reads the English.** Two terminology decisions were
+      made from evidence rather than judgement ("University of Zagreb Student
+      Centre", "student dormitory"), and articles were inserted mechanically at
+      213 sites. This is the largest outstanding risk in the migration.
 
 ---
 
