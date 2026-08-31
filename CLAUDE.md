@@ -25,6 +25,14 @@ Never bulk-write without an explicit dry-run first.
 
 ## Known hazards
 
+- **Node 25 breaks the build.** `npm run build` dies with
+  `Cannot read properties of undefined (reading 'prototype')` while collecting
+  page data for `/prehrana/dnevni-menu`, and the `/prehrana` admin pages fail to
+  render in dev. `buffer-equal-constant-time` reads `SlowBuffer.prototype` at
+  import time, and Node 25 removed `SlowBuffer`. There is no upgrade out of it:
+  the package last shipped in 2014 and even the current `jwa@2` still depends on
+  it. Use Node 22 — `.nvmrc` and `engines` in package.json say so.
+
 - `useUpdatePost` sends `slug: slug || title` (`features/posts/index.js:236`)
   and most callers pass no slug, so **editing a post title can move its slug**
   and break frontend URLs.

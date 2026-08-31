@@ -1,6 +1,9 @@
 {
   "name": "studentski-centar-admin-react",
   "private": true,
+  "engines": {
+    "node": ">=20 <25"
+  },
   "scripts": {
     "dev": "npx next dev",
     "build": "npx next build",
