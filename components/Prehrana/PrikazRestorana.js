@@ -194,7 +194,7 @@ const PrikazRestorana = ({ restaurant, page, setPage }) => {
           ?.sort((a, b) => a.order - b.order)
           ?.map((infoItem, index) => (
             <div
-              className="flex gap-4"
+              className="flex gap-4 items-center"
               key={infoItem.order}
               onMouseOver={() => setInfoHovered(infoItem.order)}
               onMouseOut={() => setInfoHovered(null)}
@@ -208,6 +208,7 @@ const PrikazRestorana = ({ restaurant, page, setPage }) => {
                 <EnglishFieldFrame
                   source={infoItem.title}
                   value={infoListEn[infoList.indexOf(infoItem)]?.title}
+                  className="flex-1 min-w-0"
                 >
                   <input
                     value={infoListEn[infoList.indexOf(infoItem)]?.title ?? ""}

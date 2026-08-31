@@ -7,18 +7,27 @@ import { hasTranslation, useLocale } from "../../lib/locale";
  * Croatian original within reach so whoever is translating does not have to
  * toggle back and forth to read it.
  */
-export const EnglishFieldFrame = ({ label, source, value, children }) => {
+export const EnglishFieldFrame = ({
+  label,
+  source,
+  value,
+  className,
+  children,
+}) => {
   const translated = hasTranslation(value);
 
   // Strip markup for the reference copy — it is there to be read, not styled,
   // and rendering stored HTML here would be needless exposure.
   const plainSource =
     typeof source === "string"
-      ? source.replace(/<\/?[^>]+(>|$)/g, " ").replace(/\s+/g, " ").trim()
+      ? source
+          .replace(/<\/?[^>]+(>|$)/g, " ")
+          .replace(/\s+/g, " ")
+          .trim()
       : "";
 
   return (
-    <div className="border-l-4 border-sky-400 pl-3 my-2">
+    <div className={`border-l-4 border-sky-400 pl-3 my-2 ${className ?? ""}`}>
       <div className="flex items-center gap-2 mb-1 flex-wrap">
         <span className="text-xs font-semibold uppercase tracking-wide text-sky-600">
           Engleski{label ? ` — ${label}` : ""}
@@ -76,7 +85,12 @@ const LocalizedField = ({
 
   if (!isEnglish) {
     return (
-      <Field value={value} onChange={onChange} className={className} {...rest} />
+      <Field
+        value={value}
+        onChange={onChange}
+        className={className}
+        {...rest}
+      />
     );
   }
 
