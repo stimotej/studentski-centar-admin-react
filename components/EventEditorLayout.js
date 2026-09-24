@@ -91,7 +91,7 @@ const eventTypes = [
   "Festivali",
 ];
 
-const EventEditorLayout = ({ location }) => {
+const EventEditorLayout = ({ location, categoryId = eventsCategoryId }) => {
   const [storedPostNote, setStoredPostNote] = useState(false);
 
   const router = useRouter();
@@ -670,7 +670,7 @@ const EventEditorLayout = ({ location }) => {
         onClose={() => setMediaDialog(false)}
         value={image}
         onSelect={handleSelectMedia}
-        categoryId={eventsCategoryId}
+        categoryId={categoryId}
         mediaType={mediaDialog?.type}
       />
       <MyDialog

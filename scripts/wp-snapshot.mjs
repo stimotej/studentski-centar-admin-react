@@ -90,7 +90,9 @@ async function fetchWindow(type, offset, perPage, context) {
   url.searchParams.set("order", "asc");
   if (authenticated) url.searchParams.set("context", context);
   // Taxonomies have no post status; asking for one is a 400.
-  if (!isTaxonomy(type) && authenticated) url.searchParams.set("status", "any");
+  // Attachments reject "any"; they only have inherit, private and trash.
+  if (!isTaxonomy(type) && authenticated)
+    url.searchParams.set("status", type === "media" ? "inherit,private" : "any");
 
   const response = await fetch(url, { headers });
 

@@ -1,7 +1,8 @@
 import EventEditorLayout from "../../components/EventEditorLayout";
+import { kulturaCategoryId } from "../../lib/constants";
 
 const EventEditorPage = () => {
-  return <EventEditorLayout />;
+  return <EventEditorLayout categoryId={kulturaCategoryId} />;
 };
 
 export default EventEditorPage;

@@ -1,6 +1,6 @@
 import MediaLayout from "../../components/MediaLayout";
 import {
-  eventsCategoryId,
+  kulturaCategoryId,
   mediaUncategorizedFolderKultura,
 } from "../../lib/constants";
 
@@ -8,7 +8,7 @@ const MediaPage = () => {
   return (
     <MediaLayout
       from="kultura"
-      categoryId={eventsCategoryId}
+      categoryId={kulturaCategoryId}
       mediaUncategorizedFolder={mediaUncategorizedFolderKultura}
     />
   );
