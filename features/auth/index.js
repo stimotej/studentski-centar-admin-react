@@ -91,34 +91,37 @@ export const useUser = (options) => {
   );
 };
 
-export const useResetEmail = () => {
-  const queryClient = useQueryClient();
-
+export const useChangePassword = () => {
   return useMutation(
-    async (email) => {
-      const responseUser = await axios.post(
-        `${WP_API}/users/me`,
-        {
-          email,
-        }
-      );
-      const responseEmail = await axios.post(
-        `${WP_API}/reset-password`,
-        {
-          user_login: email,
-        }
-      );
-      toast.success(responseEmail?.data?.message);
-      return responseUser.data;
+    async ({ login, currentPassword, newPassword }) => {
+      // WordPress lets a logged-in user set a new password without the old one,
+      // so the current password is checked first against the token endpoint.
+      // fetch rather than axios, so the stored Bearer header is not sent along.
+      const check = await fetch(`${JWT_API}/token`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: login, password: currentPassword }),
+      });
+      if (!check.ok) {
+        const body = await check.json().catch(() => ({}));
+        const message =
+          body?.code === "[jwt_auth] incorrect_password"
+            ? "Trenutna lozinka nije točna"
+            : "Provjera trenutne lozinke nije uspjela, pokušajte kasnije";
+        throw Object.assign(new Error(message), { userMessage: message });
+      }
+
+      const response = await axios.post(`${WP_API}/users/me`, {
+        password: newPassword,
+      });
+      return response.data;
     },
     {
       onSuccess: () => {
-        return queryClient.invalidateQueries(["user"]);
+        toast.success("Lozinka je promijenjena");
       },
       onError: (error) => {
-        if (error.response.data.code === "rest_user_invalid_email")
-          toast.error("Email adresa se već koristi");
-        else toast.error("Došlo je do greške");
+        toast.error(error.userMessage || "Došlo je do greške");
       },
     }
   );

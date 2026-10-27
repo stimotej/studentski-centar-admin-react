@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 import { sidebarLinks } from "../../lib/constants";
 import Image from "next/image";
-import { MdOutlineLogout } from "react-icons/md";
+import { MdOutlineAccountCircle, MdOutlineLogout } from "react-icons/md";
 import Toggle from "./Toggle";
 import Link from "./Link";
 import { logout } from "../../features/auth";
@@ -58,6 +58,12 @@ const Sidebar = ({ category }) => {
           ))}
         </nav>
         <div className="flex flex-col">
+          <Link
+            icon={<MdOutlineAccountCircle size={24} />}
+            to={`/${category}/profil`}
+            title="Moj profil"
+            onClick={() => setActive(false)}
+          />
           <Link
             icon={<MdOutlineLogout size={24} />}
             title="Odjava"
