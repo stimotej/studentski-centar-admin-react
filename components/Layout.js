@@ -1,10 +1,8 @@
 import { useRouter } from "next/router";
 import Sidebar from "./Sidebar";
-import MyDialog from "./Elements/MyDialog";
-import { createTheme, TextField, ThemeProvider } from "@mui/material";
+import { createTheme, ThemeProvider } from "@mui/material";
 import { useEffect } from "react";
-import { useCheckAuth, useResetEmail, useUser } from "../features/auth";
-import { useState } from "react";
+import { useCheckAuth, useUser } from "../features/auth";
 import { CATERING_ROLE, EVENTI_ROLE, TURIZAM_ROLE } from "../lib/constants";
 import { toast } from "react-toastify";
 
@@ -132,9 +130,6 @@ const Layout = ({ children }) => {
   const { data: user } = useUser();
   const { mutate: checkAuth } = useCheckAuth();
 
-  const [changeMailModal, setChangeMailModal] = useState(false);
-  const [email, setEmail] = useState("");
-
   useEffect(() => {
     const roleMap = {
       turizam: TURIZAM_ROLE,
@@ -167,22 +162,6 @@ const Layout = ({ children }) => {
     );
   }, [router, category, checkAuth]);
 
-  useEffect(() => {
-    if (user?.data?.email.endsWith("@check.com")) {
-      setChangeMailModal(true);
-    }
-  }, [user]);
-
-  const { mutate: resetEmail, isLoading } = useResetEmail();
-
-  const handleResetEmail = () => {
-    resetEmail(email, {
-      onSuccess: () => {
-        setChangeMailModal(false);
-      },
-    });
-  };
-
   return (
     <ThemeProvider
       theme={
@@ -206,31 +185,6 @@ const Layout = ({ children }) => {
       }
     >
       <div className={`theme-${category}`}>
-        <MyDialog
-          opened={changeMailModal}
-          setOpened={setChangeMailModal}
-          title="Postavljanje email adrese"
-          content={
-            <>
-              <span>
-                Spremanjem email adrese, bit će Vam poslan email za resetiranje
-                loznike.
-              </span>
-              <TextField
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                type="email"
-                label="Email adresa"
-                className="mt-4"
-                fullWidth
-              />
-            </>
-          }
-          actionTitle="Spremi"
-          loading={isLoading}
-          onClick={handleResetEmail}
-          onClose={() => setChangeMailModal(false)}
-        />
         <Sidebar category={category} />
         <main className="sm:pl-20">{children}</main>
       </div>
