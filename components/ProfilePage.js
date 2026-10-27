@@ -38,7 +38,7 @@ const ProfilePage = () => {
     setError("");
 
     changePassword(
-      { login: email, currentPassword, newPassword },
+      { currentPassword, newPassword },
       {
         onSuccess: () => {
           setCurrentPassword("");

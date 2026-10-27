@@ -3,7 +3,7 @@ import axios from "axios";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { CATERING_ROLE, EVENTI_ROLE, TURIZAM_ROLE } from "../../lib/constants";
-import { JWT_API, WP_API } from "../../lib/wp";
+import { JWT_API, SC_API, WP_API } from "../../lib/wp";
 
 // const url = "https://www.sczg.unizg.hr/wp-json/jwt-auth/v1/token";
 const url = `${JWT_API}/token`;
@@ -93,26 +93,13 @@ export const useUser = (options) => {
 
 export const useChangePassword = () => {
   return useMutation(
-    async ({ login, currentPassword, newPassword }) => {
-      // WordPress lets a logged-in user set a new password without the old one,
-      // so the current password is checked first against the token endpoint.
-      // fetch rather than axios, so the stored Bearer header is not sent along.
-      const check = await fetch(`${JWT_API}/token`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: login, password: currentPassword }),
-      });
-      if (!check.ok) {
-        const body = await check.json().catch(() => ({}));
-        const message =
-          body?.code === "[jwt_auth] incorrect_password"
-            ? "Trenutna lozinka nije točna"
-            : "Provjera trenutne lozinke nije uspjela, pokušajte kasnije";
-        throw Object.assign(new Error(message), { userMessage: message });
-      }
-
-      const response = await axios.post(`${WP_API}/users/me`, {
-        password: newPassword,
+    async ({ currentPassword, newPassword }) => {
+      // The server checks the current password (snippet "Change password REST
+      // API route", docs/change-password-wordpress-snippet.php); WordPress's own
+      // users/me refuses password changes for non-admins.
+      const response = await axios.post(`${SC_API}/change-password`, {
+        current_password: currentPassword,
+        new_password: newPassword,
       });
       return response.data;
     },
@@ -121,7 +108,7 @@ export const useChangePassword = () => {
         toast.success("Lozinka je promijenjena");
       },
       onError: (error) => {
-        toast.error(error.userMessage || "Došlo je do greške");
+        toast.error(error.response?.data?.message || "Došlo je do greške");
       },
     }
   );
