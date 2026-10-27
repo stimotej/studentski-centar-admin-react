@@ -116,11 +116,14 @@ export const useChangePassword = () => {
 
 export const useResetPassword = () => {
   return useMutation(
-    async (email) => {
+    // `from` is the admin section; after the reset, WordPress sends the user
+    // back to that section's login (snippet 128).
+    async ({ email, from }) => {
       const response = await axios.post(
         `${WP_API}/reset-password`,
         {
           user_login: email,
+          from,
         }
       );
       return response.data;
