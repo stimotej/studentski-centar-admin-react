@@ -58,11 +58,21 @@ function sc_change_password( WP_REST_Request $request ) {
     delete_transient( $throttle );
 
     // wp_update_user (not wp_set_password) so WordPress hashes the password and
-    // sends its usual "password changed" notice, as a profile edit would.
+    // sends its usual "password changed" notice, as a profile edit would. But it
+    // also logs the browser into WordPress with cookies when users change their
+    // own password, and those cookies then override the admin's JWT on every
+    // later REST call. So no cookies are sent from here.
+    add_filter( 'send_auth_cookies', '__return_false' );
     $result = wp_update_user( array( 'ID' => $user->ID, 'user_pass' => $new ) );
+    remove_filter( 'send_auth_cookies', '__return_false' );
     if ( is_wp_error( $result ) ) {
         return new WP_Error( 'sc_password_not_saved', 'Lozinka nije spremljena.', array( 'status' => 500 ) );
     }
+
+    // End every WordPress login session of this user (wp-admin in any browser),
+    // including the one wp_update_user just created. The admin's JWT is not a
+    // session and keeps working.
+    WP_Session_Tokens::get_instance( $user->ID )->destroy_all();
 
     return array( 'message' => 'Lozinka je promijenjena.' );
 }
