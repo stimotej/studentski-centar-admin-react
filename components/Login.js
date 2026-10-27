@@ -40,7 +40,7 @@ const Login = ({ from, title }) => {
   const { mutate: resetPassword } = useResetPassword();
 
   const handleResetPassword = () => {
-    resetPassword(email, {
+    resetPassword({ email, from }, {
       onSuccess: () => {
         setResetPasswordModal(false);
         setEmail("");
@@ -91,6 +91,11 @@ const Login = ({ from, title }) => {
         {/* <h4 className="uppercase tracking-wide font-medium mb-8">
           Admin prijava
         </h4> */}
+        {router.query.lozinka === "promijenjena" && !error && (
+          <span className="text-green-700 mb-4">
+            Lozinka je promijenjena. Prijavite se novom lozinkom.
+          </span>
+        )}
         {error && <span className="text-error mb-4">{error}</span>}
         <form className="flex flex-col gap-4 w-full" onSubmit={handleLogin}>
           {/* <InputLabel text="Korisničko ime" /> */}
